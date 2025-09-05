@@ -2,23 +2,25 @@
 
 ## Target Customer Segments
 
-### Primary Target: SMBs 25-99 Employees
+### Primary Target: High-Value SMBs 25-99 Employees (Updated)
 **Why This Size**: 
-- Sophisticated enough to need structured decision processes
-- Large enough to afford $5-20/user monthly pricing
-- Growing faster than smaller SMBs (8% IT spending CAGR)
-- Not served well by enterprise-focused tools
+- Complex decisions requiring AI assistance vs simple templates
+- Budget capability for premium pricing ($21.50/user monthly)
+- Growing AI adoption (8% IT spending CAGR)
+- Underserved by existing AI decision tools
 
 **Decision-Making Characteristics**:
-- 3-8 people typically involved in major decisions
-- Monthly/quarterly cadence for strategic decisions  
-- Need audit trails for compliance (healthcare, financial services)
-- Value speed and simplicity over sophisticated analytics
+- Strategic decisions benefit from AI guidance
+- Complex stakeholder dynamics requiring structured process
+- Need audit trails for compliance (healthcare, financial services)  
+- Value AI assistance for unfamiliar decision types
+- Willingness to pay premium for decision quality improvement
 
-### Secondary Segments
-**Professional Services Firms**: Project decisions, client consultation documentation
-**Healthcare SMBs**: Compliance-focused decision tracking for regulatory requirements
-**Financial Services**: FINRA CAT requirements mandate decision audit trails
+### High-Value Segments for AI Platform
+**Tech Scale-ups**: Product roadmap, market expansion, strategic investment decisions
+**Professional Services**: Partner decisions, service expansion, major client engagements
+**Healthcare**: Equipment/technology purchases, compliance framework updates
+**Financial Services**: Risk management decisions, regulatory compliance choices
 
 ## Market Size and Opportunity
 **Total Addressable Market**: $69.32B SMB software market
@@ -31,14 +33,16 @@
 - **Regulatory Compliance**: New audit trail requirements across industries
 - **Economic Efficiency**: SMBs seeking productivity gains amid inflation (37% cite as biggest challenge)
 
-## Competitive Landscape Gaps
-- **Underserved Segment**: Current players focus on enterprise (Monday.com moving upmarket)
-- **Feature Gap**: Collaboration tools lack decision-specific capabilities
-- **Price Gap**: Enterprise tools price 2-3x above SMB budgets ($50+ vs $15-20/user target)
-- **Complexity Gap**: Current solutions too complex for SMB implementation timelines
+## Competitive Landscape - AI Platform Opportunity
+- **Underserved Segment**: AI decision tools focus on enterprise, leaving SMB gap
+- **Feature Gap**: Simple templates lack AI customization capabilities  
+- **Price Gap**: SMBs willing to pay premium ($21.50/user) for AI assistance value
+- **Complexity Gap**: Local AI processing (DeepSeek R1) vs expensive cloud solutions
 
-## Customer Research Insights
-*Note: This section will be populated as customer interviews are conducted*
-- Target: 5 customer interviews weekly starting Week 1
-- Focus: Decision-making pain points, current tools, willingness to pay
-- Validation: Framework preference vs AI features, pricing sensitivity
+## Customer Research Insights (AI Platform Focus)
+**Concept Validation Priority**: Test 3 AI approaches with target customers
+- **Akinator-Style**: AI interview approach for complex decisions
+- **Framework Builder**: AI creates templates from descriptions
+- **Simple Templates**: Baseline comparison (Interview #9 preference)
+**Success Criteria**: Clear customer preference + $21.50/user pricing acceptance
+**Target Customer Profile**: Decision makers at $10M+ revenue companies

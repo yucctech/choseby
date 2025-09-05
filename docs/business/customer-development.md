@@ -1,33 +1,32 @@
-# Customer Development Process
+# Customer Development Process - AI Platform Concept Validation
 
-## Research-Backed Virtual Interview Framework
+## AI Platform Validation Framework
 
-### Strategic Interview Objectives (CEO-Validated)
-- **Market Category Validation**: Confirm SMBs distinguish "decision support" from "collaboration tools"
-- **Competitive Displacement Opportunity**: Document specific Monday.com/Notion/ClickUp switching triggers
-- **Compliance-Driven Demand**: Validate healthcare HIPAA and financial AML audit requirements
-- **Authentic Rejection Pattern Analysis**: Capture genuine 30-40% rejection reasons for competitive intelligence
-- **Pricing Sensitivity Mapping**: Test $5-20/user/month positioning against $300-500 SMB comfort zone
+### Strategic Interview Objectives (Updated for AI Platform)
+- **AI Concept Preference**: Test 3 AI approaches (Akinator, Framework Builder, Simple Templates)
+- **Premium Pricing Validation**: Confirm $21.50/user acceptance for AI assistance value
+- **Customer Segment Identification**: Decision makers vs operations managers preferences
+- **Use Case Validation**: Complex decisions requiring AI vs simple template needs
+- **Value Justification**: Document why customers pay premium for AI assistance
 
-### Enhanced Interview Schedule (Research-Informed)
-**Week 1-4**: 5 virtual interviews per week using authentic persona frameworks (20 total)
-**Week 5-8**: 3 interviews per week + competitive positioning validation (12 total)  
-**Week 9-12**: Compliance-focused interviews in healthcare/financial verticals (10 total)
+### AI Concept Testing Schedule (4-Week Validation)
+**Week 1-2**: Concept testing with high-value SMB decision makers (3-5 interviews/week)
+**Week 3-4**: Validation and refinement based on customer preferences (2-3 interviews/week)
+**Goal**: Clear concept preference + pricing acceptance before development investment
 
-### Virtual Interview Persona Framework (Research-Backed)
+### Target Customer Framework (AI Platform Focus)
 
-#### Primary Personas (Psychological Profiles)
-**Cautious Protector (40% of interviews)**: Risk-averse operations/finance managers with failed implementation experience
-- Language: "Walk me through exactly how this works" / "What happens if it doesn't work?"
-- Triggers: Risk mitigation, phased rollouts, money-back guarantees
-- Rejection Pattern: "I need to think about this" / "Let me run this by the team"
+#### High-Value Decision Makers (Primary Target)
+**Founders/C-Suite at $10M+ SMBs**: Strategic decision authority with AI assistance budget
+- Language: "How does this help us make better strategic decisions?" / "What's the ROI?"
+- Triggers: Decision quality improvement, competitive advantage, strategic value
+- Success Pattern: Sees AI assistance value for complex/unfamiliar decisions
 
-**Efficiency Seeker (35% of interviews)**: Results-driven senior managers frustrated with current inefficiencies
-- Language: "Skip the technical stuff - what's the impact?" / "Will this save us time and money?"
-- Triggers: Time-to-value, competitive advantage, ROI demonstrations
-- Rejection Pattern: Quick initial interest followed by extensive second-guessing
-
-**Overwhelmed Generalist (25% of interviews)**: Multi-role managers with limited technical expertise
+#### Operations Managers (Comparison Group)
+**Mid-level managers**: Day-to-day operational decisions, cost-sensitive
+- Language: "We just need simple templates" / "Will this speed up our process?"
+- Triggers: Process efficiency, simplicity, cost control
+- Pattern: Prefers simple templates (Interview #9 baseline)
 - Language: "I'm not sure I fully understand" / "What would you recommend for a company like ours?"
 - Triggers: Simplified explanations, guidance, extensive support
 - Rejection Pattern: "This seems too complex for our team"
@@ -94,10 +93,15 @@
 **Implementation Bandwidth**: "We don't have IT staff to manage complex implementations"
 **Priority vs Revenue**: "Process optimization feels like a luxury when we're focused on growth"
 
-#### Solution Validation (5 minutes - Only if still engaged)
-**Framework-First Approach**: "Would you prefer decision templates or AI-generated recommendations?"
-**Compliance Integration**: Industry-specific audit trail and documentation needs
-**Pricing Sensitivity**: Test $5-20/user/month against identified comfort zones
+#### AI Concept Testing (10 minutes - Core Validation)
+**Concept Preference**: "Would you prefer AI interview approach, smart templates, or simple templates?"
+**Value Recognition**: "What would AI assistance be worth for complex decisions?"
+**Use Case Validation**: "What decisions would benefit from AI guidance vs simple templates?"
+
+#### Premium Pricing Validation (5 minutes - Critical)
+**Pricing Sensitivity**: Test $21.50/user/month for AI assistance value
+**Budget Authority**: "Who approves $10K+ annual software purchases?"
+**ROI Justification**: "How do you calculate value for decision support tools?"
 
 #### Authentic Closure (5 minutes)
 **Follow-up Consent**: For interested prospects

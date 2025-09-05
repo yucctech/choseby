@@ -1,25 +1,25 @@
 # Kryver Project Brief
 
-**Kryver** is a framework-based decision support platform targeting SMBs with 25-99 employees, positioned as a cost-leader between simple project management tools ($5/user) and expensive BI platforms ($45+/user).
+**Kryver** is an AI Decision Platform targeting SMBs with 25-99 employees, using AI assistance or structured templates to help teams make better decisions for vendor selection, strategic choices, and investments.
 
 ## Core Value Proposition
-"Structured decision-making frameworks for SMBs without AI complexity or enterprise pricing"
+"AI-powered decision support that helps SMB teams make better choices faster, with structured guidance and collaborative tools"
 
 ## Business Model
-- **Revenue**: $5-20/user/month subscription with freemium entry
-- **Market**: SMB teams needing structured decision processes
-- **Advantage**: 60-75% cost savings through framework-first approach vs AI-heavy competitors
+- **Revenue**: $21.50/user/month subscription (premium pricing for premium value)
+- **Market**: SMB teams needing decision support for complex choices
+- **Advantage**: AI-assisted decision making with human collaboration tools
 
 ## Strategic Foundation
-- **AI Strategy**: Zero-cost local deployment (DeepSeek R1) + free API tiers
-- **Technical**: Simple, proven stack (Next.js + PostgreSQL)
-- **Go-to-Market**: Bootstrap growth, customer-funded development
-- **Positioning**: Framework templates over AI predictions
+- **AI Strategy**: AI assistance integrated with structured decision frameworks
+- **Technical**: Modern stack with AI integration capabilities
+- **Go-to-Market**: Concept validation before development investment
+- **Positioning**: Premium AI decision platform for discerning SMBs
 
 ## Key Constraints
-- **Budget**: $50K maximum (18-month runway)
-- **Timeline**: $1K MRR by month 6 (survival threshold)
-- **Success**: 25 paying customers, PMF score >40%, LTV:CAC >3:1
+- **Budget**: $15K-50K flexible based on validation results
+- **Timeline**: Concept validation first, then development timeline
+- **Success**: Validated customer demand, willingness to pay premium pricing
 
 ## Current Phase
-Project initiation complete → Beginning 90-day execution plan
+Concept validation phase → Customer development → Development decision

@@ -4,18 +4,19 @@
 - **SMB**: Small-Medium Business (25-99 employees for Kryver's target market)
 - **PMF**: Product-Market Fit (measured via Sean Ellis survey, target >40%)
 - **MRR**: Monthly Recurring Revenue (subscription revenue target)
-- **CAC**: Customer Acquisition Cost (target <$400)
-- **LTV**: Lifetime Value (target $1,200-2,400)
-- **Framework-First**: Pre-built decision templates vs AI-generated recommendations
+- **CAC**: Customer Acquisition Cost (target varies by validation approach)
+- **LTV**: Lifetime Value (target depends on final pricing model)
+- **AI Decision Platform**: AI-assisted decision making with structured frameworks
 
 ## Technical Terms  
-- **DeepSeek R1**: Open-source AI model for local deployment (zero-cost strategy)
-- **Local-First AI**: Processing on local hardware to eliminate API costs
-- **Zero-Cost AI**: Strategy using local models + free API tiers only
-- **Bootstrap**: Self-funded growth without external investment
+- **AI Integration**: Combining AI assistance with human decision frameworks
+- **Decision Support**: Technology that helps teams make better choices
+- **Concept Validation**: Testing customer demand before development investment
+- **Premium Positioning**: Higher-value pricing for sophisticated solutions
 
 ## Project Terms
-- **MVP**: Minimum Viable Product (core decision framework features)
+- **MVP**: Minimum Viable Product (core decision support features)
 - **PMO**: Project Management Office principles adapted for startup
 - **ADR**: Architecture Decision Record (major technical/business decisions)
 - **Domain**: Ownership area (business, technical, operations, metrics)
+- **Validation-First**: Confirm customer demand before development spending

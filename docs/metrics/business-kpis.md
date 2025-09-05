@@ -3,29 +3,29 @@
 ## Revenue Metrics
 
 ### Monthly Recurring Revenue (MRR)
-**Current**: $0 (pre-launch)
-**Month 6 Target**: $1,000 (survival threshold)
-**Month 12 Target**: $10,000 (growth sustainability)
+**Current**: $0 (pre-validation)
+**Validation Target**: Confirmed customer willingness to pay at target pricing
+**Post-Validation Target**: Based on validated pricing model ($21.50/user/month)
 **Calculation**: Sum of monthly subscription revenues
-**Update Frequency**: Monthly
+**Update Frequency**: Monthly post-launch
 
 ### Customer Acquisition Cost (CAC)  
-**Target**: <$400 (below SMB SaaS average of $300-600)
-**Current**: Not yet measured (pre-launch)
+**Target**: To be determined based on validation approach and go-to-market strategy
+**Current**: Not yet measured (pre-validation)
 **Calculation**: Total sales/marketing spend ÷ new customers acquired
 **Tracking**: Monthly cohort analysis by acquisition channel
-**Update Frequency**: Monthly
+**Update Frequency**: Monthly post-launch
 
 ### Customer Lifetime Value (LTV)
-**Target**: $1,200-2,400 (3-4x CAC ratio)
+**Target**: To be determined based on validated pricing and retention
 **Components**: Average monthly revenue × gross margin × average customer lifespan
-**Benchmark**: SMB SaaS average 12-36 month lifespan
-**Update Frequency**: Quarterly (requires sufficient data)
+**Benchmark**: Premium SaaS products typically show higher LTV
+**Update Frequency**: Quarterly post-launch
 
 ### Unit Economics Health
 **LTV:CAC Ratio Target**: 3-4:1 (optimal for sustainable growth)
 **Payback Period Target**: <12 months
-**Gross Margin Target**: 80-85% (above 65-70% SMB benchmark)
+**Gross Margin Target**: 80-85% (software margins)
 
 ## Product-Market Fit Indicators
 
@@ -71,26 +71,26 @@
 **Partnerships**: Target 15% from integrations
 
 ### Market Validation Indicators
-**Customer Interview Completion**: 5 per week target
+**Customer Interview Completion**: 5 per week target during validation phase
 **Problem Validation**: 60%+ report similar pain points  
-**Solution Interest**: 40%+ express purchase intent
-**Feature Alignment**: Customer requests match roadmap 80%+
+**Solution Interest**: 40%+ express purchase intent at target pricing
+**Feature Alignment**: Customer requests match AI platform concept 80%+
 
 ## Financial Health
 
-### Burn Rate and Runway
-**Monthly Burn Target**: <$8,500
-**Current Runway**: 18+ months ($50K ÷ projected burn)
-**Cash Management**: Monthly budget vs actual tracking
-**Emergency Reserve**: 10% of total budget maintained
+### Budget and Investment
+**Validation Budget**: Flexible based on learning needs
+**Development Budget**: $15K-50K based on validation outcomes
+**Investment Approach**: Concept validation before development spending
+**Budget Allocation**: Customer validation → Development → Market entry
 
-### Revenue Milestones
-**$1K MRR** (Month 6): Survival threshold validation
-**$5K MRR** (Month 9): Product-market fit confirmation  
-**$10K MRR** (Month 12): Sustainable growth foundation
-**$25K MRR** (Month 18): Scale-ready business model
+### Validation Milestones
+**Concept Validation**: Customer demand confirmed at target pricing
+**Market Validation**: Sufficient market size and willingness to pay
+**Development Decision**: Go/no-go based on validation results
+**Market Entry**: Post-development customer acquisition
 
-*Note: Baseline measurements will begin once MVP launches and first customers acquired*
+*Note: Baseline measurements will begin once concept validation completes and development decisions made*
 
-**Last Updated**: September 3, 2025
-**Next Review**: Weekly during customer acquisition phase
+**Last Updated**: September 6, 2025
+**Next Review**: Weekly during customer validation phase
