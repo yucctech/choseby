@@ -30,8 +30,9 @@ Thumbs.db
 # Logs
 *.log
 
-# Old prototype (superseded by team decision platform)
+# Old prototype and wireframes (superseded by team decision platform)
 smart-framework-builder/
+wireframes/
 
 # Temporary files
 *.tmp
