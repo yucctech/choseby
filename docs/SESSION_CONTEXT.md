@@ -39,11 +39,11 @@
 - Update existing files rather than creating redundant content
 
 ### PROJECT STATUS
-- **CORE PRODUCT**: AI Decision Platform (not simple templates)
-- **CURRENT PHASE**: Customer concept validation (3 AI approaches)
-- **BUDGET**: Flexible $15K-50K based on validation results
-- **TIMELINE**: 4-week validation, then development based on customer preference
-- **REVENUE TARGET**: $21.50/user/month (premium pricing model)
+- **CORE PRODUCT**: Team Decision Platform (validated across 4 industries)
+- **CURRENT PHASE**: Development Execution ($50K budget approved)
+- **BUDGET**: $50K development budget with 8-week MVP timeline
+- **TIMELINE**: MVP development in progress, targeting 5 paying customers
+- **REVENUE TARGET**: $107.50-172/month per team (vs individual $21.50/user)
 
 ### AI SESSION RULES
 **NEVER create without permission:**
@@ -52,12 +52,17 @@
 - todo.md, next-steps.md, action-items.md
 - Duplicate files with version numbers
 
+**CLAUDE CODE vs DESKTOP TASK SEPARATION:**
+- **Claude Code**: Any task involving programming languages (TypeScript, SQL, Python, etc.), coding, component creation, API development, database implementation, testing code
+- **Claude Desktop**: Planning, documentation, wireframes, strategy, research, analysis, business logic design, user experience planning
+
 **ALWAYS:**
 - Check `docs/README.md` for current project direction
 - Reference `docs/operations/current-status.md` for current phase
-- Reference `docs/essential-business-data.md` for customer requirements
+- Reference `docs/business/essential-business-data.md` for customer requirements
 - Use specific, implementable recommendations
 - Build what customers will pay premium prices for
+- Separate coding tasks (Claude Code) from planning tasks (Claude Desktop)
 
 ### ROLE-BASED CONTEXT GUIDE
 **AI should auto-select role and read appropriate context based on task type:**
@@ -66,19 +71,20 @@
 **Task Triggers**: "interview", "validate", "customer feedback", "market research", "pricing", "concept testing"
 **Context Files**: 
 - `docs/business/` (all files)
-- `docs/essential-business-data.md`
 - `docs/interviews/` (if available)
 **Role Declaration**: "Role: Customer Development Specialist"
 **Focus**: Validate AI platform concepts, test pricing acceptance, identify target customers
 
 #### Technical Lead
 **Task Triggers**: "wireframe", "build", "code", "architecture", "implementation", "technical", "development"
+**Claude Code Tasks**: Any programming/coding tasks (TypeScript, SQL, React components, API development, database schema, testing code)
+**Claude Desktop Tasks**: Technical planning, architecture documentation, wireframes, technical strategy
 **Context Files**:
 - `docs/technical/` (all files)  
 - `wireframes/` folder
 - `docs/archive/` (for reference designs)
 **Role Declaration**: "Role: Technical Lead"
-**Focus**: Prepare development based on validation results, design chosen concept
+**Focus**: Prepare development based on validation results, design chosen concept, separate coding vs planning tasks
 
 #### Strategic Advisor
 **Task Triggers**: "budget", "strategy", "direction", "pivot", "business model", "roadmap", "timeline"
@@ -90,13 +96,13 @@
 **Focus**: Business decisions, resource allocation, market strategy
 
 ### CURRENT FOCUS
-**Validation Phase**: Test 3 AI platform concepts with customers
-**Key Question**: Which AI approach justifies $21.50/user pricing?
-**Next**: Customer validation determines development scope and budget
+**Development Phase**: Team decision platform with Railway → DigitalOcean → Heroku hosting strategy
+**Key Question**: Execute 8-week MVP for healthcare teams first
+**Next**: Convert validation interviews to pilot customers, begin development
 
 ### CRITICAL UNDERSTANDING
-**Interview #9 Healthcare feedback**: Showed preference for simple templates BUT this is one data point
-**Strategic Decision**: Test AI platform concepts with high-value customers before concluding market preference
-**Goal**: Validate AI Decision Platform can command premium pricing vs commodity template approach
+**15/15 Interviews Complete**: Team decision platform validated across all industries
+**Development Approved**: $50K budget approved based on exceptional validation results
+**Goal**: Build team decision facilitation platform that customers validated at $107-172/month
 
-**Success = Customer says "This AI assistance is worth $21.50/user/month"**
+**Success = 5 paying healthcare teams by Week 8, $500+ MRR**
