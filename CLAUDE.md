@@ -15,10 +15,10 @@ This file provides guidance to Claude Code when working with code in this reposi
 Every new Claude Code session MUST read these files in this exact sequence:
 
 1. **`docs/SESSION_CONTEXT.md`** - ESSENTIAL AI behavior rules and project status
-2. **`docs/TECHNICAL_ARCHITECTURE_PLAN.md`** - Complete technical specifications and startup prompt
-3. **`docs/operations/WEEK_1_TASK_ASSIGNMENTS.md`** - Immediate development priorities
-4. **`docs/README.md`** - Team decision platform strategy overview
-5. **`docs/essential-business-data.md`** - Complete validation results and business model
+2. **`docs/ai-context/CLAUDE_CODE_CONTEXT.md`** - Technical context and active tasks
+3. **`docs/current/ACTIVE_TASKS.md`** - Immediate development priorities  
+4. **`docs/technical/database-schema.md`** - Database architecture and RLS setup
+5. **`README.md`** - Project navigation hub
 
 ## DEVELOPMENT MISSION ✅
 
@@ -79,17 +79,18 @@ UI Components: Shadcn/ui + Radix UI primitives
 Forms: React Hook Form + Zod validation
 
 // Backend Stack
-API: Next.js API Routes + tRPC for type safety
-Database: PostgreSQL with Prisma ORM
-Authentication: NextAuth.js with multi-tenant team support
-File Storage: Vercel Blob for document exports
+API: Vercel Edge Functions + Next.js API Routes
+Database: Supabase PostgreSQL with Row Level Security
+Authentication: Supabase Auth with multi-tenant team support
+File Storage: Supabase Storage for document exports
 Email: Resend for team invitations and notifications
 
-// Infrastructure
-Hosting: Vercel (frontend + API)
-Database: Supabase PostgreSQL with Row Level Security
-Monitoring: Vercel Analytics + error tracking
-Deployment: GitHub Actions CI/CD
+// Infrastructure (FREE Development → Paid Production)
+Development (FREE): Vercel + Supabase ($0/month)
+Production Scale: Vercel Pro + Supabase Pro ($45/month)
+Enterprise: Custom hosting with compliance ($100+/month)
+Monitoring: Vercel Analytics + Supabase Dashboard
+Deployment: Git-based CI/CD with automatic scaling
 ```
 
 ## BUSINESS CONTEXT ✅
@@ -114,7 +115,7 @@ Deployment: GitHub Actions CI/CD
 
 **EXECUTE with urgency** - first-mover advantage in unoccupied team decision facilitation market category.
 
-**Reference**: `/docs/TECHNICAL_ARCHITECTURE_PLAN.md` for complete specifications
+**Reference**: `/docs/technical/database-schema.md` for complete specifications
 **Budget**: $25K Phase 1 MVP (weeks 1-8), $25K Phase 2 expansion
 
 ## 🚀 START DEVELOPMENT IMMEDIATELY - FIRST-MOVER ADVANTAGE DEPENDS ON VELOCITY
