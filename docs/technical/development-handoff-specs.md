@@ -647,7 +647,7 @@ const lighthouseConfig = {
 ### Environment Configuration
 ```bash
 # .env.local (development)
-DATABASE_URL="postgresql://user:pass@localhost:5432/kryver_dev"
+DATABASE_URL="postgresql://user:pass@localhost:5432/choseby_dev"
 NEXTAUTH_SECRET="your-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
 GOOGLE_CLIENT_ID="your-google-client-id"
@@ -656,7 +656,7 @@ OPENAI_API_KEY="your-openai-key" # For API fallbacks
 DEEPSEEK_MODEL_PATH="/models/deepseek-r1-distill-qwen-7b"
 
 # Production environment variables
-VERCEL_URL="https://app.kryver.com"
+VERCEL_URL="https://app.choseby.com"
 DATABASE_URL="postgresql://..." # Managed PostgreSQL
 REDIS_URL="redis://..." # For WebSocket session management
 ```
@@ -775,7 +775,7 @@ interface MonitoringConfig {
 ```sql
 -- Automated daily backups
 -- Production database backup script
-pg_dump $DATABASE_URL > backups/kryver_$(date +%Y%m%d_%H%M%S).sql
+pg_dump $DATABASE_URL > backups/choseby_$(date +%Y%m%d_%H%M%S).sql
 
 -- Critical data tables (priority order)
 1. decisions (core business data)

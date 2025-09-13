@@ -1,7 +1,7 @@
 # TEAM DECISION PLATFORM DEVELOPMENT PLAN - VALIDATED & APPROVED
 
 ## STRATEGIC CONTEXT ✅
-**Project**: Kryver Team Decision Platform
+**Project**: Choseby Team Decision Platform
 **Phase**: Development Execution (validation complete - 15/15 interviews successful)
 **Goal**: Build premium team decision facilitation platform for 5-8 person leadership teams
 **Budget**: $50K development budget approved based on 100% validation confidence

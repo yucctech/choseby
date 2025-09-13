@@ -1,4 +1,4 @@
-# KRYVER SESSION CONTEXT
+# CHOSEBY SESSION CONTEXT
 ## Essential Guidelines for All AI Sessions (Claude Desktop + Claude Code)
 
 ## 🚫 CRITICAL AI BEHAVIOR RULES (READ FIRST)

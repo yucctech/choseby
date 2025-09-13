@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code when working with code in this repository.
 
-# 🚨 KRYVER TEAM DECISION PLATFORM - DEVELOPMENT EXECUTION
+# 🚨 CHOSEBY TEAM DECISION PLATFORM - DEVELOPMENT EXECUTION
 
 ## PROJECT STATUS: VALIDATION COMPLETE → DEVELOPMENT APPROVED ✅
 **Product**: Team Decision Platform for 5-8 person leadership teams

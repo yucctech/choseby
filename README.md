@@ -1,4 +1,4 @@
-# Kryver Team Decision Platform
+# Choseby Team Decision Platform
 
 **Status**: ✅ Development Execution Phase  
 **Budget**: $50K approved ($25K Phase 1, $25K Phase 2)  
