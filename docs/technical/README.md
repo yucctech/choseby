@@ -60,8 +60,8 @@
 ## 🔧 Development Resources
 
 ### Development Priorities
-1. **Phase 1 (Weeks 1-2)**: Next.js application setup with PostgreSQL integration using provided schemas
-2. **Phase 2 (Weeks 3-4)**: Frontend implementation of 26 screens with conflict resolution workflow  
+1. **Phase 1 (Weeks 1-2)**: Go backend API server with PostgreSQL integration using provided schemas
+2. **Phase 2 (Weeks 3-4)**: React/Next.js frontend implementation of 26 screens with conflict resolution workflow
 3. **Phase 3 (Weeks 5-8)**: Real-time collaboration features and healthcare compliance optimization
 
 ### Critical Implementation Requirements
