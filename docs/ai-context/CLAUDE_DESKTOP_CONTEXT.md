@@ -28,10 +28,25 @@ Conduct interviews → Extract insights → Update `docs/business/customer-inter
 ## References
 - Customer Research: `docs/business/customer-interviews/`
 - Customer Insights: `docs/business/customer-insights/`
+- **Customer Success**: `docs/business/customer-success/` (pilot conversion process, onboarding)
 - Business Strategy: `docs/business/market-strategy.md`
 - Current Progress: `docs/current/`
 - Strategic Decisions: `docs/decisions/`
+- **API Documentation**: `docs/technical/api/` (Complete backend specification - development ready)
+- **User Flows**: `docs/technical/user-flows/` (Expert-validated decision workflows)
 - **Future Features**: `docs/business/future-features/` (AI individual platform, expansion roadmap)
+
+## Technical Foundation Complete ✅
+**API Specification**: `docs/technical/api/openapi-specification.yaml`  
+- 40+ RESTful endpoints for Emergency/Express/Full DECIDE workflows
+- Anonymous evaluation system with conflict detection algorithms  
+- HIPAA-compliant audit trails and healthcare SSO integration
+- Expert validated by Technical Lead, UX Designer, Healthcare Expert, Product Manager, Security Expert
+
+**Implementation Guide**: `docs/technical/api/implementation-guide.md`
+- Complete PostgreSQL schemas with healthcare compliance
+- Authentication patterns and performance optimization
+- Deployment configuration and security implementation
 
 ## Important Future Context
 **When expanding beyond team platform**: Reference `docs/business/future-features/ai-individual-platform-research.md` for validated individual decision-maker research and implementation strategy.

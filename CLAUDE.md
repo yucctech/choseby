@@ -15,18 +15,38 @@ This file provides guidance to Claude Code when working with code in this reposi
 Every new Claude Code session MUST read these files in this exact sequence:
 
 1. **`docs/SESSION_CONTEXT.md`** - ESSENTIAL AI behavior rules and project status
-2. **`docs/ai-context/CLAUDE_CODE_CONTEXT.md`** - Technical context and active tasks
-3. **`docs/current/ACTIVE_TASKS.md`** - Immediate development priorities  
-4. **`docs/technical/database-schema.md`** - Database architecture and RLS setup
-5. **`README.md`** - Project navigation hub
+2. **`docs/technical/README.md`** - Complete technical documentation index
+3. **`docs/technical/api/implementation-guide.md`** - Database schemas, authentication, deployment specs
+4. **`docs/technical/api/openapi-specification.yaml`** - Complete API specification (40+ endpoints)
+5. **`docs/current/SPRINT_STATUS.md`** - Current development priorities
 
-## DEVELOPMENT MISSION ✅
+## DEVELOPMENT STATUS: COMPLETE TECHNICAL FOUNDATION READY ✅
 
-### IMMEDIATE TASK: Week 1 Foundation Setup
-1. **Set up Next.js 14 project** with TypeScript + Tailwind CSS
-2. **Configure Supabase database** with team decision schema
-3. **Implement NextAuth.js** for team-based authentication  
-4. **Create basic team management** (create team, invite members, roles)
+### ✅ API DOCUMENTATION & EXPERT VALIDATION COMPLETE
+- **Complete OpenAPI 3.0.3 Specification**: 40+ RESTful endpoints for healthcare workflows
+- **Database Schemas**: PostgreSQL design with HIPAA compliance and conflict detection algorithms
+- **Implementation Guide**: Complete development specifications with code examples and deployment patterns
+- **Expert Validation Results**: Technical Lead, UX Designer, Healthcare Expert, Product Manager, Security Expert approved
+
+### ✅ WIREFRAME SPECIFICATIONS & FRONTEND READY
+- **Complete Wireframes**: 26 mobile-first screens including conflict resolution workflow
+- **System Trust Components**: Connection status indicators, auto-save feedback, anonymous mode protection
+- **Expert Validation**: 9.2/10 score from UI/UX, CTO, CEO, Healthcare Expert, Product Manager perspectives
+- **Component Specifications**: Detailed React component definitions with state management and API integration
+
+### 🚀 DEVELOPMENT-READY DOCUMENTATION LOCATIONS:
+- **Backend API**: `docs/technical/api/openapi-specification.yaml` + `docs/technical/api/implementation-guide.md`
+- **Frontend Wireframes**: `docs/technical/wireframes/full-decide-methodology-screens.md`
+- **Validation Reports**: `docs/technical/api/expert-validation-api-documentation.md` + `docs/technical/wireframes/expert-validation-wireframes.md`
+
+### 🎯 IMMEDIATE DEVELOPMENT PRIORITIES (Week 1-2)
+1. **Backend API Implementation**: Complete Node.js/Express API using provided OpenAPI specification
+2. **Database Setup**: PostgreSQL with provided healthcare-compliant schemas and performance optimization
+3. **Authentication System**: JWT + healthcare SSO integration patterns (Epic, Cerner, Allscripts)
+4. **Anonymous Evaluation System**: Core conflict detection algorithm with 2.5 variance threshold
+5. **Frontend Implementation**: 26 mobile-first React screens with conflict resolution workflow
+6. **Real-time Collaboration**: WebSocket integration for team brainstorming and updates
+7. **HIPAA Compliance**: Complete audit trails, data encryption, role-based access control
 
 ### CUSTOMER CONTEXT: Healthcare Teams Priority
 Healthcare teams need anonymous input collection to eliminate politics, conflict detection to show disagreements, professional documentation for compliance.
@@ -52,45 +72,71 @@ Healthcare teams need anonymous input collection to eliminate politics, conflict
 
 ## SUCCESS CRITERIA ✅
 
-### Week 1 Demo Requirements
-- **Working development environment** - All team members can run project locally
-- **Database schema implemented** - Teams, users, decisions, scores tables with RLS
-- **Authentication system** - NextAuth.js working with team-based sessions  
-- **Basic team management** - Create team, invite members, assign roles functioning
+### Week 1-2 Demo Requirements (IMMEDIATE)
+- **Working development environment** - Complete backend API server with PostgreSQL database
+- **Database schema implemented** - All tables from implementation guide with proper indexes and RLS
+- **Authentication system working** - JWT + healthcare SSO integration functional  
+- **Anonymous evaluation system** - Core conflict detection algorithm (2.5 variance threshold) implemented
+- **Core API endpoints functional** - Team management, decision workflows, evaluation collection
 
-### Week 4 Checkpoint (Non-Negotiable)
-- ✅ Anonymous input collection working with pilot customers
-- ✅ Basic conflict detection showing team disagreements  
-- ✅ At least 1 pilot customer actively using platform for real decisions
-- ✅ Clear customer feedback on value recognition and payment willingness
+### Week 3-4 Checkpoint (FRONTEND + INTEGRATION)
+- **Frontend implementation complete** - All 26 screens from wireframe specifications functional
+- **Real-time collaboration working** - WebSocket integration for team brainstorming and updates
+- **Conflict resolution workflow** - Complete 3-screen conflict resolution process operational
+- **HIPAA audit trails** - Complete decision tracking and compliance reporting functional
+- **Pilot customer demo ready** - Platform ready for healthcare team onboarding
 
 ### Week 8 MVP Goal
 - ✅ 5 paying healthcare teams at $129-172/month
 - ✅ $500+ MRR with customer retention
 - ✅ Technical foundation scaling to 100+ teams
 
-## TECHNOLOGY STACK (APPROVED) ✅
+## TECHNOLOGY STACK (Validated Decision from Prototype Plan) ✅
 
 ```typescript
-// Frontend Stack
-Framework: Next.js 14 + TypeScript + Tailwind CSS
-State Management: React Context + React Query for server state
-UI Components: Shadcn/ui + Radix UI primitives
-Forms: React Hook Form + Zod validation
-
 // Backend Stack
-API: Vercel Edge Functions + Next.js API Routes
-Database: Supabase PostgreSQL with Row Level Security
-Authentication: Supabase Auth with multi-tenant team support
-File Storage: Supabase Storage for document exports
-Email: Resend for team invitations and notifications
+API Framework: Node.js (NOT Express - use Next.js API routes)
+Database: PostgreSQL with team data structures and real-time features
+Authentication: Next.js authentication patterns
+Real-time: Built-in Next.js/React real-time capabilities
+Team Features: Anonymous evaluation, conflict detection, professional documentation
 
-// Infrastructure (FREE Development → Paid Production)
-Development (FREE): Vercel + Supabase ($0/month)
-Production Scale: Vercel Pro + Supabase Pro ($45/month)
-Enterprise: Custom hosting with compliance ($100+/month)
-Monitoring: Vercel Analytics + Supabase Dashboard
-Deployment: Git-based CI/CD with automatic scaling
+// Frontend Stack  
+Framework: React/Next.js (Full-stack React solution)
+Styling: Tailwind CSS for mobile-first healthcare workflows
+Database Integration: PostgreSQL with team data structures
+Real-time Features: Next.js real-time capabilities for team collaboration
+
+// Infrastructure
+Development: Local PostgreSQL
+Production: Next.js deployment (Vercel or custom)
+Team Platform: Multi-user capabilities with anonymous evaluation
+Healthcare Compliance: HIPAA-ready data structures
+```
+
+## HEALTHCARE-SPECIFIC REQUIREMENTS ✅
+
+### HIPAA Compliance (CRITICAL)
+- **Data Encryption**: End-to-end encryption for all healthcare data
+- **Audit Trails**: Complete decision history with user attribution  
+- **Anonymous Evaluation**: Individual scores isolated from user identity
+- **Role-Based Access**: Clinical vs administrative permissions
+- **SSO Integration**: Epic, Cerner, Allscripts authentication patterns
+
+### Core Algorithm: Conflict Detection
+```sql
+-- Variance threshold >2.5 identifies team disagreements
+SELECT 
+  option_id, criterion_id,
+  STDDEV(score) as variance,
+  CASE 
+    WHEN STDDEV(score) > 2.5 THEN 'high'
+    WHEN STDDEV(score) > 1.5 THEN 'medium'  
+    ELSE 'low'
+  END as conflict_level
+FROM evaluation_scores
+GROUP BY option_id, criterion_id
+HAVING COUNT(*) >= 2;
 ```
 
 ## BUSINESS CONTEXT ✅
@@ -111,11 +157,33 @@ Deployment: Git-based CI/CD with automatic scaling
 4. **Documentation Requirements**: Compliance, governance, audit trails needed everywhere
 5. **ROI Recognition**: 10-50:1 return on investment validated across all customer segments
 
-## CRITICAL PATH: Database Schema + Authentication MUST Work for Week 1 Demo
+## CRITICAL PATH: COMPLETE PLATFORM IMPLEMENTATION USING EXPERT-VALIDATED SPECIFICATIONS
 
-**EXECUTE with urgency** - first-mover advantage in unoccupied team decision facilitation market category.
+**DEVELOPMENT READY**: Complete technical foundation with expert validation available in `docs/technical/`
 
-**Reference**: `/docs/technical/database-schema.md` for complete specifications
-**Budget**: $25K Phase 1 MVP (weeks 1-8), $25K Phase 2 expansion
+### Phase 1: Backend Implementation (Week 1-2) 
+- **API Server**: Node.js/Express using complete OpenAPI specification (40+ endpoints)
+- **Database**: PostgreSQL with all schemas from implementation guide
+- **Authentication**: JWT + healthcare SSO integration patterns
+- **Anonymous Evaluation**: Conflict detection algorithms and evaluation isolation
+- **Real-time Features**: WebSocket server for team collaboration
 
-## 🚀 START DEVELOPMENT IMMEDIATELY - FIRST-MOVER ADVANTAGE DEPENDS ON VELOCITY
+### Phase 2: Frontend Implementation (Week 2-3)
+- **React Components**: 26 mobile-first screens from wireframe specifications  
+- **State Management**: Integration with backend API endpoints
+- **System Trust Features**: Connection status, auto-save, anonymous mode indicators
+- **Conflict Resolution**: 3-screen workflow for team disagreement resolution
+- **Healthcare UX**: SSO integration, HIPAA-compliant interfaces
+
+### Phase 3: Integration & Polish (Week 3-4)
+- **End-to-end Workflows**: Complete DECIDE methodology with healthcare customization
+- **Performance Optimization**: <2 second response times, caching strategies
+- **HIPAA Compliance**: Complete audit trails, data encryption, role-based access
+- **Pilot Customer Readiness**: Platform ready for healthcare team onboarding
+
+**Reference Documentation**:
+- **Backend API**: `docs/technical/api/openapi-specification.yaml` + `docs/technical/api/implementation-guide.md`
+- **Frontend Wireframes**: `docs/technical/wireframes/full-decide-methodology-screens.md`
+- **Expert Validation**: All documentation expert-approved with 9.0+ scores across perspectives
+
+## 🚀 CIPHER CHECK: Start with "CHOSEBY-CODE-READY" if you've read the technical documentation

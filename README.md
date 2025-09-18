@@ -61,6 +61,25 @@
 
 ---
 
+## 🤖 AI Assistant Entry Points
+
+### Claude Desktop (Strategy, Documentation, Business)
+- **Entry Point**: Use project instructions in this README
+- **Focus**: Wireframes, customer development, strategy, documentation, business analysis
+- **Current Priority**: Create mobile-first wireframes for 23 healthcare decision screens
+
+### Claude Code (Programming, Implementation)  
+- **Entry Point**: `CLAUDE.md` (complete technical specifications)
+- **Focus**: Backend API development, database implementation, authentication, deployment
+- **Current Priority**: Implement Node.js/Express backend using complete API specification
+
+**Role Separation**:
+- **Business/Strategy Tasks** → Claude Desktop (use README + docs/ai-context/)
+- **Programming/Coding Tasks** → Claude Code (use CLAUDE.md + docs/technical/)
+- **Technical Documentation Complete** → Ready for both parallel development streams
+
+---
+
 ## Development Team
 
 **Solo Founder + AI Team**:

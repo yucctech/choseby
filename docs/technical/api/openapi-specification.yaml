@@ -1,0 +1,1721 @@
+openapi: 3.0.3
+info:
+  title: Choseby Healthcare Decision Platform API
+  description: |
+    RESTful API for the Choseby team decision facilitation platform, specifically designed for healthcare teams.
+    
+    Supports three decision workflows:
+    - **Emergency**: Critical decisions requiring immediate action with retrospective documentation
+    - **Express**: Simple decisions (<$10K, <2 weeks) using 3-phase workflow  
+    - **Full**: Complex decisions using complete 6-phase DECIDE methodology
+    
+    Key Features:
+    - Anonymous evaluation system with conflict detection
+    - HIPAA-compliant audit trails and data handling
+    - Healthcare-specific workflows and terminology
+    - Real-time collaboration with WebSocket support
+    - Mobile-first design for healthcare environments
+    
+    **Authentication**: Bearer token required for all endpoints
+    **Rate Limiting**: 1000 requests per hour per team
+    **Data Retention**: 7 years for healthcare compliance
+    
+  version: 1.0.0
+  contact:
+    name: Choseby Technical Support
+    email: tech@choseby.com
+  license:
+    name: Proprietary
+    
+servers:
+  - url: https://api.choseby.com/v1
+    description: Production API
+  - url: https://staging-api.choseby.com/v1  
+    description: Staging API
+  - url: https://localhost:3000/v1
+    description: Development API
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  - name: Teams
+    description: Healthcare team management and configuration
+  - name: Decisions
+    description: Decision creation and workflow management
+  - name: Workflows
+    description: DECIDE methodology phase management
+  - name: Evaluations
+    description: Anonymous team member evaluations
+  - name: Conflicts
+    description: Conflict detection and resolution
+  - name: Documents
+    description: Professional documentation generation
+  - name: Analytics
+    description: Team performance and decision analytics
+  - name: Compliance
+    description: Healthcare compliance and audit trails
+  - name: Notifications
+    description: Team notifications and escalations
+  - name: Calendar
+    description: Regulatory calendar and deadline tracking
+
+paths:
+  # Authentication Endpoints
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user and get access token
+      description: |
+        Authenticates healthcare team member and returns JWT access token.
+        Supports SSO integration with healthcare systems.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: dr.smith@hospital.com
+                password:
+                  type: string
+                  format: password
+                  example: SecurePass123!
+                remember_me:
+                  type: boolean
+                  default: false
+                sso_provider:
+                  type: string
+                  enum: [epic, cerner, allscripts, custom]
+                  description: Healthcare SSO provider
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refresh_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  expires_in:
+                    type: integer
+                    example: 3600
+                    description: Token expiration in seconds
+                  user:
+                    $ref: '#/components/schemas/User'
+                  team:
+                    $ref: '#/components/schemas/Team'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimit'
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Team Management
+  /teams:
+    get:
+      tags:
+        - Teams
+      summary: Get teams for authenticated user
+      description: Returns all healthcare teams the user belongs to
+      responses:
+        '200':
+          description: Teams retrieved successfully          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Team'
+                  total:
+                    type: integer
+                    example: 2
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Teams
+      summary: Create new healthcare team
+      description: |
+        Creates a new healthcare team with HIPAA compliance settings.
+        Requires administrator privileges.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamRequest'
+      responses:
+        '201':
+          description: Team created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /teams/{teamId}:
+    get:
+      tags:
+        - Teams
+      summary: Get team details
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+      responses:
+        '200':
+          description: Team details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Teams
+      summary: Update team configuration
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTeamRequest'
+      responses:
+        '200':
+          description: Team updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  # Decision Management
+  /teams/{teamId}/decisions:
+    get:
+      tags:
+        - Decisions
+      summary: Get team decisions
+      description: |
+        Retrieves decisions for a healthcare team with filtering and pagination.
+        Supports filtering by status, type, urgency, and patient impact.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, in_progress, completed, archived, emergency]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [vendor_selection, hiring, strategic, budget, compliance, clinical]
+        - name: urgency
+          in: query
+          schema:
+            type: string
+            enum: [low, normal, high, emergency]
+        - name: patient_impact
+          in: query
+          schema:
+            type: string
+            enum: [none, low, medium, high]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20      responses:
+        '200':
+          description: Decisions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decisions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Decision'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Decisions
+      summary: Create new decision
+      description: |
+        Creates a new healthcare decision. Automatically determines workflow type
+        based on urgency, budget, and patient impact assessments.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDecisionRequest'
+      responses:
+        '201':
+          description: Decision created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /teams/{teamId}/decisions/{decisionId}:
+    get:
+      tags:
+        - Decisions
+      summary: Get decision details
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+      responses:
+        '200':
+          description: Decision retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Decisions
+      summary: Update decision
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDecisionRequest'
+      responses:
+        '200':
+          description: Decision updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  # DECIDE Workflow Phase Management
+  /teams/{teamId}/decisions/{decisionId}/phases/{phaseNumber}:
+    get:
+      tags:
+        - Workflows
+      summary: Get specific phase details
+      description: |
+        Retrieves details for a specific DECIDE phase (1-6).
+        Emergency decisions have abbreviated phases.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+        - name: phaseNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 6
+            example: 1
+      responses:
+        '200':
+          description: Phase details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecisionPhase'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Workflows
+      summary: Complete phase and advance workflow
+      description: |
+        Completes current phase and advances to next phase if validation passes.
+        Handles different workflows (Emergency/Express/Full DECIDE).
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+        - name: phaseNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 6      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletePhaseRequest'
+      responses:
+        '200':
+          description: Phase completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decision:
+                    $ref: '#/components/schemas/Decision'
+                  next_phase:
+                    type: integer
+                    example: 2
+                  workflow_complete:
+                    type: boolean
+                    example: false
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Anonymous Evaluation System
+  /teams/{teamId}/decisions/{decisionId}/evaluations:
+    get:
+      tags:
+        - Evaluations
+      summary: Get evaluation status for decision
+      description: |
+        Returns aggregate evaluation data and completion status.
+        Individual scores remain anonymous.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+      responses:
+        '200':
+          description: Evaluation status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationStatus'
+    post:
+      tags:
+        - Evaluations
+      summary: Submit anonymous evaluation
+      description: |
+        Submits anonymous team member evaluation for decision options.
+        Maintains complete anonymity while enabling conflict detection.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitEvaluationRequest'
+      responses:
+        '201':
+          description: Evaluation submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  evaluation_id:
+                    type: string
+                    format: uuid
+                  conflicts_detected:
+                    type: boolean
+                  team_completion_status:
+                    type: object
+                    properties:
+                      completed:
+                        type: integer
+                        example: 3
+                      total:
+                        type: integer
+                        example: 5
+                      percentage:
+                        type: number
+                        format: float
+                        example: 60.0
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  # Conflict Detection and Resolution
+  /teams/{teamId}/decisions/{decisionId}/conflicts:
+    get:
+      tags:
+        - Conflicts
+      summary: Get detected conflicts
+      description: |
+        Returns conflicts detected in anonymous evaluations.
+        Provides aggregate data for conflict resolution without revealing individual scores.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+      responses:
+        '200':
+          description: Conflicts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conflicts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Conflict'
+                  conflict_level:
+                    type: string
+                    enum: [low, medium, high, critical]
+                  resolution_required:
+                    type: boolean
+                  estimated_resolution_time:
+                    type: string
+                    example: "2-4 hours"
+
+    post:
+      tags:
+        - Conflicts
+      summary: Initiate conflict resolution
+      description: |
+        Starts conflict resolution process with anonymous discussion forum
+        and optional facilitated meeting scheduling.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resolution_type:
+                  type: string
+                  enum: [discussion_forum, facilitated_meeting, re_evaluation]
+                facilitator_id:
+                  type: string
+                  format: uuid
+                  description: Optional facilitator assignment
+                meeting_duration:
+                  type: integer
+                  description: Meeting length in minutes
+                  example: 60      responses:
+        '201':
+          description: Conflict resolution initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resolution_id:
+                    type: string
+                    format: uuid
+                  discussion_forum_url:
+                    type: string
+                    format: uri
+                  meeting_scheduled:
+                    type: boolean
+                  meeting_details:
+                    $ref: '#/components/schemas/MeetingDetails'
+
+  # Emergency Decision Workflow
+  /teams/{teamId}/decisions/emergency:
+    post:
+      tags:
+        - Decisions
+      summary: Create emergency decision
+      description: |
+        Creates critical decision requiring immediate action.
+        Bypasses normal workflow with retrospective documentation.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyDecisionRequest'
+      responses:
+        '201':
+          description: Emergency decision created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  decision:
+                    $ref: '#/components/schemas/Decision'
+                  emergency_authorization_code:
+                    type: string
+                    example: "EMG-2025-001"
+                  retrospective_deadline:
+                    type: string
+                    format: date-time
+                    description: Documentation deadline (48 hours)
+  # Professional Documentation
+  /teams/{teamId}/decisions/{decisionId}/documents:
+    get:
+      tags:
+        - Documents
+      summary: Get available documents
+      description: |
+        Lists all generated documents for decision including audit trails,
+        board reports, and compliance documentation.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+      responses:
+        '200':
+          description: Documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+
+    post:
+      tags:
+        - Documents
+      summary: Generate professional document
+      description: |
+        Generates professional documentation for decision including
+        board-ready reports and compliance audit trails.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - $ref: '#/components/parameters/DecisionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                document_type:
+                  type: string
+                  enum: [board_report, audit_trail, compliance_summary, executive_summary]
+                include_anonymous_data:
+                  type: boolean
+                  default: false
+                compliance_standards:
+                  type: array
+                  items:
+                    type: string
+                    enum: [hipaa, joint_commission, cms, fda]      responses:
+        '201':
+          description: Document generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: '#/components/schemas/Document'
+                  download_url:
+                    type: string
+                    format: uri
+                  expires_at:
+                    type: string
+                    format: date-time
+
+  # Analytics and Reporting
+  /teams/{teamId}/analytics:
+    get:
+      tags:
+        - Analytics
+      summary: Get team performance analytics
+      description: |
+        Returns team decision-making performance metrics including
+        decision speed, quality scores, and participation rates.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [week, month, quarter, year]
+            default: month
+        - name: include_individual:
+          in: query
+          schema:
+            type: boolean
+            default: false
+            description: Include anonymized individual performance data
+      responses:
+        '200':
+          description: Analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamAnalytics'
+  # Notifications and Escalations
+  /teams/{teamId}/notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get team notifications
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - name: unread_only
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Notifications retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+
+  # Regulatory Calendar Integration
+  /teams/{teamId}/calendar:
+    get:
+      tags:
+        - Calendar
+      summary: Get regulatory calendar
+      description: |
+        Returns upcoming regulatory deadlines and compliance requirements
+        integrated with decision workflows.
+      parameters:
+        - $ref: '#/components/parameters/TeamId'
+        - name: upcoming_days
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 365
+            default: 90
+      responses:
+        '200':
+          description: Calendar retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deadlines:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RegulatoryDeadline'
+# WebSocket Events for Real-time Collaboration
+# /ws/teams/{teamId}/decisions/{decisionId}
+# Events: phase_completed, evaluation_submitted, conflict_detected, team_member_joined
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    TeamId:
+      name: teamId
+      in: path
+      required: true
+      description: Healthcare team identifier
+      schema:
+        type: string
+        format: uuid
+        example: 123e4567-e89b-12d3-a456-426614174000
+    
+    DecisionId:
+      name: decisionId
+      in: path
+      required: true
+      description: Decision identifier
+      schema:
+        type: string
+        format: uuid
+        example: 987fcdeb-51a2-43d1-9c89-123456789abc
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'    
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    RateLimit:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    # Core Data Models
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - name
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        email:
+          type: string
+          format: email
+          example: dr.smith@hospital.com
+        name:
+          type: string
+          example: Dr. Sarah Smith
+        role:
+          type: string
+          enum: [physician, nurse, administrator, technician, pharmacist, other]
+        department:
+          type: string
+          example: Emergency Medicine
+        license_number:
+          type: string
+          example: MD123456
+          description: Professional license number for audit trails
+        created_at:
+          type: string
+          format: date-time
+        last_login:
+          type: string
+          format: date-time
+    Team:
+      type: object
+      required:
+        - id
+        - name
+        - industry
+        - compliance_requirements
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Emergency Department Leadership
+        industry:
+          type: string
+          enum: [healthcare, professional_services, manufacturing, technology]
+          default: healthcare
+        organization:
+          type: string
+          example: Metropolitan General Hospital
+        compliance_requirements:
+          type: object
+          properties:
+            hipaa:
+              type: boolean
+              default: true
+            joint_commission:
+              type: boolean
+              default: true
+            patient_safety:
+              type: boolean
+              default: true
+            quality_measures:
+              type: boolean
+              default: false
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMember'
+        settings:
+          type: object
+          properties:
+            evaluation_timeout_hours:
+              type: integer
+              default: 72
+            conflict_threshold:
+              type: number
+              format: float
+              default: 2.5
+            require_unanimous_approval:
+              type: boolean
+              default: false
+        created_at:
+          type: string
+          format: date-time
+    TeamMember:
+      type: object
+      required:
+        - user_id
+        - role
+        - permissions
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [member, facilitator, administrator, observer]
+        permissions:
+          type: array
+          items:
+            type: string
+            enum: [create_decisions, evaluate_options, facilitate_meetings, view_analytics, manage_team]
+        primary_backup:
+          type: string
+          format: uuid
+          description: Backup team member for staff turnover protection
+        joined_at:
+          type: string
+          format: date-time
+
+    Decision:
+      type: object
+      required:
+        - id
+        - team_id
+        - title
+        - status
+        - workflow_type
+        - current_phase
+      properties:
+        id:
+          type: string
+          format: uuid
+        team_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "EMR System Vendor Selection"
+        description:
+          type: string
+          example: "Select new electronic medical record system for 2025 implementation"
+        status:
+          type: string
+          enum: [draft, in_progress, completed, archived, emergency]
+        workflow_type:
+          type: string
+          enum: [emergency, express, full_decide]
+          description: Emergency (immediate), Express (3-phase), Full (6-phase)        current_phase:
+          type: integer
+          minimum: 1
+          maximum: 6
+          example: 3
+        decision_type:
+          type: string
+          enum: [vendor_selection, hiring, strategic, budget, compliance, clinical]
+        urgency:
+          type: string
+          enum: [low, normal, high, emergency]
+        patient_impact:
+          type: string
+          enum: [none, low, medium, high]
+          description: Healthcare-specific patient safety impact assessment
+        budget_range:
+          type: object
+          properties:
+            min:
+              type: number
+              format: float
+            max:
+              type: number
+              format: float
+            currency:
+              type: string
+              default: USD
+        timeline:
+          type: object
+          properties:
+            estimated_duration_days:
+              type: integer
+            regulatory_deadline:
+              type: string
+              format: date-time
+            implementation_deadline:
+              type: string
+              format: date-time
+        stakeholders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stakeholder'
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/Criterion'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/Option'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+          format: uuid
+    Stakeholder:
+      type: object
+      required:
+        - id
+        - name
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Dr. Jennifer Adams
+        role:
+          type: string
+          example: Chief Medical Officer
+        department:
+          type: string
+          example: Administration
+        is_team_member:
+          type: boolean
+          description: Whether stakeholder is internal team member
+        influence_level:
+          type: string
+          enum: [low, medium, high, critical]
+        required_for_approval:
+          type: boolean
+          default: false
+
+    Criterion:
+      type: object
+      required:
+        - id
+        - name
+        - weight
+        - category
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: HIPAA Compliance
+        description:
+          type: string
+          example: System must meet all HIPAA security and privacy requirements
+        weight:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          example: 25.5
+        category:
+          type: string
+          enum: [technical, financial, clinical, compliance, operational]
+        measurement_type:
+          type: string
+          enum: [qualitative, quantitative, binary]
+        ai_suggested:
+          type: boolean
+          description: Whether criterion was suggested by AI
+        confidence_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: AI confidence in criterion relevance
+    Option:
+      type: object
+      required:
+        - id
+        - name
+        - description
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Epic EHR System
+        description:
+          type: string
+          example: Comprehensive electronic health record system with integrated billing
+        estimated_cost:
+          type: number
+          format: float
+          example: 250000.00
+        implementation_timeline:
+          type: string
+          example: 6-9 months
+        vendor_info:
+          type: object
+          properties:
+            name:
+              type: string
+            contact_email:
+              type: string
+              format: email
+            website:
+              type: string
+              format: uri
+        feasibility_assessment:
+          type: object
+          properties:
+            is_feasible:
+              type: boolean
+            technical_feasibility:
+              type: string
+              enum: [low, medium, high]
+            financial_feasibility:
+              type: string
+              enum: [low, medium, high]
+            notes:
+              type: string
+        risk_factors:
+          type: array
+          items:
+            type: string
+    EvaluationStatus:
+      type: object
+      properties:
+        decision_id:
+          type: string
+          format: uuid
+        total_team_members:
+          type: integer
+          example: 5
+        completed_evaluations:
+          type: integer
+          example: 3
+        completion_percentage:
+          type: number
+          format: float
+          example: 60.0
+        conflicts_detected:
+          type: boolean
+        conflict_level:
+          type: string
+          enum: [none, low, medium, high, critical]
+        evaluation_deadline:
+          type: string
+          format: date-time
+        aggregate_results:
+          type: array
+          items:
+            type: object
+            properties:
+              option_id:
+                type: string
+                format: uuid
+              weighted_score:
+                type: number
+                format: float
+              rank:
+                type: integer
+              confidence_interval:
+                type: object
+                properties:
+                  lower:
+                    type: number
+                    format: float
+                  upper:
+                    type: number
+                    format: float
+
+    Conflict:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        option_id:
+          type: string
+          format: uuid
+        criterion_id:
+          type: string
+          format: uuid
+        variance_score:
+          type: number
+          format: float
+          description: Statistical variance in team member scores        severity:
+          type: string
+          enum: [low, medium, high, critical]
+        conflict_type:
+          type: string
+          enum: [score_variance, rationale_disagreement, feasibility_dispute]
+        anonymous_discussion:
+          type: object
+          properties:
+            forum_id:
+              type: string
+              format: uuid
+            message_count:
+              type: integer
+            last_activity:
+              type: string
+              format: date-time
+        resolution_status:
+          type: string
+          enum: [unresolved, in_progress, resolved, escalated]
+        created_at:
+          type: string
+          format: date-time
+
+    # Request/Response Schemas
+    CreateTeamRequest:
+      type: object
+      required:
+        - name
+        - industry
+      properties:
+        name:
+          type: string
+          example: Cardiology Department Team
+        industry:
+          type: string
+          enum: [healthcare, professional_services, manufacturing, technology]
+        organization:
+          type: string
+          example: Regional Medical Center
+        compliance_requirements:
+          type: object
+          properties:
+            hipaa:
+              type: boolean
+              default: true
+            joint_commission:
+              type: boolean
+              default: true
+        initial_members:
+          type: array
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+                format: email
+              role:
+                type: string
+                enum: [member, facilitator, administrator]
+    CreateDecisionRequest:
+      type: object
+      required:
+        - title
+        - description
+        - decision_type
+        - urgency
+      properties:
+        title:
+          type: string
+          example: Telehealth Platform Selection
+        description:
+          type: string
+          example: Choose telehealth platform for remote patient consultations
+        decision_type:
+          type: string
+          enum: [vendor_selection, hiring, strategic, budget, compliance, clinical]
+        urgency:
+          type: string
+          enum: [low, normal, high, emergency]
+        patient_impact:
+          type: string
+          enum: [none, low, medium, high]
+        budget_range:
+          type: object
+          properties:
+            min:
+              type: number
+              format: float
+            max:
+              type: number
+              format: float
+        regulatory_deadline:
+          type: string
+          format: date-time
+        stakeholders:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              role:
+                type: string
+              email:
+                type: string
+                format: email
+              is_team_member:
+                type: boolean
+    SubmitEvaluationRequest:
+      type: object
+      required:
+        - evaluations
+        - overall_confidence
+      properties:
+        evaluations:
+          type: array
+          items:
+            type: object
+            required:
+              - option_id
+              - criterion_scores
+            properties:
+              option_id:
+                type: string
+                format: uuid
+              criterion_scores:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    criterion_id:
+                      type: string
+                      format: uuid
+                    score:
+                      type: number
+                      format: float
+                      minimum: 1
+                      maximum: 10
+                    rationale:
+                      type: string
+                      description: Required for scores 1-2 or 9-10
+                    confidence:
+                      type: number
+                      format: float
+                      minimum: 1
+                      maximum: 10
+        overall_confidence:
+          type: number
+          format: float
+          minimum: 1
+          maximum: 10
+        evaluation_notes:
+          type: string
+          description: Optional additional comments
+
+    EmergencyDecisionRequest:
+      type: object
+      required:
+        - title
+        - emergency_type
+        - authorized_by
+        - justification
+      properties:
+        title:
+          type: string
+          example: Critical Equipment Failure - Immediate Replacement
+        emergency_type:
+          type: string
+          enum: [clinical_emergency, regulatory_deadline, system_failure, safety_issue]        authorized_by:
+          type: string
+          format: uuid
+          description: User ID of person authorizing emergency decision
+        justification:
+          type: string
+          example: Patient safety requires immediate ventilator replacement
+        patient_impact:
+          type: string
+          enum: [life_threatening, safety_concern, operational_impact]
+        available_options:
+          type: array
+          maxItems: 3
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              estimated_cost:
+                type: number
+                format: float
+        implementation_timeline:
+          type: string
+          example: Within 4 hours
+
+    # Utility Schemas
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          example: invalid_request
+        message:
+          type: string
+          example: The request parameters are invalid
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 157
+        pages:
+          type: integer
+          example: 8        has_next:
+          type: boolean
+          example: true
+        has_previous:
+          type: boolean
+          example: false
+
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        decision_id:
+          type: string
+          format: uuid
+        document_type:
+          type: string
+          enum: [board_report, audit_trail, compliance_summary, executive_summary]
+        title:
+          type: string
+          example: Board Decision Report - EMR System Selection
+        file_format:
+          type: string
+          enum: [pdf, docx, html]
+        file_size:
+          type: integer
+          description: File size in bytes
+        download_url:
+          type: string
+          format: uri
+        compliance_standards:
+          type: array
+          items:
+            type: string
+        generated_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+
+    # Additional schemas for completeness
+    UpdateTeamRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        settings:
+          type: object
+          properties:
+            evaluation_timeout_hours:
+              type: integer
+            conflict_threshold:
+              type: number
+              format: float
+    UpdateDecisionRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        urgency:
+          type: string
+          enum: [low, normal, high, emergency]
+        patient_impact:
+          type: string
+          enum: [none, low, medium, high]
+
+    CompletePhaseRequest:
+      type: object
+      required:
+        - phase_data
+      properties:
+        phase_data:
+          type: object
+          description: Phase-specific data varies by workflow type and phase number
+        override_recommendation:
+          type: boolean
+          default: false
+        override_justification:
+          type: string
+          description: Required if override_recommendation is true
+
+    DecisionPhase:
+      type: object
+      properties:
+        phase_number:
+          type: integer
+          minimum: 1
+          maximum: 6
+        phase_name:
+          type: string
+          enum: [define_problem, establish_criteria, consider_options, identify_best, develop_action, evaluate_monitor]
+        status:
+          type: string
+          enum: [not_started, in_progress, completed, skipped]
+        workflow_type:
+          type: string
+          enum: [emergency, express, full_decide]
+        required_fields:
+          type: array
+          items:
+            type: string
+        validation_rules:
+          type: object
+        completion_percentage:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+    TeamAnalytics:
+      type: object
+      properties:
+        team_id:
+          type: string
+          format: uuid
+        period:
+          type: string
+          enum: [week, month, quarter, year]
+        metrics:
+          type: object
+          properties:
+            decisions_completed:
+              type: integer
+            average_decision_time_days:
+              type: number
+              format: float
+            conflict_resolution_rate:
+              type: number
+              format: float
+              description: Percentage of conflicts successfully resolved
+            team_participation_rate:
+              type: number
+              format: float
+              description: Average participation rate across all decisions
+            decision_quality_score:
+              type: number
+              format: float
+              minimum: 1
+              maximum: 10
+        workflow_breakdown:
+          type: object
+          properties:
+            emergency_decisions:
+              type: integer
+            express_decisions:
+              type: integer
+            full_decide_decisions:
+              type: integer
+        compliance_metrics:
+          type: object
+          properties:
+            audit_trail_completeness:
+              type: number
+              format: float
+            regulatory_deadline_adherence:
+              type: number
+              format: float
+            hipaa_compliance_score:
+              type: number
+              format: float
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [decision_created, phase_completed, evaluation_requested, conflict_detected, deadline_approaching, escalation]        title:
+          type: string
+          example: Evaluation Required - EMR System Selection
+        message:
+          type: string
+          example: Your evaluation is needed for the EMR system selection decision
+        decision_id:
+          type: string
+          format: uuid
+        priority:
+          type: string
+          enum: [low, normal, high, urgent]
+        read:
+          type: boolean
+          default: false
+        created_at:
+          type: string
+          format: date-time
+        action_required:
+          type: boolean
+        action_url:
+          type: string
+          format: uri
+
+    RegulatoryDeadline:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Joint Commission Accreditation Review
+        description:
+          type: string
+          example: Submit patient safety quality measures documentation
+        deadline:
+          type: string
+          format: date-time
+        regulatory_body:
+          type: string
+          example: Joint Commission
+        compliance_category:
+          type: string
+          enum: [patient_safety, quality_measures, hipaa, cms, fda, state_licensing]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        related_decisions:
+          type: array
+          items:
+            type: string
+            format: uuid
+        completion_status:
+          type: string
+          enum: [not_started, in_progress, completed, overdue]
+    MeetingDetails:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Conflict Resolution - EMR System Selection
+        scheduled_time:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+          example: 60
+        participants:
+          type: array
+          items:
+            type: string
+            format: uuid
+        meeting_type:
+          type: string
+          enum: [conflict_resolution, decision_review, emergency_consultation]
+        virtual_meeting_url:
+          type: string
+          format: uri
+        agenda:
+          type: array
+          items:
+            type: string
+        facilitator_id:
+          type: string
+          format: uuid
