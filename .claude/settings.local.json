@@ -10,7 +10,8 @@
       "Bash(npm run dev:*)",
       "Bash(taskkill:*)",
       "Bash(PORT=3000 npm run dev)",
-      "Bash(npx next dev:*)"
+      "Bash(npx next dev:*)",
+      "Bash(go mod:*)"
     ],
     "deny": [],
     "ask": []
