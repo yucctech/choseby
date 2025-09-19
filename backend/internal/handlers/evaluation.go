@@ -280,7 +280,6 @@ func (h *EvaluationHandler) SubmitEvaluation(c *gin.Context) {
 // GetEvaluationSummary returns aggregated evaluation results
 func (h *EvaluationHandler) GetEvaluationSummary(c *gin.Context) {
 	decisionID := c.Param("decisionId")
-	teamID := c.Param("teamId")
 	claims := c.MustGet("claims").(*auth.Claims)
 
 	decisionUUID, err := uuid.Parse(decisionID)
