@@ -9,14 +9,11 @@ import (
 	"choseby-backend/internal/database"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: .env file not found: %v", err)
-	}
+	// Load environment variables - skip in production as Render provides them
+	// godotenv is not needed for Render deployment
 
 	// Load configuration
 	cfg := config.Load()
