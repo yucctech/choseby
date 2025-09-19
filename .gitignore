@@ -13,7 +13,6 @@ build/
 # Go backend
 backend/main
 backend/*.exe
-backend/go.sum
 backend/vendor/
 
 # Environment variables
