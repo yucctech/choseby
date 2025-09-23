@@ -1,19 +1,27 @@
 # Claude Code Context
 
-**Product**: Team Decision Platform (5-8 person teams) | **Target**: Healthcare first, $500+ MRR Week 8  
-**Status**: Week 1 foundation | **Budget**: $50K MVP | **Pricing**: $107-172/month teams, $21.50/user individual (post-MVP)
+**Product**: Team Decision Platform (5-8 person teams) | **Target**: Healthcare first, $500+ MRR Week 8
+**Status**: 🚀 **DEPLOYED & LIVE** | **Budget**: $50K MVP | **Pricing**: $107-172/month teams, $21.50/user individual (post-MVP)
 
-## Tech Stack (FREE → $45/month)
-- **Frontend**: Next.js 14 + TypeScript + Tailwind + Shadcn/ui
-- **Backend**: Supabase PostgreSQL + Auth + Storage + Vercel Edge Functions  
-- **Security**: Row Level Security for multi-tenant team isolation
+## 🌐 **Live Platform URLs**
+- **Frontend**: https://choseby.vercel.app ✅
+- **Backend API**: https://choseby.onrender.com ✅
+- **Health Check**: https://choseby.onrender.com/api/v1/health ✅
+- **Database**: Supabase PostgreSQL with healthcare schemas ✅
 
-## Week 1 Tasks (Priority Order)
-1. Supabase project + Vercel connection (FREE tier)
-2. Database schema + RLS policies (`docs/technical/database-schema.md`)
-3. Supabase Auth + team-based sessions
-4. UI component library (Shadcn/ui)
-5. CI/CD pipeline setup
+## Tech Stack (DEPLOYED)
+- **Frontend**: Next.js 14 + TypeScript + Tailwind (Vercel deployment)
+- **Backend**: Go/Gin API server (Render deployment)
+- **Database**: Supabase PostgreSQL with HIPAA-compliant schemas
+- **Authentication**: JWT + healthcare SSO integration ready
+- **Real-time**: WebSocket support for team collaboration
+
+## Current Priority: Healthcare Team Onboarding
+1. Pilot customer acquisition (Target: 5 healthcare teams)
+2. Revenue generation ($500+ MRR by Week 8)
+3. Platform optimization based on real user feedback
+4. Healthcare compliance verification
+5. Scale preparation for 15+ teams by Week 16
 
 ## Code Patterns
 - **RLS**: `team_id IN (SELECT team_id FROM team_members WHERE user_id = auth.uid())`

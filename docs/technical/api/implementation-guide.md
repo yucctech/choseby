@@ -695,4 +695,186 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
 
 ---
 
+---
+
+## Data Validation Rules & TypeScript Interfaces
+
+### DECIDE Framework Phase Validation
+```typescript
+interface PhaseTransitionRules {
+  phase_1_define: {
+    name: "Define Problem"
+    required_fields: ['problem_statement', 'stakeholders', 'success_criteria']
+    validation_rules: {
+      problem_statement: { min_length: 50, max_length: 500 }
+      stakeholders: { min_count: 2, max_count: 10 }
+      success_criteria: { min_count: 1, max_count: 5 }
+    }
+    completion_criteria: "All required fields completed AND reviewed by facilitator"
+    next_phase_trigger: "facilitator_approval" | "auto_advance_after_24h"
+  }
+  
+  phase_2_establish: {
+    name: "Establish Criteria"
+    required_fields: ['evaluation_criteria']
+    validation_rules: {
+      min_criteria_count: 3
+      max_criteria_count: 8
+      total_weight_sum: 100
+      each_criteria: {
+        name: { min_length: 5, max_length: 100 }
+        description: { min_length: 20, max_length: 300 }
+        weight: { min: 5, max: 40 }
+      }
+    }
+  }
+  
+  phase_3_consider: {
+    name: "Consider Alternatives"
+    required_fields: ['alternatives']
+    validation_rules: {
+      min_alternatives: 2
+      max_alternatives: 8
+      each_alternative: {
+        name: { min_length: 5, max_length: 100 }
+        description: { min_length: 50, max_length: 1000 }
+        feasibility_score: { min: 1, max: 10 }
+      }
+    }
+  }
+  
+  phase_4_identify: {
+    name: "Anonymous Evaluation"
+    required_fields: ['individual_evaluations']
+    validation_rules: {
+      evaluation_completeness: "All team members must evaluate all alternatives against all criteria"
+      anonymity_preservation: "No user attribution stored with evaluations"
+      conflict_detection: "Variance > 2.5 triggers conflict resolution workflow"
+    }
+  }
+  
+  phase_5_develop: {
+    name: "Develop Action Plan"
+    required_fields: ['implementation_plan', 'timeline', 'responsibilities']
+    validation_rules: {
+      timeline: { min_duration_days: 1, max_duration_days: 365 }
+      responsibilities: { min_assignees: 1, all_assignees_must_be_team_members: true }
+    }
+  }
+  
+  phase_6_evaluate: {
+    name: "Evaluate & Monitor"
+    required_fields: ['success_metrics', 'review_schedule']
+    validation_rules: {
+      success_metrics: { min_count: 1, max_count: 10 }
+      review_schedule: { next_review_within_90_days: true }
+    }
+  }
+}
+```
+
+### Real-time Validation Rules
+```typescript
+interface RealTimeValidation {
+  scoring_validation: {
+    score_range: { min: 1, max: 10, type: "integer" }
+    required_scores: "All criteria for all options must be scored"
+    rationale_requirements: {
+      optional_by_default: true
+      required_for_extreme_scores: { min_score: 1, max_score: 10 }
+      min_length_when_provided: 20
+    }
+    
+    conflict_detection_real_time: {
+      calculate_variance_on_each_submission: true
+      flag_conflicts_immediately: true
+      variance_threshold: 2.5 // Standard deviations
+      minimum_submissions_for_detection: 3
+    }
+  }
+  
+  healthcare_specific_validation: {
+    patient_impact_assessment: {
+      required_for_clinical_decisions: true
+      impact_levels: ["none", "low", "medium", "high", "critical"]
+      documentation_requirements: {
+        high_impact: "Detailed rationale required"
+        critical_impact: "Medical director approval required"
+      }
+    }
+    
+    regulatory_compliance: {
+      joint_commission_flagging: "Flag decisions affecting accreditation"
+      cms_compliance_check: "Verify Medicare/Medicaid impact documentation"
+      hipaa_considerations: "Ensure no PHI in decision documentation"
+    }
+  }
+}
+```
+
+### Healthcare Team Validation
+```typescript
+interface HealthcareTeamValidation {
+  team_composition: {
+    min_members: 3
+    max_members: 8
+    role_diversity_requirements: {
+      clinical_representation: "At least 1 clinical role required"
+      administrative_balance: "Max 50% administrative roles"
+      experience_distribution: "Mix of experience levels recommended"
+    }
+  }
+  
+  member_validation: {
+    email_domain_verification: {
+      healthcare_domains: ["*.health.org", "*.hospital.com", "*.clinic.net"]
+      validation_method: "DNS MX record check + domain reputation"
+    }
+    
+    role_assignments: {
+      clinical_lead: { requires_license_verification: false } // MVP: Trust-based
+      admin: { requires_organization_approval: true }
+      member: { default_role: true, no_special_requirements: true }
+    }
+  }
+  
+  compliance_documentation: {
+    audit_trail_required: true
+    retention_period_days: 2555 // 7 years for healthcare
+    required_fields: {
+      decision_rationale: { min_length: 100, max_length: 2000 }
+      stakeholder_approvals: { min_approvers: 1, role_requirements: ["clinical_lead", "admin"] }
+      regulatory_considerations: { required_for_high_patient_impact: true }
+    }
+  }
+}
+```
+
+### Conflict Detection Algorithms
+```typescript
+interface ConflictDetectionSystem {
+  variance_calculation: {
+    method: "standard_deviation"
+    threshold: 2.5
+    minimum_evaluations: 3
+    real_time_processing: true
+  }
+  
+  conflict_types: {
+    high_variance: "Individual scores vary significantly (>2.5 SD)"
+    polarization: "Clear faction divisions in team evaluations"
+    outlier_detection: "Individual consistently scoring differently from team"
+    criteria_confusion: "High variance suggests criteria misunderstanding"
+  }
+  
+  resolution_triggers: {
+    automatic_facilitation: "System suggests discussion topics"
+    expert_escalation: "Flag for medical director review if patient safety involved"
+    consensus_building: "Guided team discussion workflows"
+  }
+}
+```
+
+---
+
 **Implementation Priority**: Begin with Phase 1 core API development using this technical specification and the validated user flows. Focus on healthcare team onboarding and basic decision workflows to achieve $500+ MRR target by Week 8.

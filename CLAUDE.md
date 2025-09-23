@@ -20,7 +20,7 @@ Every new Claude Code session MUST read these files in this exact sequence:
 4. **`docs/technical/api/openapi-specification.yaml`** - Complete API specification (40+ endpoints)
 5. **`docs/current/SPRINT_STATUS.md`** - Current development priorities
 
-## DEVELOPMENT STATUS: COMPLETE TECHNICAL FOUNDATION READY ✅
+## DEVELOPMENT STATUS: 🚀 **PLATFORM DEPLOYED & LIVE** ✅
 
 ### ✅ API DOCUMENTATION & EXPERT VALIDATION COMPLETE
 - **Complete OpenAPI 3.0.3 Specification**: 40+ RESTful endpoints for healthcare workflows
@@ -39,14 +39,18 @@ Every new Claude Code session MUST read these files in this exact sequence:
 - **Frontend Wireframes**: `docs/technical/wireframes/full-decide-methodology-screens.md`
 - **Validation Reports**: `docs/technical/api/expert-validation-api-documentation.md` + `docs/technical/wireframes/expert-validation-wireframes.md`
 
-### 🎯 IMMEDIATE DEVELOPMENT PRIORITIES (Week 1-2)
-1. **Go Backend API Implementation**: Complete Go API server using provided OpenAPI specification
-2. **Database Setup**: PostgreSQL with provided healthcare-compliant schemas and performance optimization
-3. **Authentication System**: JWT + healthcare SSO integration patterns (Epic, Cerner, Allscripts)
-4. **Anonymous Evaluation System**: Core conflict detection algorithm with 2.5 variance threshold
-5. **Frontend Implementation**: 26 mobile-first React screens with conflict resolution workflow
-6. **Real-time Collaboration**: WebSocket integration for team brainstorming and updates
-7. **HIPAA Compliance**: Complete audit trails, data encryption, role-based access control
+### 🌐 **LIVE PLATFORM URLS** ✅
+- **Frontend Application**: https://choseby.vercel.app ✅
+- **Backend API**: https://choseby.onrender.com ✅
+- **Health Check**: https://choseby.onrender.com/api/v1/health ✅
+- **Database**: Supabase PostgreSQL with healthcare schemas ✅
+
+### 🎯 CURRENT PRIORITIES (Week 2-4: Customer Onboarding)
+1. **Healthcare Team Acquisition**: Convert validation interviews to 5 pilot customers
+2. **Revenue Generation**: Target $500+ MRR by Week 8 ($129-172/month per team)
+3. **Platform Optimization**: Performance tuning based on real user feedback
+4. **Compliance Verification**: HIPAA audit trails and healthcare SSO testing
+5. **Scale Preparation**: Technical foundation for 15+ teams by Week 16
 
 ### CUSTOMER CONTEXT: Healthcare Teams Priority
 Healthcare teams need anonymous input collection to eliminate politics, conflict detection to show disagreements, professional documentation for compliance.

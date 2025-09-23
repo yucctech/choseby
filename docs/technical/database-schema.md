@@ -7,7 +7,9 @@
 **Compliance**: HIPAA audit trails, data retention, encryption at rest
 
 ## DECIDE Methodology Support (6-Phase Framework)
-Based on research validation, the schema supports the DECIDE framework adapted for healthcare team collaboration rather than the original 7-phase proposal.
+**Current Implementation**: 6-phase DECIDE framework optimized for healthcare team collaboration  
+**Historical Note**: Evolved from original 7-phase proposal to focus on healthcare-specific workflow efficiency  
+**Framework Support**: Database schema designed to support multiple decision frameworks for future expansion
 
 ### Teams (Healthcare Organizations)
 ```sql
