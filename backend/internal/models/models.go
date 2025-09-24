@@ -6,61 +6,64 @@ import (
 	"github.com/google/uuid"
 )
 
-// User represents a healthcare team member
+// User represents a team member
 type User struct {
-	ID            uuid.UUID `json:"id" db:"id"`
-	Email         string    `json:"email" db:"email"`
-	Name          string    `json:"name" db:"name"`
-	Role          string    `json:"role" db:"role"` // physician, nurse, administrator, technician, pharmacist, other
-	Department    *string   `json:"department,omitempty" db:"department"`
-	LicenseNumber *string   `json:"license_number,omitempty" db:"license_number"`
-	PasswordHash  string    `json:"-" db:"password_hash"`
-	CreatedAt     time.Time `json:"created_at" db:"created_at"`
-	LastLogin     *time.Time `json:"last_login,omitempty" db:"last_login"`
+	ID           uuid.UUID  `json:"id" db:"id"`
+	Email        string     `json:"email" db:"email"`
+	Name         string     `json:"name" db:"name"`
+	Role         string     `json:"role" db:"role"` // admin, team_admin, member, viewer
+	Department   *string    `json:"department,omitempty" db:"department"`
+	PasswordHash string     `json:"-" db:"password_hash"`
+	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at" db:"updated_at"`
+	IsActive     bool       `json:"is_active" db:"is_active"`
 }
 
-// Team represents a healthcare decision-making team
+// Team represents a decision-making team
 type Team struct {
-	ID                     uuid.UUID   `json:"id" db:"id"`
-	Name                   string      `json:"name" db:"name"`
-	Organization           *string     `json:"organization,omitempty" db:"organization"`
-	Industry               string      `json:"industry" db:"industry"`
-	ComplianceRequirements interface{} `json:"compliance_requirements" db:"compliance_requirements"`
-	Settings               interface{} `json:"settings" db:"settings"`
-	CreatedAt              time.Time   `json:"created_at" db:"created_at"`
-	UpdatedAt              time.Time   `json:"updated_at" db:"updated_at"`
+	ID           uuid.UUID   `json:"id" db:"id"`
+	Name         string      `json:"name" db:"name"`
+	Description  *string     `json:"description,omitempty" db:"description"`
+	Organization *string     `json:"organization,omitempty" db:"organization"`
+	Department   *string     `json:"department,omitempty" db:"department"`
+	TeamType     string      `json:"team_type" db:"team_type"` // clinical, administrative, executive, quality, safety
+	Settings     interface{} `json:"settings,omitempty" db:"settings"`
+	CreatedBy    *uuid.UUID  `json:"created_by,omitempty" db:"created_by"`
+	CreatedAt    time.Time   `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time   `json:"updated_at" db:"updated_at"`
+	IsActive     bool        `json:"is_active" db:"is_active"`
 }
 
 // TeamMember represents team membership with roles
 type TeamMember struct {
-	ID          uuid.UUID `json:"id" db:"id"`
-	TeamID      uuid.UUID `json:"team_id" db:"team_id"`
-	UserID      uuid.UUID `json:"user_id" db:"user_id"`
-	Role        string    `json:"role" db:"role"` // member, facilitator, administrator, observer
-	Permissions []string  `json:"permissions" db:"permissions"`
-	PrimaryBackup *uuid.UUID `json:"primary_backup,omitempty" db:"primary_backup"`
-	JoinedAt    time.Time `json:"joined_at" db:"joined_at"`
+	ID          uuid.UUID   `json:"id" db:"id"`
+	TeamID      uuid.UUID   `json:"team_id" db:"team_id"`
+	UserID      uuid.UUID   `json:"user_id" db:"user_id"`
+	Role        string      `json:"role" db:"role"` // admin, moderator, member, observer
+	Permissions interface{} `json:"permissions,omitempty" db:"permissions"`
+	JoinedAt    time.Time   `json:"joined_at" db:"joined_at"`
+	IsActive    bool        `json:"is_active" db:"is_active"`
 }
 
-// Decision represents a healthcare team decision
+// Decision represents a team decision
 type Decision struct {
-	ID                     uuid.UUID  `json:"id" db:"id"`
-	TeamID                 uuid.UUID  `json:"team_id" db:"team_id"`
-	Title                  string     `json:"title" db:"title"`
-	Description            *string    `json:"description,omitempty" db:"description"`
-	Status                 string     `json:"status" db:"status"` // draft, in_progress, completed, archived, emergency
-	WorkflowType           string     `json:"workflow_type" db:"workflow_type"` // emergency, express, full_decide
-	CurrentPhase           int        `json:"current_phase" db:"current_phase"`
-	DecisionType           string     `json:"decision_type" db:"decision_type"` // vendor_selection, hiring, strategic, budget, compliance, clinical
-	Urgency                string     `json:"urgency" db:"urgency"` // low, normal, high, emergency
-	PatientImpact          string     `json:"patient_impact" db:"patient_impact"` // none, low, medium, high
-	BudgetMin              *float64   `json:"budget_min,omitempty" db:"budget_min"`
-	BudgetMax              *float64   `json:"budget_max,omitempty" db:"budget_max"`
-	RegulatoryDeadline     *time.Time `json:"regulatory_deadline,omitempty" db:"regulatory_deadline"`
-	ImplementationDeadline *time.Time `json:"implementation_deadline,omitempty" db:"implementation_deadline"`
-	CreatedBy              uuid.UUID  `json:"created_by" db:"created_by"`
-	CreatedAt              time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt              time.Time  `json:"updated_at" db:"updated_at"`
+	ID                 uuid.UUID   `json:"id" db:"id"`
+	TeamID             uuid.UUID   `json:"team_id" db:"team_id"`
+	Title              string      `json:"title" db:"title"`
+	Description        *string     `json:"description,omitempty" db:"description"`
+	DecisionType       string      `json:"decision_type" db:"decision_type"` // clinical, operational, strategic, policy, resource
+	Methodology        string      `json:"methodology" db:"methodology"` // DECIDE framework
+	Status             string      `json:"status" db:"status"` // draft, active, under_review, completed, cancelled
+	Priority           string      `json:"priority" db:"priority"` // low, medium, high, critical
+	DueDate            *time.Time  `json:"due_date,omitempty" db:"due_date"`
+	CreatedBy          *uuid.UUID  `json:"created_by,omitempty" db:"created_by"`
+	CreatedAt          time.Time   `json:"created_at" db:"created_at"`
+	UpdatedAt          time.Time   `json:"updated_at" db:"updated_at"`
+	CompletedAt        *time.Time  `json:"completed_at,omitempty" db:"completed_at"`
+	FinalDecision      *string     `json:"final_decision,omitempty" db:"final_decision"`
+	Rationale          *string     `json:"rationale,omitempty" db:"rationale"`
+	ImplementationPlan *string     `json:"implementation_plan,omitempty" db:"implementation_plan"`
+	Metadata           interface{} `json:"metadata,omitempty" db:"metadata"`
 }
 
 // DecisionCriteria represents evaluation criteria for decisions
@@ -70,7 +73,7 @@ type DecisionCriteria struct {
 	Name            string    `json:"name" db:"name"`
 	Description     *string   `json:"description,omitempty" db:"description"`
 	Weight          float64   `json:"weight" db:"weight"`
-	Category        string    `json:"category" db:"category"` // technical, financial, clinical, compliance, operational
+	Category        string    `json:"category" db:"category"` // technical, financial, strategic, compliance, operational
 	MeasurementType string    `json:"measurement_type" db:"measurement_type"` // qualitative, quantitative, binary
 	AISuggested     bool      `json:"ai_suggested" db:"ai_suggested"`
 	ConfidenceScore *float64  `json:"confidence_score,omitempty" db:"confidence_score"`
@@ -93,12 +96,15 @@ type DecisionOption struct {
 
 // Evaluation represents anonymous team member evaluations
 type Evaluation struct {
-	ID                uuid.UUID `json:"id" db:"id"`
-	DecisionID        uuid.UUID `json:"decision_id" db:"decision_id"`
-	UserID            uuid.UUID `json:"user_id" db:"user_id"` // For participation tracking only
-	OverallConfidence float64   `json:"overall_confidence" db:"overall_confidence"`
-	EvaluationNotes   *string   `json:"evaluation_notes,omitempty" db:"evaluation_notes"`
-	SubmittedAt       time.Time `json:"submitted_at" db:"submitted_at"`
+	ID               uuid.UUID   `json:"id" db:"id"`
+	DecisionID       uuid.UUID   `json:"decision_id" db:"decision_id"`
+	UserID           uuid.UUID   `json:"user_id" db:"user_id"` // For participation tracking only
+	EvaluationToken  *uuid.UUID  `json:"evaluation_token,omitempty" db:"evaluation_token"`
+	SubmittedAt      time.Time   `json:"submitted_at" db:"submitted_at"`
+	IsComplete       bool        `json:"is_complete" db:"is_complete"`
+	Comments         *string     `json:"comments,omitempty" db:"comments"`
+	ConfidenceLevel  int         `json:"confidence_level" db:"confidence_level"` // 1-10
+	Metadata         interface{} `json:"metadata,omitempty" db:"metadata"`
 }
 
 // EvaluationScore represents individual criterion scores (anonymized)
@@ -125,7 +131,7 @@ type Conflict struct {
 	CreatedAt        time.Time `json:"created_at" db:"created_at"`
 }
 
-// AuditLog represents HIPAA-compliant audit trail entries
+// AuditLog represents audit trail entries
 type AuditLog struct {
 	ID           uuid.UUID   `json:"id" db:"id"`
 	UserID       *uuid.UUID  `json:"user_id,omitempty" db:"user_id"`
@@ -140,7 +146,7 @@ type AuditLog struct {
 	ErrorMessage *string     `json:"error_message,omitempty" db:"error_message"`
 }
 
-// UserSession represents healthcare SSO sessions
+// UserSession represents user SSO sessions
 type UserSession struct {
 	ID           uuid.UUID  `json:"id" db:"id"`
 	UserID       uuid.UUID  `json:"user_id" db:"user_id"`

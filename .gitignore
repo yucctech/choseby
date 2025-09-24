@@ -16,13 +16,19 @@ backend/*.exe
 backend/vendor/
 # Note: go.sum should be committed, but we temporarily ignore it until proper generation
 
-# Environment variables
+# Environment variables (Frontend & Backend)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 .env.mcp
+backend/.env
+backend/.env.local
+backend/.env.production
+frontend/.env
+frontend/.env.local
+frontend/.env.production
 
 # IDE
 .vscode/
@@ -40,6 +46,8 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+login.json
+token.txt
 
 # Cache
 .cache/

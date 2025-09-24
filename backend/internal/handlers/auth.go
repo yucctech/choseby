@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 
 	"choseby-backend/internal/auth"
@@ -81,8 +82,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// Update last login
-	h.db.Exec("UPDATE users SET last_login = NOW() WHERE id = $1", user.ID)
+	// Update last login (note: public.users doesn't have last_login column)
+	// h.db.Exec("UPDATE users SET updated_at = NOW() WHERE id = $1", user.ID)
 
 	// Log successful login for HIPAA audit
 	h.db.AuditLog(user.ID.String(), "user_login", user.ID.String(), map[string]interface{}{
@@ -261,7 +262,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 
 	// Update user
 	_, err := h.db.Exec(
-		"UPDATE users SET name = $1, department = $2 WHERE id = $3",
+		"UPDATE users SET name = $1, department = $2, updated_at = NOW() WHERE id = $3",
 		updateData.Name, updateData.Department, claims.UserID,
 	)
 
@@ -286,7 +287,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	claims := c.MustGet("claims").(*auth.Claims)
 
 	// Delete session
-	h.db.Exec("DELETE FROM user_sessions WHERE user_id = $1", claims.UserID)
+	h.db.Exec("DELETE FROMuser_sessions WHERE user_id = $1", claims.UserID)
 
 	// Log logout for HIPAA audit
 	h.db.AuditLog(claims.UserID.String(), "user_logout", claims.UserID.String(), nil)
@@ -299,9 +300,9 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 func (h *AuthHandler) authenticateUser(email, password string) (*models.User, []string, []string, error) {
 	var user models.User
 	err := h.db.QueryRow(
-		"SELECT id, email, name, role, department, license_number, password_hash FROM users WHERE email = $1",
+		"SELECT id, email, name, role, department, password_hash FROM public.users WHERE email = $1",
 		email,
-	).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &user.Department, &user.LicenseNumber, &user.PasswordHash)
+	).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &user.Department, &user.PasswordHash)
 
 	if err != nil {
 		return nil, nil, nil, err
@@ -309,6 +310,7 @@ func (h *AuthHandler) authenticateUser(email, password string) (*models.User, []
 
 	// Verify password
 	if !h.authService.VerifyPassword(password, user.PasswordHash) {
+		log.Printf("Password verification failed for user: %s", user.Email)
 		return nil, nil, nil, sql.ErrNoRows
 	}
 
@@ -320,9 +322,9 @@ func (h *AuthHandler) authenticateUser(email, password string) (*models.User, []
 func (h *AuthHandler) getUserWithTeams(userID uuid.UUID) (*models.User, []string, []string, error) {
 	var user models.User
 	err := h.db.QueryRow(
-		"SELECT id, email, name, role, department, license_number FROM users WHERE id = $1",
+		"SELECT id, email, name, role, department FROMusers WHERE id = $1",
 		userID,
-	).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &user.Department, &user.LicenseNumber)
+	).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &user.Department)
 
 	if err != nil {
 		return nil, nil, nil, err
@@ -382,7 +384,7 @@ func (h *AuthHandler) storeUserSession(userID uuid.UUID, accessToken, refreshTok
 func (h *AuthHandler) validateRefreshToken(refreshToken string) (uuid.UUID, error) {
 	var userID uuid.UUID
 	err := h.db.QueryRow(
-		"SELECT user_id FROM user_sessions WHERE refresh_token = $1 AND expires_at > NOW()",
+		"SELECT user_id FROMuser_sessions WHERE refresh_token = $1 AND expires_at > NOW()",
 		refreshToken,
 	).Scan(&userID)
 	return userID, err
@@ -391,9 +393,9 @@ func (h *AuthHandler) validateRefreshToken(refreshToken string) (uuid.UUID, erro
 func (h *AuthHandler) getUserByID(userID uuid.UUID) (*models.User, error) {
 	var user models.User
 	err := h.db.QueryRow(
-		"SELECT id, email, name, role, department, license_number, created_at, last_login FROM users WHERE id = $1",
+		"SELECT id, email, name, role, department, created_at FROM users WHERE id = $1",
 		userID,
-	).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &user.Department, &user.LicenseNumber, &user.CreatedAt, &user.LastLogin)
+	).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &user.Department, &user.CreatedAt)
 	return &user, err
 }
 
@@ -401,9 +403,9 @@ func (h *AuthHandler) findOrCreateSSOUser(ssoUserInfo *auth.SSOUserInfo) (*model
 	// Try to find existing user
 	var user models.User
 	err := h.db.QueryRow(
-		"SELECT id, email, name, role, department, license_number FROM users WHERE email = $1",
+		"SELECT id, email, name, role, department FROM users WHERE email = $1",
 		ssoUserInfo.Email,
-	).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &user.Department, &user.LicenseNumber)
+	).Scan(&user.ID, &user.Email, &user.Name, &user.Role, &user.Department)
 
 	if err == sql.ErrNoRows {
 		// Create new user
@@ -412,15 +414,14 @@ func (h *AuthHandler) findOrCreateSSOUser(ssoUserInfo *auth.SSOUserInfo) (*model
 		user.Name = ssoUserInfo.Name
 		user.Role = ssoUserInfo.Role
 		user.Department = ssoUserInfo.Department
-		user.LicenseNumber = ssoUserInfo.LicenseNumber
 
 		// Generate a placeholder password hash for SSO users
 		passwordHash, _ := h.authService.HashPassword(uuid.New().String())
 
 		_, err = h.db.Exec(`
-			INSERT INTO users (id, email, name, role, department, license_number, password_hash)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
-		`, user.ID, user.Email, user.Name, user.Role, user.Department, user.LicenseNumber, passwordHash)
+			INSERT INTO users (id, email, name, role, department, password_hash)
+			VALUES ($1, $2, $3, $4, $5, $6)
+		`, user.ID, user.Email, user.Name, user.Role, user.Department, passwordHash)
 
 		if err != nil {
 			return nil, err
@@ -473,8 +474,8 @@ func (h *AuthHandler) completeSSOLogin(c *gin.Context, user *models.User, provid
 		return
 	}
 
-	// Update last login
-	h.db.Exec("UPDATE users SET last_login = NOW() WHERE id = $1", user.ID)
+	// Update last login (note: public.users doesn't have last_login column)
+	// h.db.Exec("UPDATE users SET updated_at = NOW() WHERE id = $1", user.ID)
 
 	// Log SSO login for HIPAA audit
 	h.db.AuditLog(user.ID.String(), "sso_login", user.ID.String(), map[string]interface{}{

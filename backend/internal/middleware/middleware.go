@@ -4,6 +4,8 @@ import (
 	"choseby-backend/internal/auth"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -17,6 +19,20 @@ func SecurityHeaders() gin.HandlerFunc {
 		c.Header("X-XSS-Protection", "1; mode=block")
 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
 		c.Header("Content-Security-Policy", "default-src 'self'")
+		c.Header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		c.Next()
+	}
+}
+
+// HTTPSRedirect enforces HTTPS in production
+func HTTPSRedirect() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.GetHeader("X-Forwarded-Proto") == "http" {
+			httpsURL := "https://" + c.Request.Host + c.Request.RequestURI
+			c.Redirect(http.StatusMovedPermanently, httpsURL)
+			c.Abort()
+			return
+		}
 		c.Next()
 	}
 }
@@ -34,12 +50,55 @@ func RequestID() gin.HandlerFunc {
 	}
 }
 
-// Simple rate limiting middleware
+// RateLimit implements token bucket rate limiting per IP
 func RateLimit(limit, window int) gin.HandlerFunc {
+	type bucket struct {
+		tokens     int
+		lastRefill time.Time
+	}
+
+	buckets := make(map[string]*bucket)
+	var mu sync.Mutex
+
 	return func(c *gin.Context) {
-		// Simple implementation - in production use Redis
+		ip := c.ClientIP()
+
+		mu.Lock()
+		defer mu.Unlock()
+
+		b, exists := buckets[ip]
+		if !exists {
+			b = &bucket{tokens: limit, lastRefill: time.Now()}
+			buckets[ip] = b
+		}
+
+		// Refill tokens based on time elapsed
+		elapsed := time.Since(b.lastRefill).Seconds()
+		tokensToAdd := int(elapsed * float64(limit) / float64(window))
+		if tokensToAdd > 0 {
+			b.tokens = min(limit, b.tokens + tokensToAdd)
+			b.lastRefill = time.Now()
+		}
+
+		if b.tokens <= 0 {
+			c.JSON(http.StatusTooManyRequests, gin.H{
+				"error": "rate_limit_exceeded",
+				"message": "Too many requests. Please try again later.",
+			})
+			c.Abort()
+			return
+		}
+
+		b.tokens--
 		c.Next()
 	}
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // AuthRequired validates JWT tokens

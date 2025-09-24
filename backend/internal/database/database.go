@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -137,13 +138,33 @@ func (db *DB) AuditLog(userID, action, resourceID string, details map[string]int
 		VALUES ($1, $2, $3, $4, $5, NOW())
 	`
 
-	detailsJSON := ""
+	var detailsJSON interface{}
 	if details != nil {
-		// Convert details to JSON string (simplified for demo)
-		detailsJSON = fmt.Sprintf("%v", details)
+		jsonBytes, err := json.Marshal(details)
+		if err != nil {
+			detailsJSON = nil
+		} else {
+			detailsJSON = string(jsonBytes)
+		}
+	} else {
+		detailsJSON = nil
 	}
 
-	_, err := db.Exec(query, userID, action, resourceID, detailsJSON, "127.0.0.1")
+	var userIDParam interface{}
+	if userID == "" {
+		userIDParam = nil
+	} else {
+		userIDParam = userID
+	}
+
+	var resourceIDParam interface{}
+	if resourceID == "" {
+		resourceIDParam = nil
+	} else {
+		resourceIDParam = resourceID
+	}
+
+	_, err := db.Exec(query, userIDParam, action, resourceIDParam, detailsJSON, "127.0.0.1")
 	return err
 }
 

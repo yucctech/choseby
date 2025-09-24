@@ -1,164 +1,66 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LoginScreen } from '@/components/screens/LoginScreen';
-import { TeamSelectionScreen } from '@/components/screens/TeamSelectionScreen';
-import { DecisionTypeScreen } from '@/components/screens/DecisionTypeScreen';
-import { AnonymousEvaluationScreen } from '@/components/screens/AnonymousEvaluationScreen';
-import { ConflictResolutionScreen } from '@/components/screens/ConflictResolutionScreen';
+import { Dashboard } from '@/components/screens/Dashboard';
+import { DecisionCreation } from '@/components/screens/DecisionCreation';
+import { DecisionWorkflow } from '@/components/screens/DecisionWorkflow';
+import { apiClient } from '@/lib/api-client';
+import type { User, Team } from '@/types';
 
-type Screen = 'login' | 'team-selection' | 'decision-type' | 'evaluation' | 'conflict-resolution';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  teams: string[];
-}
-
-interface Team {
-  id: string;
-  name: string;
-  organization: string;
-  industry: string;
-  user_role: string;
-  member_count: number;
-  active_decisions: number;
-}
+type Screen = 'login' | 'dashboard' | 'create-decision' | 'decision-detail';
 
 export default function HomePage() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('login');
   const [user, setUser] = useState<User | null>(null);
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
-  // Mock data for demonstration
-  const mockTeams: Team[] = [
-    {
-      id: '1',
-      name: 'Emergency Department Leadership',
-      organization: 'Metropolitan General Hospital',
-      industry: 'healthcare',
-      user_role: 'facilitator',
-      member_count: 8,
-      active_decisions: 3
-    },
-    {
-      id: '2',
-      name: 'ICU Quality Committee',
-      organization: 'Metropolitan General Hospital',
-      industry: 'healthcare',
-      user_role: 'member',
-      member_count: 6,
-      active_decisions: 1
-    },
-    {
-      id: '3',
-      name: 'Nursing Administration',
-      organization: 'Metropolitan General Hospital',
-      industry: 'healthcare',
-      user_role: 'administrator',
-      member_count: 12,
-      active_decisions: 5
-    }
-  ];
+  useEffect(() => {
+    // TODO: Re-enable auto-login when backend /user/profile and /teams endpoints are ready
+    // const token = apiClient.getToken();
+    // if (token) {
+    //   loadUserData();
+    // }
+  }, []);
 
-  const mockOptions = [
-    {
-      id: '1',
-      name: 'Increase Staffing',
-      description: 'Hire additional clinical staff to reduce workload and improve patient care'
-    },
-    {
-      id: '2',
-      name: 'Implement New Protocol',
-      description: 'Create standardized procedures to improve efficiency without additional staff'
-    },
-    {
-      id: '3',
-      name: 'Outsource Non-Clinical Functions',
-      description: 'Contract external services for administrative tasks to free up clinical time'
-    }
-  ];
-
-  const mockCriteria = [
-    {
-      id: '1',
-      name: 'Patient Safety',
-      description: 'Impact on patient outcomes and safety measures',
-      weight: 35,
-      category: 'clinical'
-    },
-    {
-      id: '2',
-      name: 'Staff Satisfaction',
-      description: 'Effect on healthcare worker wellbeing and job satisfaction',
-      weight: 25,
-      category: 'operational'
-    },
-    {
-      id: '3',
-      name: 'Financial Impact',
-      description: 'Cost considerations and budget implications',
-      weight: 20,
-      category: 'financial'
-    },
-    {
-      id: '4',
-      name: 'Implementation Time',
-      description: 'How quickly the solution can be implemented',
-      weight: 20,
-      category: 'operational'
-    }
-  ];
-
-  const mockConflicts = [
-    {
-      id: '1',
-      option_name: 'Outsource Non-Clinical Functions',
-      criterion_name: 'Quality Control',
-      variance_score: 3.2,
-      conflict_level: 'high' as const,
-      evaluation_count: 5,
-      score_range: { mean: 5.2, min: 2, max: 9 }
-    },
-    {
-      id: '2',
-      option_name: 'Outsource Non-Clinical Functions',
-      criterion_name: 'Cost Impact',
-      variance_score: 2.8,
-      conflict_level: 'medium' as const,
-      evaluation_count: 5,
-      score_range: { mean: 6.1, min: 3, max: 8 }
-    }
-  ];
-
-  const handleLogin = async (email: string, password: string, ssoProvider?: string) => {
-    setLoading(true);
-    setError('');
-
+  const loadUserData = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      setLoading(true);
+      const userData = await apiClient.getCurrentUser();
+      const teamsData = await apiClient.getTeams();
+      setUser(userData);
+      setTeams(teamsData);
+      if (teamsData.length > 0) {
+        setSelectedTeam(teamsData[0]);
+        setCurrentScreen('dashboard');
+      }
+    } catch (error) {
+      console.error('Failed to load user data:', error);
+      apiClient.clearToken();
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // Mock successful login
-      if (email === 'demo@example.com' || ssoProvider) {
-        const mockUser = {
-          id: '1',
-          email: email || 'sso@hospital.com',
-          name: ssoProvider ? 'Dr. Sarah Smith (SSO)' : 'Dr. Sarah Smith',
-          role: 'physician',
-          teams: ['1', '2', '3']
-        };
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      setError('');
 
-        setUser(mockUser);
-        setTeams(mockTeams);
-        setCurrentScreen('team-selection');
-      } else {
-        throw new Error('Invalid credentials. Use demo@example.com for testing.');
+      const response = await apiClient.login(email, password);
+      const userData = response.user;
+
+      setUser(userData);
+
+      const teamsData = await apiClient.getTeams();
+      setTeams(teamsData);
+
+      if (teamsData.length > 0) {
+        setSelectedTeam(teamsData[0]);
+        setCurrentScreen('dashboard');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -167,108 +69,143 @@ export default function HomePage() {
     }
   };
 
-  const handleTeamSelection = (teamId: string) => {
-    setSelectedTeam(teamId);
-    setCurrentScreen('decision-type');
+  const handleLogout = () => {
+    apiClient.logout();
+    setUser(null);
+    setTeams([]);
+    setSelectedTeam(null);
+    setCurrentScreen('login');
   };
 
-  const handleDecisionCreation = (decisionData: any) => {
-    console.log('Decision created:', decisionData);
-    setCurrentScreen('evaluation');
-  };
+  if (currentScreen === 'login') {
+    return <LoginScreen onLogin={handleLogin} loading={loading} error={error} />;
+  }
 
-  const handleEvaluationSubmit = (evaluations: any, overallConfidence: number, notes?: string) => {
-    console.log('Evaluation submitted:', { evaluations, overallConfidence, notes });
-    // Simulate conflict detection
-    setCurrentScreen('conflict-resolution');
-  };
+  if (!user || !selectedTeam) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>;
+  }
 
-  const handleConflictResolution = (resolutionType: string, facilitatorId?: string) => {
-    console.log('Conflict resolution started:', { resolutionType, facilitatorId });
-    // Continue to next phase
-  };
+  if (currentScreen === 'dashboard') {
+    return (
+      <Dashboard
+        user={user}
+        team={selectedTeam}
+        onCreateDecision={() => setCurrentScreen('create-decision')}
+        onViewDecision={(id) => {
+          setSelectedDecisionId(id);
+          setCurrentScreen('decision-detail');
+        }}
+      />
+    );
+  }
 
-  const handleBack = () => {
-    switch (currentScreen) {
-      case 'team-selection':
-        setCurrentScreen('login');
-        setUser(null);
-        break;
-      case 'decision-type':
-        setCurrentScreen('team-selection');
-        break;
-      case 'evaluation':
-        setCurrentScreen('decision-type');
-        break;
-      case 'conflict-resolution':
-        setCurrentScreen('evaluation');
-        break;
-    }
-  };
+  if (currentScreen === 'create-decision') {
+    return (
+      <DecisionCreation
+        team={selectedTeam}
+        onBack={() => setCurrentScreen('dashboard')}
+        onContinue={(decisionId) => {
+          setSelectedDecisionId(decisionId);
+          setCurrentScreen('decision-detail');
+        }}
+      />
+    );
+  }
 
-  const renderCurrentScreen = () => {
-    switch (currentScreen) {
-      case 'login':
-        return (
-          <LoginScreen
-            onLogin={handleLogin}
-            loading={loading}
-            error={error}
-          />
-        );
+  if (currentScreen === 'decision-detail' && selectedDecisionId) {
+    return (
+      <DecisionWorkflow
+        decisionId={selectedDecisionId}
+        teamId={selectedTeam?.id}
+        onBack={() => setCurrentScreen('dashboard')}
+        onComplete={() => setCurrentScreen('dashboard')}
+      />
+    );
+  }
 
-      case 'team-selection':
-        return (
-          <TeamSelectionScreen
-            teams={teams}
-            onSelectTeam={handleTeamSelection}
-            onBack={handleBack}
-            loading={loading}
-          />
-        );
+  return null;
+}
 
-      case 'decision-type':
-        return (
-          <DecisionTypeScreen
-            onContinue={handleDecisionCreation}
-            onBack={handleBack}
-          />
-        );
+function LoginScreen({ onLogin, loading, error }: { onLogin: (email: string, password: string) => void; loading: boolean; error: string }) {
+  const [email, setEmail] = useState('demo@choseby.com');
+  const [password, setPassword] = useState('demo123');
 
-      case 'evaluation':
-        return (
-          <AnonymousEvaluationScreen
-            options={mockOptions}
-            criteria={mockCriteria}
-            onSubmit={handleEvaluationSubmit}
-            onBack={handleBack}
-          />
-        );
-
-      case 'conflict-resolution':
-        return (
-          <ConflictResolutionScreen
-            conflicts={mockConflicts}
-            consensusLevel={65}
-            anonymousConcerns={[
-              'Risk to patient care quality',
-              'Budget concerns overstated',
-              'Implementation too complex'
-            ]}
-            onStartResolution={handleConflictResolution}
-            onContinueWithConflicts={() => console.log('Continue with conflicts')}
-            onBack={handleBack}
-          />
-        );
-
-      default:
-        return <LoginScreen onLogin={handleLogin} loading={loading} error={error} />;
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onLogin(email, password);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {renderCurrentScreen()}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">🏥 ChoseBy Healthcare</h1>
+          <p className="text-gray-600">Team Decision Platform</p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Sign In</h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-500 text-center mb-3">Healthcare SSO Options</p>
+            <div className="space-y-2">
+              <button className="w-full py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                Sign in with Epic
+              </button>
+              <button className="w-full py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                Sign in with Cerner
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-6 text-center text-sm text-gray-500">
+          Demo credentials: demo@choseby.com / demo123
+        </p>
+      </div>
     </div>
   );
 }

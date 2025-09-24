@@ -1,9 +1,12 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -42,13 +45,28 @@ type Config struct {
 }
 
 func Load() *Config {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
+	}
+
+	jwtSecret := getEnv("JWT_SECRET", "")
+	if jwtSecret == "" || jwtSecret == "your-super-secure-jwt-secret-change-in-production" {
+		log.Fatal("FATAL: JWT_SECRET environment variable must be set to a strong secret (min 32 characters)")
+	}
+
+	dbURL := getEnv("DATABASE_URL", "")
+	if dbURL == "" {
+		log.Fatal("FATAL: DATABASE_URL environment variable is required")
+	}
+
 	return &Config{
 		// Database
-		DatabaseURL:      getEnv("DATABASE_URL", "postgresql://user:password@localhost:5432/choseby_dev"),
+		DatabaseURL:      dbURL,
 		DatabasePoolSize: getEnvInt("DATABASE_POOL_SIZE", 20),
 
 		// JWT
-		JWTSecret:             getEnv("JWT_SECRET", "your-super-secure-jwt-secret-change-in-production"),
+		JWTSecret:             jwtSecret,
 		JWTExpiration:         getEnvInt("JWT_EXPIRATION", 3600),
 		RefreshTokenExpiration: getEnvInt("REFRESH_TOKEN_EXPIRATION", 604800),
 

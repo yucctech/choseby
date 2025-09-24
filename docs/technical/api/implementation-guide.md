@@ -50,7 +50,7 @@ CREATE TABLE decisions (
     description TEXT,
     status VARCHAR(50) CHECK (status IN ('draft', 'in_progress', 'completed', 'archived', 'emergency')),
     workflow_type VARCHAR(50) CHECK (workflow_type IN ('emergency', 'express', 'full_decide')),
-    current_phase INTEGER CHECK (current_phase BETWEEN 1 AND 6) DEFAULT 1,
+    current_phase INTEGER CHECK (current_phase BETWEEN 1 AND 6) DEFAULT 1, -- ✅ ADDED: Tracks DECIDE workflow progression
     decision_type VARCHAR(50) CHECK (decision_type IN ('vendor_selection', 'hiring', 'strategic', 'budget', 'compliance', 'clinical')),
     urgency VARCHAR(20) CHECK (urgency IN ('low', 'normal', 'high', 'emergency')),
     patient_impact VARCHAR(20) CHECK (patient_impact IN ('none', 'low', 'medium', 'high')),
@@ -58,10 +58,13 @@ CREATE TABLE decisions (
     budget_max DECIMAL(12,2),
     regulatory_deadline TIMESTAMPTZ,
     implementation_deadline TIMESTAMPTZ,
-    created_by UUID REFERENCES users(id) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ✅ MIGRATION NOTE: The current_phase column was added via migration script backend/scripts/add_current_phase.go
+-- This column is critical for IMPLEMENTATION PHASE 1 workflow tracking (6 DECIDE phases)
+-- Migration SQL: ALTER TABLE decisions ADD COLUMN IF NOT EXISTS current_phase INTEGER DEFAULT 1 CHECK (current_phase >= 1 AND current_phase <= 6);
 
 -- Decision criteria with AI suggestion tracking
 CREATE TABLE decision_criteria (
@@ -300,7 +303,7 @@ const processAnonymousEvaluation = async (evaluation) => {
 ```javascript
 const checkConflicts = async (decisionId) => {
   const conflicts = await db.query(`
-    SELECT 
+    SELECT
       option_id,
       criterion_id,
       STDDEV(score) as variance,
@@ -311,13 +314,101 @@ const checkConflicts = async (decisionId) => {
     GROUP BY option_id, criterion_id
     HAVING COUNT(*) >= 2 AND STDDEV(score) > 2.5
   `, [decisionId]);
-  
+
   for (const conflict of conflicts) {
     await createConflictRecord(conflict);
     await notifyFacilitator(decisionId, conflict);
   }
 };
 ```
+
+## ✅ IMPLEMENTATION PHASE 1: API Endpoints Implemented
+
+### Decision Management Endpoints (handlers.go)
+
+**GET /api/v1/teams/:teamId/decisions/:decisionId** - ✅ IMPLEMENTED
+```go
+// handlers.go lines 239-283
+func (h *DecisionHandler) GetDecision(c *gin.Context) {
+    decisionID := c.Param("decisionId")
+
+    var decision struct {
+        ID             string    `db:"id"`
+        TeamID         string    `db:"team_id"`
+        Title          string    `db:"title"`
+        Description    string    `db:"description"`
+        DecisionType   string    `db:"decision_type"`
+        Status         string    `db:"status"`
+        Priority       string    `db:"priority"`
+        CurrentPhase   int       `db:"current_phase"`  // ✅ TRACKS WORKFLOW PROGRESSION
+        CreatedAt      time.Time `db:"created_at"`
+        UpdatedAt      time.Time `db:"updated_at"`
+    }
+
+    err := h.db.QueryRow(`
+        SELECT id, team_id, title, description, decision_type, status, priority,
+               COALESCE(current_phase, 1) as current_phase, created_at, updated_at
+        FROM decisions
+        WHERE id = $1
+    `, decisionID).Scan(
+        &decision.ID, &decision.TeamID, &decision.Title, &decision.Description,
+        &decision.DecisionType, &decision.Status, &decision.Priority,
+        &decision.CurrentPhase, &decision.CreatedAt, &decision.UpdatedAt,
+    )
+
+    if err != nil {
+        log.Printf("GetDecision error for decision %s: %v", decisionID, err)
+        c.JSON(http.StatusNotFound, gin.H{"error": "Decision not found"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "id":             decision.ID,
+        "team_id":        decision.TeamID,
+        "title":          decision.Title,
+        "description":    decision.Description,
+        "decision_type":  decision.DecisionType,
+        "status":         decision.Status,
+        "priority":       decision.Priority,
+        "current_phase":  decision.CurrentPhase,
+        "created_at":     decision.CreatedAt,
+        "updated_at":     decision.UpdatedAt,
+    })
+}
+```
+**Bug Fixes**: Removed non-existent `created_by` field that caused 404 errors. Added error logging with `log.Printf()` for debugging.
+
+**PUT /api/v1/teams/:teamId/decisions/:decisionId** - ✅ IMPLEMENTED
+- Updates decision with partial field support using COALESCE
+- Phase progression tracking via current_phase field
+- Used by all 6 workflow screens to advance through DECIDE phases
+
+**GET /api/v1/teams/:teamId/decisions/:decisionId/criteria** - ✅ IMPLEMENTED
+**POST /api/v1/teams/:teamId/decisions/:decisionId/criteria** - ✅ IMPLEMENTED
+- Full CRUD for evaluation criteria management
+- Used by Phase 2: Establish Criteria screen
+
+**GET /api/v1/teams/:teamId/decisions/:decisionId/options** - ✅ IMPLEMENTED
+**POST /api/v1/teams/:teamId/decisions/:decisionId/options** - ✅ IMPLEMENTED
+- Full CRUD for decision options management
+- Used by Phase 3: Consider Options screen
+
+### Frontend API Integration Fixed
+All workflow screens now correctly use teamId parameter:
+```typescript
+// Before (BROKEN):
+apiClient.updateDecision(decision.id, { current_phase: X })
+
+// After (FIXED):
+apiClient.updateDecision(decision.team_id, decision.id, { current_phase: X })
+```
+
+Files updated:
+- DefineProblem.tsx:78
+- EstablishCriteria.tsx:87
+- ConsiderOptions.tsx:105
+- AnonymousEvaluation.tsx:72
+- ActionPlanning.tsx:44
 
 ## Healthcare Compliance Features
 

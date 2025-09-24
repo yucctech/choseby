@@ -45,6 +45,24 @@
 - **TIMELINE**: MVP development in progress, targeting 5 paying customers
 - **REVENUE TARGET**: $107.50-172/month per team (vs individual $21.50/user)
 
+### 📖 TERMINOLOGY CLARIFICATION
+**IMPORTANT**: "Phase" has TWO meanings in this project:
+
+1. **IMPLEMENTATION PHASES** (Development Timeline):
+   - IMPLEMENTATION PHASE 1: Core DECIDE Workflow (Screens 1-8) - Week 2-4
+   - IMPLEMENTATION PHASE 2: Essential Support Features - Week 4-6
+   - IMPLEMENTATION PHASE 3: Error Handling & Polish - Week 6-8
+
+2. **DECIDE METHODOLOGY PHASES** (User Workflow):
+   - Phase 1: Define the Problem (Screen 3)
+   - Phase 2: Establish Criteria (Screen 4)
+   - Phase 3: Consider Options (Screen 5)
+   - Phase 4: Evaluate Anonymously (Screen 6)
+   - Phase 5: Develop Action Plan (Screen 7)
+   - Phase 6: Monitor Results (Screen 8)
+
+Always clarify which "Phase" you're referring to in discussions.
+
 ### AI SESSION RULES
 **NEVER create without permission:**
 - summary.md, recap.md, session-summary.md

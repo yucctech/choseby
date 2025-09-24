@@ -21,20 +21,56 @@
 
 ## 📋 **MVP IMPLEMENTATION PRIORITIES**
 
-### **PHASE 1: Core DECIDE Workflow (Screens 1-8)** ⭐ REVENUE CRITICAL
-**Timeline**: Week 2-4 Implementation
+> **TERMINOLOGY NOTE**: "PHASE" in this document refers to **IMPLEMENTATION PHASES** (development timeline), NOT the 6-phase DECIDE methodology. The DECIDE methodology phases are: 1) Define Problem, 2) Establish Criteria, 3) Consider Options, 4) Evaluate, 5) Develop Action Plan, 6) Monitor Results.
+
+### **IMPLEMENTATION PHASE 1: Core DECIDE Workflow (Screens 1-8)** ⭐ REVENUE CRITICAL - ✅ COMPLETE AND VALIDATED
+**Timeline**: Week 2-4 Implementation → **Status**: COMPLETE (Week 4)
 **Files**: `core-decide-workflow-wireframes.md` (1,299 lines - Complete)
 
-1. **Screen 1: Dashboard** - Active decisions, emergency access
-2. **Screen 2: Create Decision** - Emergency/Express/Full DECIDE types
-3. **Screen 3: Define Problem** - Healthcare context, stakeholder identification
-4. **Screen 4: Establish Criteria** - Patient safety, cost, timeline criteria
-5. **Screen 5: Consider Options** - Alternative comparison with healthcare impact
-6. **Screen 6: Anonymous Evaluation** ⭐ CORE DIFFERENTIATOR - Conflict detection
-7. **Screen 7: Action Planning** - Implementation timeline, responsibility assignment
-8. **Screen 8: Monitor Results** - Success metrics, outcome tracking
+1. **Screen 1: Dashboard** - Active decisions, emergency access ✅
+2. **Screen 2: Create Decision** - Emergency/Express/Full DECIDE types ✅
+3. **Screen 3: Define Problem** - Healthcare context, stakeholder identification ✅
+4. **Screen 4: Establish Criteria** - Patient safety, cost, timeline criteria ✅
+5. **Screen 5: Consider Options** - Alternative comparison with healthcare impact ✅
+6. **Screen 6: Anonymous Evaluation** ⭐ CORE DIFFERENTIATOR - Conflict detection ✅
+7. **Screen 7: Action Planning** - Implementation timeline, responsibility assignment ✅
+8. **Screen 8: Monitor Results** - Success metrics, outcome tracking ✅
 
-### **PHASE 2: Essential Support Features (Screens 9, 15, 24)**
+#### **Implementation Details - Phase 1 Complete**:
+
+**Backend API Implementation** (handlers.go):
+- ✅ **GetDecision** (lines 239-283): Returns decision with current_phase field, COALESCE for default value
+- ✅ **UpdateDecision**: Partial updates with COALESCE for nullable fields, phase progression tracking
+- ✅ **GetDecisionCriteria/CreateCriterion**: Full CRUD for evaluation criteria
+- ✅ **GetDecisionOptions/CreateOption**: Full CRUD for decision options
+- ✅ **Error Logging**: Added log.Printf() for debugging GetDecision issues
+- ✅ **Bug Fix**: Removed non-existent created_by field that caused 404 errors
+
+**Database Schema Updates**:
+- ✅ **Migration Script**: `backend/scripts/add_current_phase.go`
+- ✅ **current_phase Column**: Added to decisions table with CHECK constraint (1-6)
+- ✅ **SQL**: `ALTER TABLE decisions ADD COLUMN IF NOT EXISTS current_phase INTEGER DEFAULT 1 CHECK (current_phase >= 1 AND current_phase <= 6);`
+- ✅ **Purpose**: Tracks workflow progression through 6 DECIDE phases
+
+**Frontend API Integration Fixes**:
+- ✅ **DefineProblem.tsx:78** - Fixed API call to include teamId parameter
+- ✅ **EstablishCriteria.tsx:87** - Fixed API call to include teamId parameter
+- ✅ **ConsiderOptions.tsx:105** - Fixed API call to include teamId parameter
+- ✅ **AnonymousEvaluation.tsx:72** - Fixed API call to include teamId parameter
+- ✅ **ActionPlanning.tsx:44** - Fixed API call to include teamId parameter
+- ✅ **Bug Fix**: All screens now use `apiClient.updateDecision(decision.team_id, decision.id, { current_phase: X })` signature
+
+**End-to-End Validation Results** (Browser MCP Testing):
+- ✅ **Login → Dashboard**: Real backend data with team information
+- ✅ **Phase 1: Define Problem**: Input validation, problem statement persistence
+- ✅ **Phase 2: Establish Criteria**: 4 criteria with 100% weighted scoring
+- ✅ **Phase 3: Consider Options**: 2 options with detailed comparison tables
+- ✅ **Phase 4: Anonymous Evaluation**: Privacy guarantees, team progress tracking
+- ✅ **Phase 5: Action Planning**: Timeline, budget allocation, risk management
+- ✅ **Phase 6: Monitor Results**: Performance dashboard with 96% success metrics
+- ✅ **Workflow Complete**: Successfully returns to Dashboard after completion
+
+### **IMPLEMENTATION PHASE 2: Essential Support Features (Screens 9, 15, 24)**
 **Timeline**: Week 4-6 Implementation
 **Justification**: Required for multi-user billing and conflict resolution
 
@@ -42,7 +78,7 @@
 - **Screen 15: Professional Documentation** - Board reports justify premium pricing
 - **Screen 24: Conflict Resolution** - Handle anonymous evaluation outcomes
 
-### **PHASE 3: Error Handling & Polish**
+### **IMPLEMENTATION PHASE 3: Error Handling & Polish**
 **Timeline**: Week 6-8 Implementation
 **Focus**: Professional user experience for healthcare environments
 
@@ -71,7 +107,7 @@
 - **Conflict Detection**: <3 seconds for team evaluation analysis
 - **Platform Uptime**: 99.9% availability for pilot healthcare teams
 
-## 🚫 **DEFERRED TO PHASE 2 (POST-MVP)**
+## 🚫 **DEFERRED TO POST-MVP (FUTURE IMPLEMENTATION)**
 
 ### **Complex Integrations (3+ Months Development)**
 - ❌ **EMR Integration** - Epic, Cerner, Allscripts (extremely complex)
