@@ -1,433 +1,277 @@
-# Healthcare Decision Platform - Database Schema
+# Customer Response Platform: Database Schema
+## PostgreSQL Implementation-Ready Schema
 
-## Overview
-**Database**: Supabase PostgreSQL with HIPAA-compliant Row Level Security
-**Multi-tenancy**: Team-based isolation for healthcare organizations
-**Authentication**: Supabase Auth with role-based healthcare team access
-**Compliance**: HIPAA audit trails, data retention, encryption at rest
+### 🎯 **OVERVIEW**
+Complete database schema for Customer Response Decision Intelligence platform. This schema is designed for PostgreSQL and ready for immediate implementation by Claude Code.
 
-## DECIDE Methodology Support (6-Phase Framework)
-**Current Implementation**: 6-phase DECIDE framework optimized for healthcare team collaboration  
-**Historical Note**: Evolved from original 7-phase proposal to focus on healthcare-specific workflow efficiency  
-**Framework Support**: Database schema designed to support multiple decision frameworks for future expansion
+---
 
-### Teams (Healthcare Organizations)
+## 📋 **CORE TABLES**
+
+### Teams Table
 ```sql
 CREATE TABLE teams (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(100) NOT NULL,
-  industry VARCHAR(50) NOT NULL DEFAULT 'healthcare' 
-    CHECK (industry IN ('healthcare', 'professional_services', 'manufacturing', 'tech')),
-  organization_size VARCHAR(20) CHECK (organization_size IN ('25-49', '50-99', '100-249')),
-  compliance_requirements JSONB DEFAULT '{"hipaa": true, "joint_commission": false, "patient_safety": true}',
-  subscription_tier VARCHAR(20) DEFAULT 'pilot' CHECK (subscription_tier IN ('pilot', 'standard', 'premium')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    industry VARCHAR(100),
+    team_size INTEGER DEFAULT 5,
+    subscription_tier VARCHAR(20) DEFAULT 'starter' 
+        CHECK (subscription_tier IN ('starter', 'professional', 'enterprise')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
-
--- Healthcare-specific indexes
-CREATE INDEX idx_teams_industry ON teams(industry);
-CREATE INDEX idx_teams_compliance ON teams USING GIN (compliance_requirements);
 ```
 
-### Users (Healthcare Team Members)
-```sql
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email VARCHAR(255) UNIQUE NOT NULL,
-  team_id UUID REFERENCES teams(id) ON DELETE CASCADE NOT NULL,
-  role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'facilitator', 'member', 'clinical_lead')),
-  first_name VARCHAR(50),
-  last_name VARCHAR(50),
-  department VARCHAR(50), -- Clinical, Administrative, IT, Compliance
-  title VARCHAR(100),
-  healthcare_role VARCHAR(50), -- Physician, Nurse, Administrator, etc.
-  is_active BOOLEAN DEFAULT true,
-  last_login TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Performance and security indexes
-CREATE INDEX idx_users_team_role ON users(team_id, role);
-CREATE INDEX idx_users_active ON users(team_id) WHERE is_active = true;
-```
-
-### Decisions (DECIDE Methodology - 6 Phases)
-```sql
-CREATE TABLE decisions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  team_id UUID REFERENCES teams(id) ON DELETE CASCADE NOT NULL,
-  title VARCHAR(200) NOT NULL,
-  description TEXT,
-  decision_type VARCHAR(50) NOT NULL 
-    CHECK (decision_type IN ('vendor_selection', 'hiring', 'strategic', 'budget', 'compliance', 'clinical_protocol')),
-  current_phase INTEGER NOT NULL CHECK (current_phase BETWEEN 1 AND 6) DEFAULT 1,
-  status VARCHAR(20) NOT NULL CHECK (status IN ('draft', 'in_progress', 'completed', 'archived')) DEFAULT 'draft',
-  created_by UUID REFERENCES users(id) NOT NULL,
-  facilitator_id UUID REFERENCES users(id),
-  due_date TIMESTAMP WITH TIME ZONE,
-  priority VARCHAR(10) CHECK (priority IN ('low', 'medium', 'high', 'critical')) DEFAULT 'medium',
-  
-  -- Healthcare-specific fields
-  patient_impact_level VARCHAR(10) CHECK (patient_impact_level IN ('none', 'low', 'medium', 'high')) DEFAULT 'none',
-  compliance_required BOOLEAN DEFAULT false,
-  regulatory_deadline TIMESTAMP WITH TIME ZONE,
-  estimated_budget DECIMAL(12,2),
-  
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Decision workflow optimization indexes
-CREATE INDEX idx_decisions_team_status ON decisions(team_id, status);
-CREATE INDEX idx_decisions_current_phase ON decisions(current_phase);
-CREATE INDEX idx_decisions_patient_impact ON decisions(patient_impact_level) WHERE patient_impact_level != 'none';
-```
-
-
-### Decision Phases (DECIDE Methodology Storage)
-```sql
-CREATE TABLE decision_phases (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  decision_id UUID REFERENCES decisions(id) ON DELETE CASCADE NOT NULL,
-  phase_number INTEGER NOT NULL CHECK (phase_number BETWEEN 1 AND 6),
-  phase_name VARCHAR(50) NOT NULL, -- 'Define', 'Establish', 'Consider', 'Identify', 'Develop', 'Evaluate'
-  phase_data JSONB NOT NULL DEFAULT '{}',
-  completed_at TIMESTAMP WITH TIME ZONE,
-  completed_by UUID REFERENCES users(id),
-  UNIQUE(decision_id, phase_number)
-);
-
--- JSONB structure for phase data
-/*
-Phase 1 (Define Problem):
-{
-  "problem_statement": "string",
-  "stakeholders": [{"name": "string", "role": "clinical|administrative|compliance", "influence": "high|medium|low"}],
-  "success_criteria": ["string"],
-  "constraints": [{"type": "regulatory|budget|timeline", "description": "string"}],
-  "patient_impact": {"direct_impact": boolean, "risk_level": "none|low|medium|high"}
-}
-
-Phase 2 (Establish Criteria):
-{
-  "evaluation_criteria": [
-    {
-      "id": "uuid",
-      "name": "string", 
-      "description": "string",
-      "weight": number,
-      "category": "technical|financial|clinical|compliance",
-      "healthcare_specific": boolean
-    }
-  ],
-  "ai_generated": boolean
-}
-
-Phase 4 (Identify - Anonymous Evaluations):
-{
-  "evaluation_summary": {
-    "total_evaluations": number,
-    "consensus_level": number,
-    "conflicts_detected": ["conflict_id"]
-  }
-}
-*/
-
-CREATE INDEX idx_decision_phases_lookup ON decision_phases(decision_id, phase_number);
-```
-
-### Anonymous Evaluations (Phase 4: Identify Best Alternative)
-```sql
-CREATE TABLE evaluations (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  decision_id UUID REFERENCES decisions(id) ON DELETE CASCADE NOT NULL,
-  user_id UUID REFERENCES users(id) NOT NULL,
-  evaluation_data JSONB NOT NULL,
-  confidence_level INTEGER CHECK (confidence_level BETWEEN 1 AND 10),
-  bias_alerts JSONB DEFAULT '[]',
-  rationale TEXT,
-  time_spent_minutes INTEGER,
-  submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  is_anonymous BOOLEAN DEFAULT true,
-  
-  -- Ensure one evaluation per user per decision
-  UNIQUE(decision_id, user_id)
-);
-
--- Evaluation data structure
-/*
-{
-  "option_scores": {"option_1_id": 8, "option_2_id": 6},
-  "criteria_weights": {"criteria_1_id": 30, "criteria_2_id": 25},
-  "weighted_totals": {"option_1_id": 7.2, "option_2_id": 6.8},
-  "confidence_factors": {
-    "data_quality": 8,
-    "expertise_level": 7,
-    "time_adequate": true
-  }
-}
-*/
-
-CREATE INDEX idx_evaluations_decision ON evaluations(decision_id);
-```
-
-### Conflict Detection and Resolution
-```sql
-CREATE TABLE conflicts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  decision_id UUID REFERENCES decisions(id) ON DELETE CASCADE NOT NULL,
-  criteria_id VARCHAR(100), -- Which evaluation criteria shows conflict
-  conflict_type VARCHAR(20) CHECK (conflict_type IN ('data', 'values', 'assumptions')) NOT NULL,
-  severity VARCHAR(10) CHECK (severity IN ('low', 'medium', 'high')) NOT NULL,
-  disagreement_score DECIMAL(3,2) CHECK (disagreement_score BETWEEN 0 AND 1),
-  participants_count INTEGER NOT NULL,
-  description TEXT,
-  resolution_status VARCHAR(20) CHECK (resolution_status IN ('detected', 'in_progress', 'resolved')) DEFAULT 'detected',
-  resolution_approach TEXT,
-  facilitator_notes TEXT,
-  resolved_at TIMESTAMP WITH TIME ZONE,
-  detected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-
-## Row Level Security (HIPAA Compliance)
-
-### Enable RLS on All Tables
-```sql
-ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE decisions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE decision_phases ENABLE ROW LEVEL SECURITY;
-ALTER TABLE evaluations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE conflicts ENABLE ROW LEVEL SECURITY;
-```
-
-### Team Data Isolation Policies
-```sql
--- Users can only access their own team's data
-CREATE POLICY "team_isolation_decisions" ON decisions
-  FOR ALL USING (team_id IN (
-    SELECT team_id FROM users WHERE id = auth.uid()
-  ));
-
-CREATE POLICY "team_isolation_phases" ON decision_phases
-  FOR ALL USING (decision_id IN (
-    SELECT d.id FROM decisions d 
-    JOIN users u ON d.team_id = u.team_id 
-    WHERE u.id = auth.uid()
-  ));
-
--- Anonymous evaluation protection - users can only see their own submissions
-CREATE POLICY "own_evaluations_only" ON evaluations
-  FOR SELECT USING (user_id = auth.uid());
-
-CREATE POLICY "insert_own_evaluation" ON evaluations
-  FOR INSERT WITH CHECK (user_id = auth.uid());
-
--- Facilitators can manage team decisions
-CREATE POLICY "facilitator_decision_management" ON decisions
-  FOR UPDATE USING (
-    facilitator_id = auth.uid() OR 
-    created_by = auth.uid() OR
-    team_id IN (
-      SELECT team_id FROM users 
-      WHERE id = auth.uid() AND role IN ('admin', 'facilitator')
-    )
-  );
-```
-
-## API Endpoint Specifications
-
-### Decision Management
-```typescript
-// Create new DECIDE workflow
-POST /api/decisions
-Body: {
-  title: string
-  description: string
-  decision_type: 'vendor_selection' | 'hiring' | 'strategic' | 'budget' | 'compliance'
-  facilitator_id?: string
-  patient_impact_level: 'none' | 'low' | 'medium' | 'high'
-  estimated_budget?: number
-  regulatory_deadline?: string
-}
-
-// Get decision with all phases
-GET /api/decisions/{id}
-Response: {
-  decision: Decision
-  phases: DecisionPhase[]
-  team_members: User[]
-  evaluation_count: number
-  conflicts: Conflict[]
-}
-
-// Update DECIDE phase data  
-PUT /api/decisions/{id}/phases/{phase_number}
-Body: { phase_data: PhaseData }
-
-// Submit anonymous evaluation (Phase 4)
-POST /api/decisions/{id}/evaluations
-Body: {
-  evaluation_data: {
-    option_scores: Record<string, number>
-    criteria_weights: Record<string, number>
-    rationale: string
-    confidence_level: number
-  }
-}
-```
-
-### Healthcare AI Integration
-```typescript
-// Generate healthcare decision criteria
-POST /api/ai/generate-criteria
-Body: {
-  decision_type: string
-  industry: 'healthcare'
-  context: string
-  compliance_requirements: string[]
-}
-Response: {
-  criteria: Array<{
-    name: string
-    description: string
-    weight: number
-    healthcare_specific: boolean
-  }>
-  compliance_considerations: string[]
-}
-```
-```
+### Team Members Table
 ```sql
 CREATE TABLE team_members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  team_id UUID REFERENCES teams(id),
-  user_id UUID REFERENCES users(id),
-  role VARCHAR(50) NOT NULL, -- 'admin', 'member', 'observer'
-  expertise_area VARCHAR(100), -- 'CEO', 'CTO', 'Operations', etc.
-  created_at TIMESTAMP DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL CHECK (role IN (
+        'customer_success_manager', 
+        'support_manager', 
+        'account_manager', 
+        'sales_manager', 
+        'legal_compliance', 
+        'operations_manager'
+    )),
+    expertise_areas TEXT[],
+    escalation_authority INTEGER DEFAULT 1 CHECK (escalation_authority BETWEEN 1 AND 5),
+    notification_preferences JSONB DEFAULT '{"email": true, "sms": false, "push": true}',
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
-### Decisions
+### Customer Decisions Table
 ```sql
-CREATE TABLE decisions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  team_id UUID REFERENCES teams(id),
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  status VARCHAR(50) DEFAULT 'active', -- 'active', 'resolved', 'archived'
-  created_by UUID REFERENCES users(id),
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE customer_decisions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+    created_by UUID NOT NULL REFERENCES team_members(id),
+    
+    -- Customer Context
+    customer_name VARCHAR(255) NOT NULL,
+    customer_id VARCHAR(100),
+    customer_email VARCHAR(255),
+    customer_tier VARCHAR(20) DEFAULT 'standard' 
+        CHECK (customer_tier IN ('basic', 'standard', 'premium', 'enterprise')),
+    customer_value DECIMAL(12,2),
+    relationship_duration_months INTEGER DEFAULT 0,
+    
+    -- Decision Details
+    title VARCHAR(500) NOT NULL,
+    description TEXT NOT NULL,
+    decision_type VARCHAR(50) NOT NULL CHECK (decision_type IN (
+        'refund_request', 
+        'billing_dispute', 
+        'service_escalation', 
+        'policy_exception', 
+        'contract_modification', 
+        'churn_prevention'
+    )),
+    urgency_level INTEGER NOT NULL DEFAULT 3 CHECK (urgency_level BETWEEN 1 AND 5),
+    financial_impact DECIMAL(12,2),
+    
+    -- Workflow Status
+    status VARCHAR(20) DEFAULT 'created' CHECK (status IN (
+        'created', 
+        'team_input', 
+        'evaluating', 
+        'resolved', 
+        'cancelled'
+    )),
+    current_phase INTEGER DEFAULT 1 CHECK (current_phase BETWEEN 1 AND 6),
+    expected_resolution_date TIMESTAMP,
+    actual_resolution_date TIMESTAMP,
+    
+    -- AI Analysis
+    ai_classification JSONB,
+    ai_recommendations JSONB,
+    ai_confidence_score DECIMAL(3,2),
+    
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
-### Evaluation Criteria
+### Decision Criteria Table
 ```sql
-CREATE TABLE criteria (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  decision_id UUID REFERENCES decisions(id),
-  name VARCHAR(255) NOT NULL,
-  description TEXT,
-  weight INTEGER DEFAULT 1,
-  created_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE decision_criteria (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID NOT NULL REFERENCES customer_decisions(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    weight DECIMAL(3,2) DEFAULT 1.0 CHECK (weight BETWEEN 0.1 AND 5.0),
+    created_by UUID NOT NULL REFERENCES team_members(id),
+    created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
-### Anonymous Scores
+### Response Options Table
 ```sql
-CREATE TABLE scores (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  decision_id UUID REFERENCES decisions(id),
-  criteria_id UUID REFERENCES criteria(id),
-  user_id UUID REFERENCES users(id),
-  score INTEGER NOT NULL, -- 1-5 or 1-10 scale
-  rationale TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE response_options (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID NOT NULL REFERENCES customer_decisions(id) ON DELETE CASCADE,
+    title VARCHAR(500) NOT NULL,
+    description TEXT NOT NULL,
+    financial_cost DECIMAL(12,2) DEFAULT 0,
+    implementation_effort VARCHAR(20) DEFAULT 'medium' 
+        CHECK (implementation_effort IN ('low', 'medium', 'high')),
+    risk_level VARCHAR(20) DEFAULT 'medium' 
+        CHECK (risk_level IN ('low', 'medium', 'high')),
+    ai_generated BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES team_members(id),
+    created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
-### Conflicts Detection
+### Evaluations Table
 ```sql
-CREATE TABLE conflicts (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  decision_id UUID REFERENCES decisions(id),
-  criteria_id UUID REFERENCES criteria(id),
-  conflict_type VARCHAR(50), -- 'high_variance', 'opposing_views'
-  description TEXT,
-  resolved BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE evaluations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID NOT NULL REFERENCES customer_decisions(id) ON DELETE CASCADE,
+    evaluator_id UUID NOT NULL REFERENCES team_members(id),
+    option_id UUID NOT NULL REFERENCES response_options(id),
+    criteria_id UUID NOT NULL REFERENCES decision_criteria(id),
+    score INTEGER NOT NULL CHECK (score BETWEEN 1 AND 10),
+    confidence INTEGER DEFAULT 5 CHECK (confidence BETWEEN 1 AND 5),
+    anonymous_comment TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    
+    UNIQUE(decision_id, evaluator_id, option_id, criteria_id)
 );
 ```
 
-## Row Level Security Policies
-
-### Team Member Access Control
+### Decision Outcomes Table
 ```sql
--- Users can only access teams they belong to
-ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "team_member_access" ON teams
-  FOR ALL USING (
-    id IN (
-      SELECT team_id FROM team_members 
-      WHERE user_id = auth.uid()
-    )
-  );
+CREATE TABLE decision_outcomes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID NOT NULL REFERENCES customer_decisions(id) ON DELETE CASCADE,
+    selected_option_id UUID NOT NULL REFERENCES response_options(id),
+    response_sent_at TIMESTAMP,
+    customer_satisfaction_score INTEGER CHECK (customer_satisfaction_score BETWEEN 1 AND 10),
+    escalation_occurred BOOLEAN DEFAULT false,
+    resolution_time_hours INTEGER,
+    follow_up_required BOOLEAN DEFAULT false,
+    follow_up_date TIMESTAMP,
+    outcome_notes TEXT,
+    financial_impact_actual DECIMAL(12,2),
+    customer_retained BOOLEAN,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
-### Private Score Protection
+### Authentication Tokens Table
 ```sql
--- Users can only view/edit their own scores
-ALTER TABLE scores ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "own_scores_only" ON scores
-  FOR ALL USING (user_id = auth.uid());
+CREATE TABLE auth_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES team_members(id) ON DELETE CASCADE,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
-### Team Admin Access
+### Audit Logs Table
 ```sql
--- Team admins can see all team data
-ALTER TABLE decisions ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "team_admin_access" ON decisions
-  FOR ALL USING (
-    team_id IN (
-      SELECT team_id FROM team_members 
-      WHERE user_id = auth.uid() AND role = 'admin'
-    )
-  );
+CREATE TABLE audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID REFERENCES customer_decisions(id),
+    user_id UUID REFERENCES team_members(id),
+    action VARCHAR(100) NOT NULL,
+    details JSONB,
+    ip_address INET,
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
-## Indexes for Performance
+---
+
+## 🔍 **PERFORMANCE INDEXES**
+
 ```sql
--- Team membership lookups
-CREATE INDEX idx_team_members_user_id ON team_members(user_id);
-CREATE INDEX idx_team_members_team_id ON team_members(team_id);
+-- Primary performance indexes
+CREATE INDEX idx_customer_decisions_team_id ON customer_decisions(team_id);
+CREATE INDEX idx_customer_decisions_status ON customer_decisions(status);
+CREATE INDEX idx_customer_decisions_urgency ON customer_decisions(urgency_level, created_at);
+CREATE INDEX idx_customer_decisions_customer ON customer_decisions(customer_name, customer_tier);
+CREATE INDEX idx_evaluations_decision ON evaluations(decision_id);
+CREATE INDEX idx_team_members_team ON team_members(team_id);
+CREATE INDEX idx_audit_logs_decision ON audit_logs(decision_id, created_at);
 
--- Decision queries
-CREATE INDEX idx_decisions_team_id ON decisions(team_id);
-CREATE INDEX idx_decisions_status ON decisions(status);
-
--- Score aggregations
-CREATE INDEX idx_scores_decision_id ON scores(decision_id);
-CREATE INDEX idx_scores_criteria_id ON scores(criteria_id);
+-- Customer response specific indexes
+CREATE INDEX idx_decisions_urgent ON customer_decisions(urgency_level, status) 
+    WHERE urgency_level >= 4;
+CREATE INDEX idx_decisions_pending_evaluation ON customer_decisions(status, created_at) 
+    WHERE status = 'team_input';
+CREATE INDEX idx_outcomes_satisfaction ON decision_outcomes(customer_satisfaction_score, created_at);
 ```
 
-## Data Flow
-1. **Team Creation**: Admin creates team, receives team_id
-2. **Member Invitation**: Admin invites users, assigns roles and expertise areas
-3. **Decision Creation**: Team member creates decision, defines criteria
-4. **Anonymous Scoring**: Each member scores privately, rationale optional
-5. **Conflict Detection**: System identifies disagreements, flags for resolution
-6. **Resolution Tracking**: Team works through conflicts, marks resolved
+---
 
-## Free Tier Considerations
-**Supabase FREE Tier**: 500MB database limit
-**Estimated Capacity**: ~1000 teams, ~10,000 decisions, ~100,000 scores
-**Monitoring**: Track usage via Supabase Dashboard
-**Upgrade Trigger**: Approach 400MB usage → upgrade to Pro ($25/month)
+## 📊 **SAMPLE DATA INSERTS**
+
+```sql
+-- Sample team
+INSERT INTO teams (id, name, company_name, industry) VALUES 
+('550e8400-e29b-41d4-a716-446655440000', 'Customer Success Team', 'TechCorp Inc', 'SaaS');
+
+-- Sample team members
+INSERT INTO team_members (id, team_id, email, name, password_hash, role) VALUES 
+('550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440000', 'sarah@techcorp.com', 'Sarah Johnson', '$2b$10$hash1', 'customer_success_manager'),
+('550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440000', 'mike@techcorp.com', 'Mike Chen', '$2b$10$hash2', 'support_manager'),
+('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440000', 'lisa@techcorp.com', 'Lisa Rodriguez', '$2b$10$hash3', 'account_manager');
+
+-- Sample customer decision
+INSERT INTO customer_decisions (
+    id, team_id, created_by, customer_name, customer_email, customer_tier, 
+    customer_value, title, description, decision_type, urgency_level
+) VALUES (
+    '550e8400-e29b-41d4-a716-446655440010',
+    '550e8400-e29b-41d4-a716-446655440000',
+    '550e8400-e29b-41d4-a716-446655440001',
+    'ABC Corporation',
+    'john@abccorp.com',
+    'enterprise',
+    120000.00,
+    'Refund Request for Service Outage',
+    'Customer demanding full refund due to 8-hour service outage affecting their business operations',
+    'refund_request',
+    4
+);
+```
+
+---
+
+## ✅ **VALIDATION QUERIES**
+
+```sql
+-- Verify schema creation
+SELECT table_name FROM information_schema.tables 
+WHERE table_schema = 'public' 
+ORDER BY table_name;
+
+-- Check constraints
+SELECT conname, contype FROM pg_constraint 
+WHERE conrelid = 'customer_decisions'::regclass;
+
+-- Test relationships
+SELECT 
+    cd.title,
+    tm.name as created_by,
+    t.name as team_name
+FROM customer_decisions cd
+JOIN team_members tm ON cd.created_by = tm.id
+JOIN teams t ON cd.team_id = t.id;
+```
+
+**Status**: Ready for implementation by Claude Code
+**Next**: API endpoint specifications
