@@ -41,6 +41,45 @@ Every new Claude Code session MUST read these files in this exact sequence:
 
 ---
 
+## 📋 **REQUIRED READING (in order)**:
+1. `docs/SESSION_CONTEXT.md` (AI behavior rules)
+2. `docs/ai-context/CLAUDE_DESKTOP_CONTEXT.md` (business context)  
+3. `docs/technical/implementation-summary.md` (technical foundation - implementation ready)
+4. `docs/current/active-tasks.md` (current sprint priorities)
+
+## 🎯 **CURRENT PHASE: Customer Response Platform Implementation (Week 1-8)**
+**✅ COMPLETED**: Strategic Foundation & Documentation Complete
+- Market strategy for Customer Response Decision Intelligence ✅
+- Customer development methodology for customer-facing teams ✅  
+- Technical implementation roadmap (95% backend reuse, 80% frontend) ✅
+- Complete technical specifications (API, database, frontend) ✅
+
+**🚧 READY FOR IMPLEMENTATION**: Platform Development & Customer Acquisition
+- Database schema implementation for customer response context
+- DeepSeek AI integration for cost-effective intelligence
+- Frontend development with customer response workflows
+- Backend API implementation with customer response endpoints
+
+## 📊 **Business Intelligence & Strategy**:
+- **Market Strategy**: `docs/business/market-strategy.md`
+- **Customer Development**: `docs/business/customer-development.md`  
+- **Active Sprint Plan**: `docs/current/active-tasks.md`
+- **Success Metrics**: `docs/business/success-metrics.md`
+
+## 🔧 **Technical Foundation (IMPLEMENTATION READY)**:
+- **API Infrastructure**: `docs/technical/api-specifications.md`
+  - Complete REST endpoint specifications for customer response workflows
+  - Anonymous evaluation & conflict detection for customer response decisions
+  - Team management & real-time collaboration for customer-facing teams
+- **Database Schema**: `docs/technical/database-schema.md`
+  - Complete PostgreSQL schema optimized for customer response context
+- **Frontend Components**: `docs/technical/frontend-components.md`
+  - React component specifications for customer response workflows
+- **Implementation Guide**: `docs/technical/implementation-summary.md`
+  - Step-by-step development roadmap for Claude Code
+
+---
+
 ## 🎯 **CUSTOMER RESPONSE PLATFORM PRIORITIES**
 
 ### **Week 1-2: Customer Response Backend (Claude Code Focus)**
@@ -66,6 +105,21 @@ Every new Claude Code session MUST read these files in this exact sequence:
 - Customer response team onboarding and pilot customer acquisition
 - Customer response success metrics tracking and optimization
 - Revenue generation from customer response team efficiency improvements
+
+---
+
+## 💰 **VALIDATED BUSINESS MODEL**:
+**CORE PRINCIPLE**: Build Customer Response Decision Intelligence that eliminates 3-5 day email threads  
+**TARGET MARKET**: Customer-facing teams (support, success, sales) at growing companies  
+**PRICING**: Team-based $199-699/month with clear ROI tied to response time improvement  
+**TARGET**: 5 customer response teams, $500+ MRR by Week 8
+
+## 🎯 **Customer Response Priority Features**:
+- AI-powered customer issue classification (DeepSeek integration)
+- Anonymous team evaluation for unbiased customer response decisions
+- Customer context capture (tier, value, relationship history)
+- Response time tracking and consistency measurement
+- Customer satisfaction correlation with decision quality
 
 ---
 
@@ -171,4 +225,29 @@ Every new Claude Code session MUST read these files in this exact sequence:
 - **Customer Satisfaction**: Faster response times improve NPS and reduce churn
 - **Team Efficiency**: Structured decision process reduces coordination chaos and improves consistency
 
+---
+
+## 📁 **Navigation & Resources**:
+- **Project Hub**: `README.md`
+- **Business Strategy**: `docs/business/market-strategy.md`
+- **Sprint Planning**: `docs/current/active-tasks.md`
+- **Technical Foundation**: `docs/technical/implementation-summary.md`
+
+## 🔧 **ROLE SEPARATION**:
+- **Claude Desktop**: Strategy, documentation, customer development, business analysis, competitive research
+- **Claude Code**: Backend implementation, database development, AI integration, frontend customer response development
+
+## ⚠️ **CRITICAL AI BEHAVIOR RULES**:
+- **Never create summary/recap/analysis files** - UPDATE existing files only
+- **Update-only policy**: Modify existing docs rather than creating duplicate content
+- **Permission protocol**: Ask before creating any new files vs updating existing ones
+- **Role-appropriate tasks**: Business/strategy → Desktop, Programming/implementation → Code
+
+## 🔑 **VALIDATION CHECKS**:
+- **IMPLEMENTATION-READY**: All technical specifications complete and validated
+- **Customer Focus**: All decisions must align with customer-facing team requirements and ROI demonstration
+- **Revenue Target**: $500+ MRR by Week 8 through 5 customer response teams
+
 **IMPLEMENTATION PRIORITY**: Focus on customer response team value delivery through faster decision times, improved customer satisfaction, and team coordination efficiency to achieve $500+ MRR by Week 8.
+
+**NEXT ACTION**: Begin implementation following `docs/technical/implementation-summary.md` - complete technical specifications ready for immediate development.
