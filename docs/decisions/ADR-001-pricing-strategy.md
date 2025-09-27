@@ -1,67 +1,68 @@
-# ADR-001: Pricing Strategy - Team vs Individual Models
+# ADR-001: Customer Response Platform Pricing Strategy
 
 ## Status
-**Under Consideration** - Team pricing prioritized for MVP, individual pricing post-MVP
+**APPROVED** - Team-based pricing implemented for customer response platform
 
 ## Context
-Customer validation revealed demand for both team-based and individual decision-making tools:
-- **Team Model**: 15/15 interviews validated team decision facilitation ($107.50-172/month)
-- **Individual Model**: 1/1 interview validated individual decision frameworks ($21.50/user/month)
+Customer response decision intelligence platform targeting customer-facing teams with clear ROI demonstration through response time improvement and customer satisfaction correlation.
 
 ## Decision
-**MVP Strategy**: Implement team-based pricing first, consider individual pricing after MVP validation
+**Customer Response Team-Based Pricing Strategy**: Focus on customer response team efficiency value
 
-### Team-Based Pricing (Immediate Implementation)
-- **5-person team**: $107.50/month
-- **6-person team**: $129/month  
-- **7-person team**: $150.50/month
-- **8-person team**: $172/month
+### Customer Response Team-Based Pricing (Implemented)
+- **Small Response Team**: $199/month (3-8 members)
+  - Core customer response decision workflow
+  - AI classification and summarization
+  - 90-day outcome tracking
+  - Email support + knowledge base
 
-**Rationale**: 
-- 15/15 customer validation vs 1/1 for individual
-- Higher revenue per customer ($107-172 vs $21.50)
-- Stronger customer budgets (150-400% above our pricing)
-- First-mover advantage in team decision facilitation
+- **Standard Response Team**: $399/month (9-15 members)
+  - Advanced AI analysis and option generation
+  - Custom response templates and workflows  
+  - 1-year outcome tracking with analytics
+  - Priority support + monthly success check-ins
 
-### Individual Pricing (Post-MVP Consideration)
+- **Large Response Team**: $699/month (16-25 members)
+  - Team-specific AI model training
+  - Advanced analytics and benchmarking
+  - Custom integrations (Zendesk, Salesforce, etc.)
+  - Dedicated customer success manager
+
+### Customer Response ROI Rationale
+**Time Savings Value**: 12 hours/week saved = $2,400/month in team productivity
+**Customer Satisfaction**: Faster response times improve NPS and reduce churn
+**Team Efficiency**: Structured decision process eliminates coordination chaos
+**Cost Justification**: 3-12x ROI at $199-699/month pricing vs $2,400/month value
+
+### Customer Response Market Validation
+- **SaaS Companies**: $300-800/month budgets for customer response efficiency
+- **E-commerce**: $200-600/month for support team coordination
+- **Professional Services**: $250-500/month for client response coordination
+- **B2B Services**: $400-700/month for account management efficiency
+
+## Alternatives Considered
+
+### Individual Pricing Model (Rejected for MVP)
 - **Per-user**: $21.50/user/month
-- **Use case**: Solo decision-makers, smaller teams, market expansion
-- **Validation**: Healthcare operations manager valued framework at $500+
+- **Rationale**: Lower revenue per customer, harder ROI demonstration
+- **Future Consideration**: Post-MVP expansion for smaller teams
+
+### Enterprise Custom Pricing (Post-MVP)
+- **25+ team members**: Custom pricing based on usage and integrations
+- **Implementation**: After validating team-based model success
 
 ## Consequences
 
-### Positive
-- ✅ Focus development resources on highest-validated model (15/15 interviews)
-- ✅ Higher revenue per customer enables faster growth
-- ✅ Team features create stronger customer lock-in than individual tools
-- ✅ Individual model provides post-MVP expansion opportunity
+### Positive Outcomes
+- **Clear ROI**: Direct correlation between pricing and customer response team value
+- **Higher Revenue**: $199-699/month vs $21.50/user individual pricing
+- **Market Fit**: Aligns with customer response team budget authority and spending patterns
+- **Scalability**: Team growth increases subscription value naturally
 
-### Negative  
-- ❌ May miss individual customer segment during MVP phase
-- ❌ Complex pricing strategy requires clear communication
-- ❌ Individual features development delayed until post-MVP
+### Monitoring Requirements
+- **Customer Response Team Size**: Track actual team sizes vs pricing tiers
+- **Usage Patterns**: Monitor decision frequency and team engagement
+- **ROI Demonstration**: Measure response time improvement and customer satisfaction correlation
+- **Competitive Response**: Watch for customer service platform pricing reactions
 
-### Risks & Mitigation
-- **Risk**: Individual customers switch to competitors during MVP development
-- **Mitigation**: Strong validation shows unoccupied market category
-- **Risk**: Technical complexity supporting both pricing models
-- **Mitigation**: Individual features can build on team platform foundation
-
-## Implementation Plan
-1. **Phase 1 MVP**: Team features only, team-based pricing
-2. **Phase 2 Expansion**: Add individual features and pricing option
-3. **Hybrid Option**: Teams can invite individual consultants/advisors at individual rates
-
-## Success Criteria
-- **MVP Success**: 5+ paying teams at $107-172/month, $500+ MRR
-- **Individual Validation**: Post-MVP testing with individual pricing
-- **Market Expansion**: Both pricing models serving different customer needs
-
-## Related Decisions
-- Technical architecture supports both team and individual workflows
-- Customer research continues for both segments
-- Marketing positioning emphasizes team collaboration first
-
-**Owner**: Solo Founder  
-**Date**: Current (September 2025)  
-**Review**: After MVP validation (Week 8)
+**Success Metrics**: 5 customer response teams paying $199-699/month by Week 8 for $500+ MRR through demonstrable response time and customer satisfaction improvements.
