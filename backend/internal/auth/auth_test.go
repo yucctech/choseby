@@ -14,11 +14,11 @@ func TestPasswordHashingAndVerification(t *testing.T) {
 			t.Fatalf("Failed to hash password: %v", err)
 		}
 
-		if !authService.VerifyPassword(password, hash) {
+		if err := authService.VerifyPassword(hash, password); err != nil {
 			t.Error("Failed to verify correct password with freshly generated hash")
 		}
 
-		if authService.VerifyPassword("wrongpassword", hash) {
+		if err := authService.VerifyPassword(hash, "wrongpassword"); err == nil {
 			t.Error("Incorrectly verified wrong password")
 		}
 	})
@@ -26,7 +26,7 @@ func TestPasswordHashingAndVerification(t *testing.T) {
 	t.Run("Verify with stored database hash", func(t *testing.T) {
 		storedHash := "$2a$10$yAD32IRsnOwvD65NGm7wge7D5OhD9qyX68smBi2H.xyzTbOtvAMGa"
 
-		if authService.VerifyPassword(password, storedHash) {
+		if err := authService.VerifyPassword(storedHash, password); err == nil {
 			t.Log("✅ Stored hash is valid for password 'demo123'")
 		} else {
 			t.Log("❌ Stored hash does NOT match 'demo123' - need to regenerate")

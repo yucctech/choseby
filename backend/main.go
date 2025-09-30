@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	log.Println("=== Choseby Healthcare API Starting ===")
+	log.Println("=== Choseby Customer Response Decision Intelligence API Starting ===")
 
 	// Load configuration
 	cfg := config.Load()
@@ -47,13 +47,19 @@ func main() {
 		port = cfg.Port
 	}
 
-	log.Printf("=== Starting Choseby Healthcare Decision Platform API server on port %s ===", port)
+	log.Printf("=== Starting Choseby Customer Response Decision Intelligence API server on port %s ===", port)
 	log.Printf("Environment: %s", cfg.Environment)
 	if db != nil {
 		log.Printf("Database: Connected to PostgreSQL")
 	} else {
 		log.Printf("Database: Running without database connection")
 	}
+	log.Printf("AI Integration: DeepSeek API %s", func() string {
+		if cfg.DeepSeekAPIKey != "" {
+			return "enabled"
+		}
+		return "disabled"
+	}())
 
 	// Start server
 	if err := router.Run(":" + port); err != nil {

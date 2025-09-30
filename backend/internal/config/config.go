@@ -19,21 +19,20 @@ type Config struct {
 	JWTExpiration         int
 	RefreshTokenExpiration int
 
-	// Healthcare SSO
-	EpicClientID     string
-	EpicClientSecret string
-	CernerClientID   string
-	CernerClientSecret string
+	// AI Integration
+	DeepSeekAPIKey    string
+	DeepSeekAPIURL    string
+	AIRequestTimeout  int
 
 	// API Configuration
 	APIRateLimit  int
 	APIRateWindow int
 	CORSOrigins   []string
 
-	// Healthcare Compliance
-	HIPAAEncryptionKey   string
-	AuditRetentionYears  int
-	DataExportEncryption bool
+	// Customer Response Platform
+	MaxTeamMembers         int
+	MaxDecisionsPerTeam    int
+	EvaluationTimeoutHours int
 
 	// WebSocket
 	WSMaxConnections    int
@@ -60,6 +59,11 @@ func Load() *Config {
 		log.Fatal("FATAL: DATABASE_URL environment variable is required")
 	}
 
+	deepSeekAPIKey := getEnv("DEEPSEEK_API_KEY", "")
+	if deepSeekAPIKey == "" {
+		log.Println("WARNING: DEEPSEEK_API_KEY not set - AI features will be disabled")
+	}
+
 	return &Config{
 		// Database
 		DatabaseURL:      dbURL,
@@ -70,21 +74,20 @@ func Load() *Config {
 		JWTExpiration:         getEnvInt("JWT_EXPIRATION", 3600),
 		RefreshTokenExpiration: getEnvInt("REFRESH_TOKEN_EXPIRATION", 604800),
 
-		// Healthcare SSO
-		EpicClientID:     getEnv("EPIC_CLIENT_ID", ""),
-		EpicClientSecret: getEnv("EPIC_CLIENT_SECRET", ""),
-		CernerClientID:   getEnv("CERNER_CLIENT_ID", ""),
-		CernerClientSecret: getEnv("CERNER_CLIENT_SECRET", ""),
+		// AI Integration
+		DeepSeekAPIKey:    deepSeekAPIKey,
+		DeepSeekAPIURL:    getEnv("DEEPSEEK_API_URL", "https://api.deepseek.com/v1"),
+		AIRequestTimeout:  getEnvInt("AI_REQUEST_TIMEOUT", 30),
 
 		// API Configuration
 		APIRateLimit:  getEnvInt("API_RATE_LIMIT", 1000),
 		APIRateWindow: getEnvInt("API_RATE_WINDOW", 3600),
-		CORSOrigins:   strings.Split(getEnv("CORS_ORIGINS", "http://localhost:3000"), ","),
+		CORSOrigins:   strings.Split(getEnv("CORS_ORIGINS", "http://localhost:3000,https://choseby.vercel.app"), ","),
 
-		// Healthcare Compliance
-		HIPAAEncryptionKey:   getEnv("HIPAA_ENCRYPTION_KEY", ""),
-		AuditRetentionYears:  getEnvInt("AUDIT_RETENTION_YEARS", 7),
-		DataExportEncryption: getEnvBool("DATA_EXPORT_ENCRYPTION", true),
+		// Customer Response Platform
+		MaxTeamMembers:         getEnvInt("MAX_TEAM_MEMBERS", 25),
+		MaxDecisionsPerTeam:    getEnvInt("MAX_DECISIONS_PER_TEAM", 100),
+		EvaluationTimeoutHours: getEnvInt("EVALUATION_TIMEOUT_HOURS", 72),
 
 		// WebSocket
 		WSMaxConnections:    getEnvInt("WS_MAX_CONNECTIONS", 1000),

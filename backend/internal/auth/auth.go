@@ -4,8 +4,6 @@ import (
 	"errors"
 	"time"
 
-	"choseby-backend/internal/models"
-
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -15,8 +13,7 @@ type Claims struct {
 	UserID      uuid.UUID `json:"sub"`
 	Email       string    `json:"email"`
 	Role        string    `json:"role"`
-	Teams       []string  `json:"teams"`
-	Permissions []string  `json:"permissions"`
+	TeamID      string    `json:"team_id"`
 	jwt.RegisteredClaims
 }
 
@@ -34,44 +31,35 @@ func NewAuthService(jwtSecret string, jwtExpiration, refreshTokenExpiration int)
 	}
 }
 
-// GenerateToken creates a JWT token for authenticated user
-func (a *AuthService) GenerateToken(user *models.User, teams []string, permissions []string) (string, error) {
+// GenerateToken creates a JWT token for authenticated team member
+func (a *AuthService) GenerateToken(userID, role string) (string, time.Time, error) {
 	now := time.Now()
+	expiresAt := now.Add(a.jwtExpiration)
+
 	claims := &Claims{
-		UserID:      user.ID,
-		Email:       user.Email,
-		Role:        user.Role,
-		Teams:       teams,
-		Permissions: permissions,
+		UserID: uuid.MustParse(userID),
+		Role:   role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(now.Add(a.jwtExpiration)),
-			Subject:   user.ID.String(),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			Subject:   userID,
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(a.jwtSecret)
-}
-
-// GenerateRefreshToken creates a refresh token
-func (a *AuthService) GenerateRefreshToken(userID uuid.UUID) (string, error) {
-	now := time.Now()
-	claims := &jwt.RegisteredClaims{
-		Subject:   userID.String(),
-		IssuedAt:  jwt.NewNumericDate(now),
-		ExpiresAt: jwt.NewNumericDate(now.Add(a.refreshTokenExpiration)),
+	tokenString, err := token.SignedString(a.jwtSecret)
+	if err != nil {
+		return "", time.Time{}, err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(a.jwtSecret)
+	return tokenString, expiresAt, nil
 }
 
-// ValidateToken verifies and parses a JWT token
+// ValidateToken validates and parses a JWT token
 func (a *AuthService) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
+			return nil, errors.New("invalid signing method")
 		}
 		return a.jwtSecret, nil
 	})
@@ -80,104 +68,52 @@ func (a *AuthService) ValidateToken(tokenString string) (*Claims, error) {
 		return nil, err
 	}
 
-	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-		return claims, nil
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
 	}
 
-	return nil, errors.New("invalid token")
+	return claims, nil
 }
 
-// HashPassword creates a bcrypt hash of the password
+// GenerateRefreshToken creates a refresh token (placeholder implementation)
+func (a *AuthService) GenerateRefreshToken(userID string) (string, time.Time, error) {
+	// In a complete implementation, this would:
+	// 1. Generate a unique refresh token
+	// 2. Store it in the database with expiration
+	// 3. Return the token and expiration time
+
+	now := time.Now()
+	expiresAt := now.Add(a.refreshTokenExpiration)
+
+	claims := &Claims{
+		UserID: uuid.MustParse(userID),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			Subject:   userID,
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(a.jwtSecret)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	return tokenString, expiresAt, nil
+}
+
+// HashPassword hashes a password using bcrypt
 func (a *AuthService) HashPassword(password string) (string, error) {
-	// Use higher cost for healthcare security
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
 	}
-	return string(hash), nil
+	return string(hashedPassword), nil
 }
 
-// VerifyPassword compares password with hash
-func (a *AuthService) VerifyPassword(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-// HasPermission checks if user has specific permission
-func (c *Claims) HasPermission(permission string) bool {
-	for _, p := range c.Permissions {
-		if p == permission {
-			return true
-		}
-	}
-	return false
-}
-
-// IsTeamMember checks if user is member of specific team
-func (c *Claims) IsTeamMember(teamID string) bool {
-	for _, t := range c.Teams {
-		if t == teamID {
-			return true
-		}
-	}
-	return false
-}
-
-// Healthcare SSO integration structures
-type EpicSSORequest struct {
-	AuthorizationCode string `json:"authorization_code"`
-	RedirectURI       string `json:"redirect_uri"`
-}
-
-type CernerSSORequest struct {
-	AccessToken string `json:"access_token"`
-	UserInfo    string `json:"user_info"`
-}
-
-type SSOUserInfo struct {
-	Email         string  `json:"email"`
-	Name          string  `json:"name"`
-	Role          string  `json:"role"`
-	Department    *string `json:"department"`
-	LicenseNumber *string `json:"license_number"`
-	Provider      string  `json:"provider"` // epic, cerner, allscripts
-}
-
-// ProcessEpicSSO handles Epic MyChart authentication
-func (a *AuthService) ProcessEpicSSO(request EpicSSORequest) (*SSOUserInfo, error) {
-	// In production, this would:
-	// 1. Exchange authorization code for access token
-	// 2. Fetch user info from Epic FHIR API
-	// 3. Map Epic user data to our user structure
-
-	// Mock implementation for development
-	return &SSOUserInfo{
-		Email:      "epic.user@hospital.com",
-		Name:       "Dr. Epic User",
-		Role:       "physician",
-		Department: stringPtr("Emergency Medicine"),
-		Provider:   "epic",
-	}, nil
-}
-
-// ProcessCernerSSO handles Cerner PowerChart authentication
-func (a *AuthService) ProcessCernerSSO(request CernerSSORequest) (*SSOUserInfo, error) {
-	// In production, this would:
-	// 1. Validate access token with Cerner
-	// 2. Fetch user profile from Cerner API
-	// 3. Map Cerner user data to our user structure
-
-	// Mock implementation for development
-	return &SSOUserInfo{
-		Email:         "cerner.user@hospital.com",
-		Name:          "Nurse Cerner User",
-		Role:          "nurse",
-		Department:    stringPtr("ICU"),
-		LicenseNumber: stringPtr("RN-12345"),
-		Provider:      "cerner",
-	}, nil
-}
-
-func stringPtr(s string) *string {
-	return &s
+// VerifyPassword verifies a password against its hash
+func (a *AuthService) VerifyPassword(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }

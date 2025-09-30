@@ -1,304 +1,247 @@
--- CHOSEBY HEALTHCARE DECISION PLATFORM DATABASE SCHEMA
--- Go Backend Implementation
--- HIPAA-compliant with audit trails and anonymous evaluation support
+-- CHOSEBY CUSTOMER RESPONSE DECISION INTELLIGENCE DATABASE SCHEMA
+-- PostgreSQL Implementation-Ready Schema for Claude Code
+-- Customer-facing team decision workflows with AI integration
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Teams table with HIPAA compliance settings
+-- Teams table for customer response teams
 CREATE TABLE teams (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(100) NOT NULL,
-    organization VARCHAR(200),
-    industry VARCHAR(50) DEFAULT 'healthcare',
-    compliance_requirements JSONB DEFAULT '{"hipaa": true, "joint_commission": true, "patient_safety": true}',
-    settings JSONB DEFAULT '{"evaluation_timeout_hours": 72, "conflict_threshold": 2.5}',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    industry VARCHAR(100),
+    team_size INTEGER DEFAULT 5,
+    subscription_tier VARCHAR(20) DEFAULT 'starter'
+        CHECK (subscription_tier IN ('starter', 'professional', 'enterprise')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Users with healthcare-specific roles
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    role VARCHAR(50) CHECK (role IN ('physician', 'nurse', 'administrator', 'technician', 'pharmacist', 'other')),
-    department VARCHAR(100),
-    license_number VARCHAR(50), -- For audit trails
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    last_login TIMESTAMPTZ
-);
-
--- Team membership with role-based permissions
+-- Team members with customer response roles
 CREATE TABLE team_members (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    role VARCHAR(50) CHECK (role IN ('member', 'facilitator', 'administrator', 'observer')),
-    permissions TEXT[] DEFAULT ARRAY['evaluate_options', 'view_decisions'],
-    primary_backup UUID REFERENCES users(id), -- Staff turnover protection
-    joined_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(team_id, user_id)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL CHECK (role IN (
+        'customer_success_manager',
+        'support_manager',
+        'account_manager',
+        'sales_manager',
+        'legal_compliance',
+        'operations_manager'
+    )),
+    expertise_areas TEXT[],
+    escalation_authority INTEGER DEFAULT 1 CHECK (escalation_authority BETWEEN 1 AND 5),
+    notification_preferences JSONB DEFAULT '{"email": true, "sms": false, "push": true}',
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Decisions with workflow type determination
-CREATE TABLE decisions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    team_id UUID REFERENCES teams(id) NOT NULL,
-    title VARCHAR(200) NOT NULL,
-    description TEXT,
-    status VARCHAR(50) CHECK (status IN ('draft', 'in_progress', 'completed', 'archived', 'emergency')),
-    workflow_type VARCHAR(50) CHECK (workflow_type IN ('emergency', 'express', 'full_decide')),
-    current_phase INTEGER CHECK (current_phase BETWEEN 1 AND 6) DEFAULT 1,
-    decision_type VARCHAR(50) CHECK (decision_type IN ('vendor_selection', 'hiring', 'strategic', 'budget', 'compliance', 'clinical')),
-    urgency VARCHAR(20) CHECK (urgency IN ('low', 'normal', 'high', 'emergency')),
-    patient_impact VARCHAR(20) CHECK (patient_impact IN ('none', 'low', 'medium', 'high')),
-    budget_min DECIMAL(12,2),
-    budget_max DECIMAL(12,2),
-    regulatory_deadline TIMESTAMPTZ,
-    implementation_deadline TIMESTAMPTZ,
-    created_by UUID REFERENCES users(id) NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+-- Customer decisions for response workflows
+CREATE TABLE customer_decisions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+    created_by UUID NOT NULL REFERENCES team_members(id),
+
+    -- Customer Context
+    customer_name VARCHAR(255) NOT NULL,
+    customer_id VARCHAR(100),
+    customer_email VARCHAR(255),
+    customer_tier VARCHAR(20) DEFAULT 'standard'
+        CHECK (customer_tier IN ('basic', 'standard', 'premium', 'enterprise')),
+    customer_value DECIMAL(12,2),
+    relationship_duration_months INTEGER DEFAULT 0,
+
+    -- Decision Details
+    title VARCHAR(500) NOT NULL,
+    description TEXT NOT NULL,
+    decision_type VARCHAR(50) NOT NULL CHECK (decision_type IN (
+        'refund_request',
+        'billing_dispute',
+        'service_escalation',
+        'policy_exception',
+        'contract_modification',
+        'churn_prevention'
+    )),
+    urgency_level INTEGER NOT NULL DEFAULT 3 CHECK (urgency_level BETWEEN 1 AND 5),
+    financial_impact DECIMAL(12,2),
+
+    -- Workflow Status
+    status VARCHAR(20) DEFAULT 'created' CHECK (status IN (
+        'created',
+        'team_input',
+        'evaluating',
+        'resolved',
+        'cancelled'
+    )),
+    current_phase INTEGER DEFAULT 1 CHECK (current_phase BETWEEN 1 AND 6),
+    expected_resolution_date TIMESTAMP,
+    actual_resolution_date TIMESTAMP,
+
+    -- AI Analysis
+    ai_classification JSONB,
+    ai_recommendations JSONB,
+    ai_confidence_score DECIMAL(3,2),
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Decision criteria with AI suggestion tracking
+-- Decision criteria for customer response evaluation
 CREATE TABLE decision_criteria (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    decision_id UUID REFERENCES decisions(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID NOT NULL REFERENCES customer_decisions(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
     description TEXT,
-    weight DECIMAL(5,2) CHECK (weight >= 0 AND weight <= 100),
-    category VARCHAR(50) CHECK (category IN ('technical', 'financial', 'clinical', 'compliance', 'operational')),
-    measurement_type VARCHAR(20) CHECK (measurement_type IN ('qualitative', 'quantitative', 'binary')),
-    ai_suggested BOOLEAN DEFAULT FALSE,
-    confidence_score DECIMAL(3,2) CHECK (confidence_score >= 0 AND confidence_score <= 1),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    weight DECIMAL(3,2) DEFAULT 1.0 CHECK (weight BETWEEN 0.1 AND 5.0),
+    created_by UUID NOT NULL REFERENCES team_members(id),
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Decision options
-CREATE TABLE decision_options (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    decision_id UUID REFERENCES decisions(id) ON DELETE CASCADE,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    estimated_cost DECIMAL(12,2),
-    implementation_timeline VARCHAR(100),
-    vendor_info JSONB,
-    feasibility_assessment JSONB,
-    risk_factors TEXT[],
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Response options for customer issues
+CREATE TABLE response_options (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID NOT NULL REFERENCES customer_decisions(id) ON DELETE CASCADE,
+    title VARCHAR(500) NOT NULL,
+    description TEXT NOT NULL,
+    financial_cost DECIMAL(12,2) DEFAULT 0,
+    implementation_effort VARCHAR(20) DEFAULT 'medium'
+        CHECK (implementation_effort IN ('low', 'medium', 'high')),
+    risk_level VARCHAR(20) DEFAULT 'medium'
+        CHECK (risk_level IN ('low', 'medium', 'high')),
+    ai_generated BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES team_members(id),
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Anonymous evaluations (core feature)
+-- Anonymous evaluations for team input
 CREATE TABLE evaluations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    decision_id UUID REFERENCES decisions(id) ON DELETE CASCADE,
-    user_id UUID REFERENCES users(id) NOT NULL, -- For participation tracking only
-    overall_confidence DECIMAL(3,1) CHECK (overall_confidence >= 1 AND overall_confidence <= 10),
-    evaluation_notes TEXT,
-    submitted_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(decision_id, user_id) -- One evaluation per user per decision
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID NOT NULL REFERENCES customer_decisions(id) ON DELETE CASCADE,
+    evaluator_id UUID NOT NULL REFERENCES team_members(id),
+    option_id UUID NOT NULL REFERENCES response_options(id),
+    criteria_id UUID NOT NULL REFERENCES decision_criteria(id),
+    score INTEGER NOT NULL CHECK (score BETWEEN 1 AND 10),
+    confidence INTEGER DEFAULT 5 CHECK (confidence BETWEEN 1 AND 5),
+    anonymous_comment TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+
+    UNIQUE(decision_id, evaluator_id, option_id, criteria_id)
 );
 
--- Anonymous evaluation scores (separate for anonymity)
-CREATE TABLE evaluation_scores (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    evaluation_id UUID REFERENCES evaluations(id) ON DELETE CASCADE,
-    option_id UUID REFERENCES decision_options(id) NOT NULL,
-    criterion_id UUID REFERENCES decision_criteria(id) NOT NULL,
-    score DECIMAL(3,1) CHECK (score >= 1 AND score <= 10),
-    rationale TEXT, -- Required for extreme scores
-    confidence DECIMAL(3,1) CHECK (confidence >= 1 AND confidence <= 10),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Decision outcomes and customer satisfaction tracking
+CREATE TABLE decision_outcomes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID NOT NULL REFERENCES customer_decisions(id) ON DELETE CASCADE,
+    selected_option_id UUID NOT NULL REFERENCES response_options(id),
+    response_sent_at TIMESTAMP,
+    customer_satisfaction_score INTEGER CHECK (customer_satisfaction_score BETWEEN 1 AND 10),
+    escalation_occurred BOOLEAN DEFAULT false,
+    resolution_time_hours INTEGER,
+    follow_up_required BOOLEAN DEFAULT false,
+    follow_up_date TIMESTAMP,
+    outcome_notes TEXT,
+    financial_impact_actual DECIMAL(12,2),
+    customer_retained BOOLEAN,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
--- Conflicts detected in evaluations
-CREATE TABLE conflicts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    decision_id UUID REFERENCES decisions(id) ON DELETE CASCADE,
-    option_id UUID REFERENCES decision_options(id) NOT NULL,
-    criterion_id UUID REFERENCES decision_criteria(id) NOT NULL,
-    variance_score DECIMAL(5,2) NOT NULL,
-    conflict_level VARCHAR(20) CHECK (conflict_level IN ('low', 'medium', 'high', 'critical')),
-    resolution_status VARCHAR(20) CHECK (resolution_status IN ('unresolved', 'in_progress', 'resolved')),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+-- Authentication tokens
+CREATE TABLE auth_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES team_members(id) ON DELETE CASCADE,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
--- HIPAA-compliant audit trail
-CREATE TABLE audit_log (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id),
+-- Audit logs for customer response actions
+CREATE TABLE audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    decision_id UUID REFERENCES customer_decisions(id),
+    user_id UUID REFERENCES team_members(id),
     action VARCHAR(100) NOT NULL,
-    resource_id UUID,
-    resource_type VARCHAR(50),
     details JSONB,
     ip_address INET,
     user_agent TEXT,
-    timestamp TIMESTAMPTZ DEFAULT NOW(),
-    success BOOLEAN DEFAULT TRUE,
-    error_message TEXT
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Healthcare SSO sessions
-CREATE TABLE user_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    session_token VARCHAR(255) UNIQUE NOT NULL,
-    refresh_token VARCHAR(255) UNIQUE,
-    sso_provider VARCHAR(50),
-    expires_at TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    last_accessed TIMESTAMPTZ DEFAULT NOW()
+-- Performance indexes for customer response queries
+CREATE INDEX idx_customer_decisions_team_id ON customer_decisions(team_id);
+CREATE INDEX idx_customer_decisions_status ON customer_decisions(status);
+CREATE INDEX idx_customer_decisions_urgency ON customer_decisions(urgency_level, created_at);
+CREATE INDEX idx_customer_decisions_customer ON customer_decisions(customer_name, customer_tier);
+CREATE INDEX idx_evaluations_decision ON evaluations(decision_id);
+CREATE INDEX idx_team_members_team ON team_members(team_id);
+CREATE INDEX idx_audit_logs_decision ON audit_logs(decision_id, created_at);
+
+-- Customer response specific indexes
+CREATE INDEX idx_decisions_urgent ON customer_decisions(urgency_level, status)
+    WHERE urgency_level >= 4;
+CREATE INDEX idx_decisions_pending_evaluation ON customer_decisions(status, created_at)
+    WHERE status = 'team_input';
+CREATE INDEX idx_outcomes_satisfaction ON decision_outcomes(customer_satisfaction_score, created_at);
+
+-- Sample data for customer response platform
+-- Sample team
+INSERT INTO teams (id, name, company_name, industry) VALUES
+('550e8400-e29b-41d4-a716-446655440000', 'Customer Success Team', 'TechCorp Inc', 'SaaS');
+
+-- Sample team members
+INSERT INTO team_members (id, team_id, email, name, password_hash, role) VALUES
+('550e8400-e29b-41d4-a716-446655440001', '550e8400-e29b-41d4-a716-446655440000', 'sarah@techcorp.com', 'Sarah Johnson', '$2b$10$hash1', 'customer_success_manager'),
+('550e8400-e29b-41d4-a716-446655440002', '550e8400-e29b-41d4-a716-446655440000', 'mike@techcorp.com', 'Mike Chen', '$2b$10$hash2', 'support_manager'),
+('550e8400-e29b-41d4-a716-446655440003', '550e8400-e29b-41d4-a716-446655440000', 'lisa@techcorp.com', 'Lisa Rodriguez', '$2b$10$hash3', 'account_manager');
+
+-- Sample customer decision
+INSERT INTO customer_decisions (
+    id, team_id, created_by, customer_name, customer_email, customer_tier,
+    customer_value, title, description, decision_type, urgency_level
+) VALUES (
+    '550e8400-e29b-41d4-a716-446655440010',
+    '550e8400-e29b-41d4-a716-446655440000',
+    '550e8400-e29b-41d4-a716-446655440001',
+    'ABC Corporation',
+    'john@abccorp.com',
+    'enterprise',
+    120000.00,
+    'Refund Request for Service Outage',
+    'Customer demanding full refund due to 8-hour service outage affecting their business operations',
+    'refund_request',
+    4
 );
 
--- WebSocket connection tracking for real-time collaboration
-CREATE TABLE websocket_connections (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
-    connection_id VARCHAR(255) UNIQUE NOT NULL,
-    connected_at TIMESTAMPTZ DEFAULT NOW(),
-    last_ping TIMESTAMPTZ DEFAULT NOW(),
-    status VARCHAR(20) CHECK (status IN ('connected', 'disconnected')) DEFAULT 'connected'
-);
+-- Validation queries
+-- Verify schema creation
+-- SELECT table_name FROM information_schema.tables
+-- WHERE table_schema = 'public'
+-- ORDER BY table_name;
 
--- Indexes for performance optimization
-CREATE INDEX idx_teams_industry ON teams(industry);
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_team_members_team_id ON team_members(team_id);
-CREATE INDEX idx_team_members_user_id ON team_members(user_id);
-CREATE INDEX idx_decisions_team_id ON decisions(team_id);
-CREATE INDEX idx_decisions_status ON decisions(status);
-CREATE INDEX idx_decisions_workflow_type ON decisions(workflow_type);
-CREATE INDEX idx_decision_criteria_decision_id ON decision_criteria(decision_id);
-CREATE INDEX idx_decision_options_decision_id ON decision_options(decision_id);
-CREATE INDEX idx_evaluations_decision_id ON evaluations(decision_id);
-CREATE INDEX idx_evaluations_user_id ON evaluations(user_id);
-CREATE INDEX idx_evaluation_scores_evaluation_id ON evaluation_scores(evaluation_id);
-CREATE INDEX idx_evaluation_scores_option_criterion ON evaluation_scores(option_id, criterion_id);
-CREATE INDEX idx_conflicts_decision_id ON conflicts(decision_id);
-CREATE INDEX idx_audit_log_user_id ON audit_log(user_id);
-CREATE INDEX idx_audit_log_timestamp ON audit_log(timestamp);
-CREATE INDEX idx_user_sessions_user_id ON user_sessions(user_id);
-CREATE INDEX idx_user_sessions_session_token ON user_sessions(session_token);
-CREATE INDEX idx_websocket_connections_user_id ON websocket_connections(user_id);
-CREATE INDEX idx_websocket_connections_team_id ON websocket_connections(team_id);
+-- Check constraints
+-- SELECT conname, contype FROM pg_constraint
+-- WHERE conrelid = 'customer_decisions'::regclass;
 
--- Views for common healthcare queries
-CREATE VIEW evaluation_conflicts AS
-SELECT
-    es.option_id,
-    es.criterion_id,
-    do.name as option_name,
-    dc.name as criterion_name,
-    COUNT(*) as evaluation_count,
-    AVG(es.score) as mean_score,
-    STDDEV(es.score) as score_variance,
-    CASE
-        WHEN STDDEV(es.score) > 2.5 THEN 'high'
-        WHEN STDDEV(es.score) > 1.5 THEN 'medium'
-        WHEN STDDEV(es.score) > 0.5 THEN 'low'
-        ELSE 'none'
-    END as conflict_level
-FROM evaluation_scores es
-JOIN decision_options do ON es.option_id = do.id
-JOIN decision_criteria dc ON es.criterion_id = dc.id
-GROUP BY es.option_id, es.criterion_id, do.name, dc.name
-HAVING COUNT(*) >= 2; -- Minimum 2 evaluations for conflict detection
+-- Test relationships
+-- SELECT
+--     cd.title,
+--     tm.name as created_by,
+--     t.name as team_name
+-- FROM customer_decisions cd
+-- JOIN team_members tm ON cd.created_by = tm.id
+-- JOIN teams t ON cd.team_id = t.id;
 
--- Function for healthcare workflow determination
-CREATE OR REPLACE FUNCTION determine_workflow_type(
-    p_urgency VARCHAR,
-    p_patient_impact VARCHAR,
-    p_budget_max DECIMAL,
-    p_regulatory_deadline TIMESTAMPTZ
-) RETURNS VARCHAR AS $$
-BEGIN
-    -- Emergency criteria
-    IF p_urgency = 'emergency' OR
-       p_patient_impact = 'high' OR
-       (p_regulatory_deadline IS NOT NULL AND
-        p_regulatory_deadline - NOW() < INTERVAL '24 hours') THEN
-        RETURN 'emergency';
-    END IF;
-
-    -- Express criteria
-    IF p_budget_max < 10000 AND p_patient_impact = 'none' THEN
-        RETURN 'express';
-    END IF;
-
-    -- Default to full DECIDE workflow
-    RETURN 'full_decide';
-END;
-$$ LANGUAGE plpgsql;
-
--- Function to update team consensus levels
-CREATE OR REPLACE FUNCTION update_team_consensus(decision_id UUID)
-RETURNS DECIMAL AS $$
-DECLARE
-    total_members INTEGER;
-    completed_evaluations INTEGER;
-    consensus_level DECIMAL;
-BEGIN
-    -- Count total team members
-    SELECT COUNT(*) INTO total_members
-    FROM team_members tm
-    JOIN decisions d ON tm.team_id = d.team_id
-    WHERE d.id = decision_id;
-
-    -- Count completed evaluations
-    SELECT COUNT(*) INTO completed_evaluations
-    FROM evaluations e
-    WHERE e.decision_id = decision_id;
-
-    -- Calculate consensus level
-    IF total_members > 0 THEN
-        consensus_level := (completed_evaluations::DECIMAL / total_members::DECIMAL) * 100;
-    ELSE
-        consensus_level := 0;
-    END IF;
-
-    RETURN consensus_level;
-END;
-$$ LANGUAGE plpgsql;
-
--- Trigger to automatically detect conflicts after evaluation submission
-CREATE OR REPLACE FUNCTION detect_conflicts_trigger()
-RETURNS TRIGGER AS $$
-BEGIN
-    -- Insert conflicts for high variance scores
-    INSERT INTO conflicts (decision_id, option_id, criterion_id, variance_score, conflict_level)
-    SELECT
-        e.decision_id,
-        es.option_id,
-        es.criterion_id,
-        STDDEV(es.score),
-        CASE
-            WHEN STDDEV(es.score) > 2.5 THEN 'high'
-            WHEN STDDEV(es.score) > 1.5 THEN 'medium'
-            ELSE 'low'
-        END
-    FROM evaluation_scores es
-    JOIN evaluations e ON es.evaluation_id = e.id
-    WHERE e.decision_id = (SELECT decision_id FROM evaluations WHERE id = NEW.evaluation_id)
-    GROUP BY e.decision_id, es.option_id, es.criterion_id
-    HAVING COUNT(*) >= 2 AND STDDEV(es.score) > 1.5
-    ON CONFLICT DO NOTHING;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER evaluation_conflict_detection
-    AFTER INSERT ON evaluation_scores
-    FOR EACH ROW
-    EXECUTE FUNCTION detect_conflicts_trigger();
-
--- Healthcare compliance validation
-COMMENT ON TABLE teams IS 'Healthcare teams with HIPAA compliance settings';
-COMMENT ON TABLE audit_log IS 'HIPAA-compliant audit trail for all system actions';
-COMMENT ON TABLE evaluations IS 'Anonymous evaluations for conflict-free decision making';
-COMMENT ON COLUMN users.license_number IS 'Professional license for healthcare audit trails';
-COMMENT ON COLUMN decisions.patient_impact IS 'Patient safety impact assessment for healthcare workflows';
+-- Customer response platform specific comments
+COMMENT ON TABLE teams IS 'Customer-facing teams for response decision workflows';
+COMMENT ON TABLE team_members IS 'Team members with customer response roles and expertise';
+COMMENT ON TABLE customer_decisions IS 'Customer issue decisions requiring team input and AI classification';
+COMMENT ON TABLE evaluations IS 'Anonymous team evaluations preventing hierarchy bias';
+COMMENT ON TABLE decision_outcomes IS 'Customer satisfaction tracking and response outcome analytics';
+COMMENT ON COLUMN customer_decisions.ai_classification IS 'DeepSeek AI classification of customer issue type and urgency';
+COMMENT ON COLUMN customer_decisions.customer_value IS 'Annual customer value for decision context and prioritization';
+COMMENT ON COLUMN decision_outcomes.customer_satisfaction_score IS 'Post-resolution customer satisfaction for continuous improvement';

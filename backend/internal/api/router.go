@@ -18,7 +18,7 @@ func SetupRouter(db *database.DB, cfg *config.Config) *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	// CORS for healthcare frontend
+	// CORS for customer response platform frontend
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = cfg.CORSOrigins
 	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
@@ -38,107 +38,73 @@ func SetupRouter(db *database.DB, cfg *config.Config) *gin.Engine {
 		cfg.RefreshTokenExpiration,
 	)
 
-	// Initialize handlers
+	// Initialize handlers for customer response workflows
 	authHandler := handlers.NewAuthHandler(db, authService)
+	decisionsHandler := handlers.NewDecisionsHandler(db, authService)
+	evaluationsHandler := handlers.NewEvaluationsHandler(db, authService)
+	aiHandler := handlers.NewAIHandler(db, authService, cfg.DeepSeekAPIKey)
 	teamHandler := handlers.NewTeamHandler(db, authService)
-	decisionHandler := handlers.NewDecisionHandler(db, authService)
-	evaluationHandler := handlers.NewEvaluationHandler(db, authService)
-	conflictHandler := handlers.NewConflictHandler(db, authService)
-	complianceHandler := handlers.NewComplianceHandler(db, authService)
+	analyticsHandler := handlers.NewAnalyticsHandler(db, authService)
 	healthHandler := handlers.NewHealthHandler(db)
 
 	// Public routes
 	public := router.Group("/api/v1")
 	{
-		// Health check
+		// Health check for platform monitoring
 		public.GET("/health", healthHandler.HealthCheck)
 		public.HEAD("/health/ready", healthHandler.ReadinessProbe)
 
-		// Authentication
+		// Authentication endpoints for customer response teams
+		public.POST("/auth/register", authHandler.Register)
 		public.POST("/auth/login", authHandler.Login)
-		public.POST("/auth/refresh", authHandler.RefreshToken)
-		public.POST("/auth/sso/epic", authHandler.EpicSSO)
-		public.POST("/auth/sso/cerner", authHandler.CernerSSO)
 	}
 
-	// Protected routes
+	// Protected routes - customer response platform
 	protected := router.Group("/api/v1")
 	protected.Use(middleware.AuthRequired(authService))
 	{
-		// User management
-		protected.GET("/user/profile", authHandler.GetProfile)
-		protected.PUT("/user/profile", authHandler.UpdateProfile)
-		protected.POST("/auth/logout", authHandler.Logout)
-
-		// Team management
-		teams := protected.Group("/teams")
+		// Customer Decision Endpoints
+		decisions := protected.Group("/decisions")
 		{
-			teams.GET("", teamHandler.GetUserTeams)
-			teams.POST("", teamHandler.CreateTeam)
-			teams.GET("/:teamId", middleware.TeamMember(), teamHandler.GetTeam)
-			teams.PUT("/:teamId", middleware.TeamAdmin(), teamHandler.UpdateTeam)
-			teams.DELETE("/:teamId", middleware.TeamAdmin(), teamHandler.DeleteTeam)
+			decisions.GET("", decisionsHandler.GetTeamDecisions)
+			decisions.POST("", decisionsHandler.CreateDecision)
+			decisions.GET("/:id", decisionsHandler.GetDecision)
+			decisions.PUT("/:id", decisionsHandler.UpdateDecision)
+			decisions.DELETE("/:id", decisionsHandler.DeleteDecision)
 
-			// Team members
-			teams.GET("/:teamId/members", middleware.TeamMember(), teamHandler.GetTeamMembers)
-			teams.POST("/:teamId/members", middleware.TeamAdmin(), teamHandler.AddTeamMember)
-			teams.PUT("/:teamId/members/:userId", middleware.TeamAdmin(), teamHandler.UpdateTeamMember)
-			teams.DELETE("/:teamId/members/:userId", middleware.TeamAdmin(), teamHandler.RemoveTeamMember)
+			// Decision criteria management
+			decisions.PUT("/:id/criteria", decisionsHandler.UpdateCriteria)
+			decisions.GET("/:id/criteria", decisionsHandler.GetCriteria)
 
-			// Decisions
-			decisions := teams.Group("/:teamId/decisions")
-			decisions.Use(middleware.TeamMember())
-			{
-				decisions.GET("", decisionHandler.GetTeamDecisions)
-				decisions.POST("", decisionHandler.CreateDecision)
-				decisions.GET("/:decisionId", decisionHandler.GetDecision)
-				decisions.PUT("/:decisionId", decisionHandler.UpdateDecision)
-				decisions.DELETE("/:decisionId", decisionHandler.DeleteDecision)
+			// Response options management
+			decisions.PUT("/:id/options", decisionsHandler.UpdateOptions)
+			decisions.GET("/:id/options", decisionsHandler.GetOptions)
 
-				// Decision criteria
-				decisions.GET("/:decisionId/criteria", decisionHandler.GetDecisionCriteria)
-				decisions.POST("/:decisionId/criteria", decisionHandler.CreateCriterion)
-				decisions.PUT("/:decisionId/criteria/:criterionId", decisionHandler.UpdateCriterion)
-				decisions.DELETE("/:decisionId/criteria/:criterionId", decisionHandler.DeleteCriterion)
-
-				// Decision options
-				decisions.GET("/:decisionId/options", decisionHandler.GetDecisionOptions)
-				decisions.POST("/:decisionId/options", decisionHandler.CreateOption)
-				decisions.PUT("/:decisionId/options/:optionId", decisionHandler.UpdateOption)
-				decisions.DELETE("/:decisionId/options/:optionId", decisionHandler.DeleteOption)
-
-				// Anonymous evaluations
-				evaluations := decisions.Group("/:decisionId/evaluations")
-				{
-					evaluations.GET("", evaluationHandler.GetEvaluationStatus)
-					evaluations.POST("", evaluationHandler.SubmitEvaluation)
-					evaluations.GET("/summary", evaluationHandler.GetEvaluationSummary)
-					evaluations.GET("/export", evaluationHandler.ExportEvaluations)
-				}
-
-				// Conflict resolution
-				conflicts := decisions.Group("/:decisionId/conflicts")
-				{
-					conflicts.GET("", conflictHandler.GetConflicts)
-					conflicts.POST("", conflictHandler.InitiateResolution)
-					conflicts.GET("/:conflictId", conflictHandler.GetConflictDetails)
-					conflicts.PUT("/:conflictId/resolve", conflictHandler.ResolveConflict)
-				}
-			}
+			// Evaluation endpoints for anonymous team input
+			decisions.POST("/:id/evaluate", evaluationsHandler.SubmitEvaluation)
+			decisions.GET("/:id/results", evaluationsHandler.GetResults)
 		}
 
-		// Healthcare compliance
-		compliance := protected.Group("/compliance")
-		compliance.Use(middleware.Permission("view_analytics"))
+		// AI Integration Endpoints for customer issue classification
+		ai := protected.Group("/ai")
 		{
-			compliance.GET("/audit", complianceHandler.GetAuditReport)
-			compliance.POST("/audit/cleanup", complianceHandler.PerformRetentionCleanup)
-			compliance.GET("/health", complianceHandler.GetComplianceHealth)
+			ai.POST("/classify", aiHandler.ClassifyIssue)
+			ai.POST("/generate-options", aiHandler.GenerateOptions)
+		}
+
+		// Team Management Endpoints
+		team := protected.Group("/team")
+		{
+			team.GET("/members", teamHandler.GetMembers)
+			team.POST("/invite", teamHandler.InviteMember)
+		}
+
+		// Analytics Dashboard Endpoints
+		analytics := protected.Group("/analytics")
+		{
+			analytics.GET("/dashboard", analyticsHandler.GetDashboard)
 		}
 	}
-
-	// WebSocket endpoint for real-time collaboration
-	router.GET("/ws/:teamId", middleware.WebSocketAuth(authService), handlers.HandleWebSocket)
 
 	return router
 }

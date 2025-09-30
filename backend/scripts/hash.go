@@ -1,4 +1,4 @@
-package main
+package scripts
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func main() {
+func HashPassword() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run hash.go <password>")
 		os.Exit(1)
