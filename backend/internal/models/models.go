@@ -77,6 +77,15 @@ type CustomerDecision struct {
 	CustomerValue              *float64 `json:"customer_value,omitempty" db:"customer_value"`
 	RelationshipDurationMonths int      `json:"relationship_duration_months" db:"relationship_duration_months"`
 
+	// Enhanced Customer Context (Week 1 Migration)
+	CustomerTierDetailed string     `json:"customer_tier_detailed" db:"customer_tier_detailed"`
+	UrgencyLevelDetailed string     `json:"urgency_level_detailed" db:"urgency_level_detailed"`
+	CustomerImpactScope  string     `json:"customer_impact_scope" db:"customer_impact_scope"`
+	RelationshipHistory  *string    `json:"relationship_history,omitempty" db:"relationship_history"`
+	PreviousIssuesCount  int        `json:"previous_issues_count" db:"previous_issues_count"`
+	LastInteractionDate  *time.Time `json:"last_interaction_date,omitempty" db:"last_interaction_date"`
+	NPSScore             *int       `json:"nps_score,omitempty" db:"nps_score"`
+
 	// Decision Details
 	Title           string   `json:"title" db:"title"`
 	Description     string   `json:"description" db:"description"`
@@ -268,17 +277,27 @@ type AuthResponse struct {
 
 // CreateDecisionRequest represents decision creation request
 type CreateDecisionRequest struct {
-	CustomerName               string     `json:"customer_name" validate:"required"`
-	CustomerEmail              *string    `json:"customer_email,omitempty"`
-	CustomerTier               string     `json:"customer_tier" validate:"required"`
-	CustomerValue              *float64   `json:"customer_value,omitempty"`
-	RelationshipDurationMonths int        `json:"relationship_duration_months"`
-	Title                      string     `json:"title" validate:"required"`
-	Description                string     `json:"description" validate:"required"`
-	DecisionType               string     `json:"decision_type" validate:"required"`
-	UrgencyLevel               int        `json:"urgency_level" validate:"min=1,max=5"`
-	FinancialImpact            *float64   `json:"financial_impact,omitempty"`
-	ExpectedResolutionDate     *time.Time `json:"expected_resolution_date,omitempty"`
+	CustomerName               string   `json:"customer_name" validate:"required"`
+	CustomerEmail              *string  `json:"customer_email,omitempty"`
+	CustomerTier               string   `json:"customer_tier" validate:"required"`
+	CustomerValue              *float64 `json:"customer_value,omitempty"`
+	RelationshipDurationMonths int      `json:"relationship_duration_months"`
+
+	// Enhanced Customer Context (Week 1 Migration)
+	CustomerTierDetailed string     `json:"customer_tier_detailed,omitempty"`
+	UrgencyLevelDetailed string     `json:"urgency_level_detailed,omitempty"`
+	CustomerImpactScope  string     `json:"customer_impact_scope,omitempty"`
+	RelationshipHistory  *string    `json:"relationship_history,omitempty"`
+	PreviousIssuesCount  int        `json:"previous_issues_count,omitempty"`
+	LastInteractionDate  *time.Time `json:"last_interaction_date,omitempty"`
+	NPSScore             *int       `json:"nps_score,omitempty"`
+
+	Title                  string     `json:"title" validate:"required"`
+	Description            string     `json:"description" validate:"required"`
+	DecisionType           string     `json:"decision_type" validate:"required"`
+	UrgencyLevel           int        `json:"urgency_level" validate:"min=1,max=5"`
+	FinancialImpact        *float64   `json:"financial_impact,omitempty"`
+	ExpectedResolutionDate *time.Time `json:"expected_resolution_date,omitempty"`
 }
 
 // EvaluationRequest represents evaluation submission
@@ -312,6 +331,58 @@ type OptionScore struct {
 	Evaluators    int       `json:"evaluators"`
 	Consensus     float64   `json:"consensus"`
 	ConflictLevel string    `json:"conflict_level"`
+}
+
+// CustomerResponseType represents lookup table for response types
+type CustomerResponseType struct {
+	ID                         uuid.UUID `json:"id" db:"id"`
+	TypeCode                   string    `json:"type_code" db:"type_code"`
+	TypeName                   string    `json:"type_name" db:"type_name"`
+	Description                *string   `json:"description,omitempty" db:"description"`
+	TypicalResolutionTimeHours *int      `json:"typical_resolution_time_hours,omitempty" db:"typical_resolution_time_hours"`
+	RequiresEscalation         bool      `json:"requires_escalation" db:"requires_escalation"`
+	DefaultStakeholders        []string  `json:"default_stakeholders,omitempty" db:"default_stakeholders"`
+	AIClassificationKeywords   []string  `json:"ai_classification_keywords,omitempty" db:"ai_classification_keywords"`
+	CreatedAt                  time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt                  time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// OutcomeTracking represents comprehensive outcome tracking
+type OutcomeTracking struct {
+	ID         uuid.UUID  `json:"id" db:"id"`
+	DecisionID uuid.UUID  `json:"decision_id" db:"decision_id"`
+	OutcomeID  *uuid.UUID `json:"outcome_id,omitempty" db:"outcome_id"`
+
+	// Response Time Metrics
+	DecisionCreatedAt        time.Time  `json:"decision_created_at" db:"decision_created_at"`
+	FirstResponseAt          *time.Time `json:"first_response_at,omitempty" db:"first_response_at"`
+	ResolutionAt             *time.Time `json:"resolution_at,omitempty" db:"resolution_at"`
+	TimeToFirstResponseHours *float64   `json:"time_to_first_response_hours,omitempty" db:"time_to_first_response_hours"`
+	TimeToResolutionHours    *float64   `json:"time_to_resolution_hours,omitempty" db:"time_to_resolution_hours"`
+
+	// Customer Satisfaction Metrics
+	CustomerSatisfactionScore *int  `json:"customer_satisfaction_score,omitempty" db:"customer_satisfaction_score"`
+	NPSChange                 *int  `json:"nps_change,omitempty" db:"nps_change"`
+	CustomerRetained          *bool `json:"customer_retained,omitempty" db:"customer_retained"`
+	EscalationOccurred        bool  `json:"escalation_occurred" db:"escalation_occurred"`
+
+	// Decision Quality Metrics
+	TeamConsensusScore        *float64 `json:"team_consensus_score,omitempty" db:"team_consensus_score"`
+	AIAccuracyValidation      *bool    `json:"ai_accuracy_validation,omitempty" db:"ai_accuracy_validation"`
+	OptionEffectivenessRating *int     `json:"option_effectiveness_rating,omitempty" db:"option_effectiveness_rating"`
+
+	// Learning Data
+	WhatWorkedWell   *string `json:"what_worked_well,omitempty" db:"what_worked_well"`
+	WhatCouldImprove *string `json:"what_could_improve,omitempty" db:"what_could_improve"`
+	LessonsLearned   *string `json:"lessons_learned,omitempty" db:"lessons_learned"`
+
+	// Financial Impact
+	EstimatedFinancialImpact *float64 `json:"estimated_financial_impact,omitempty" db:"estimated_financial_impact"`
+	ActualFinancialImpact    *float64 `json:"actual_financial_impact,omitempty" db:"actual_financial_impact"`
+	ROIRatio                 *float64 `json:"roi_ratio,omitempty" db:"roi_ratio"`
+
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 // Analytics DTOs

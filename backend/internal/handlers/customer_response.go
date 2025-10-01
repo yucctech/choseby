@@ -143,6 +143,20 @@ func (h *DecisionsHandler) CreateDecision(c *gin.Context) {
 		return
 	}
 
+	// Set default values for enhanced customer context if not provided
+	customerTierDetailed := req.CustomerTierDetailed
+	if customerTierDetailed == "" {
+		customerTierDetailed = "standard"
+	}
+	urgencyLevelDetailed := req.UrgencyLevelDetailed
+	if urgencyLevelDetailed == "" {
+		urgencyLevelDetailed = "medium"
+	}
+	customerImpactScope := req.CustomerImpactScope
+	if customerImpactScope == "" {
+		customerImpactScope = "single_user"
+	}
+
 	// Create decision
 	decision := models.CustomerDecision{
 		ID:                         uuid.New(),
@@ -153,30 +167,42 @@ func (h *DecisionsHandler) CreateDecision(c *gin.Context) {
 		CustomerTier:               req.CustomerTier,
 		CustomerValue:              req.CustomerValue,
 		RelationshipDurationMonths: req.RelationshipDurationMonths,
-		Title:                      req.Title,
-		Description:                req.Description,
-		DecisionType:               req.DecisionType,
-		UrgencyLevel:               req.UrgencyLevel,
-		FinancialImpact:            req.FinancialImpact,
-		Status:                     "created",
-		CurrentPhase:               1,
-		ExpectedResolutionDate:     req.ExpectedResolutionDate,
-		CreatedAt:                  time.Now(),
-		UpdatedAt:                  time.Now(),
+		// Enhanced Customer Context (Week 1 Migration)
+		CustomerTierDetailed:   customerTierDetailed,
+		UrgencyLevelDetailed:   urgencyLevelDetailed,
+		CustomerImpactScope:    customerImpactScope,
+		RelationshipHistory:    req.RelationshipHistory,
+		PreviousIssuesCount:    req.PreviousIssuesCount,
+		LastInteractionDate:    req.LastInteractionDate,
+		NPSScore:               req.NPSScore,
+		Title:                  req.Title,
+		Description:            req.Description,
+		DecisionType:           req.DecisionType,
+		UrgencyLevel:           req.UrgencyLevel,
+		FinancialImpact:        req.FinancialImpact,
+		Status:                 "created",
+		CurrentPhase:           1,
+		ExpectedResolutionDate: req.ExpectedResolutionDate,
+		CreatedAt:              time.Now(),
+		UpdatedAt:              time.Now(),
 	}
 
 	// Insert decision into database
 	_, err = h.db.NamedExecContext(c, `
 		INSERT INTO customer_decisions (
 			id, team_id, created_by, customer_name, customer_email, customer_tier,
-			customer_value, relationship_duration_months, title, description,
-			decision_type, urgency_level, financial_impact, status, current_phase,
-			expected_resolution_date, created_at, updated_at
+			customer_value, relationship_duration_months,
+			customer_tier_detailed, urgency_level_detailed, customer_impact_scope,
+			relationship_history, previous_issues_count, last_interaction_date, nps_score,
+			title, description, decision_type, urgency_level, financial_impact,
+			status, current_phase, expected_resolution_date, created_at, updated_at
 		) VALUES (
 			:id, :team_id, :created_by, :customer_name, :customer_email, :customer_tier,
-			:customer_value, :relationship_duration_months, :title, :description,
-			:decision_type, :urgency_level, :financial_impact, :status, :current_phase,
-			:expected_resolution_date, :created_at, :updated_at
+			:customer_value, :relationship_duration_months,
+			:customer_tier_detailed, :urgency_level_detailed, :customer_impact_scope,
+			:relationship_history, :previous_issues_count, :last_interaction_date, :nps_score,
+			:title, :description, :decision_type, :urgency_level, :financial_impact,
+			:status, :current_phase, :expected_resolution_date, :created_at, :updated_at
 		)
 	`, decision)
 	if err != nil {
