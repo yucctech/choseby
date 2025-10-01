@@ -347,6 +347,44 @@ type CustomerResponseType struct {
 	UpdatedAt                  time.Time `json:"updated_at" db:"updated_at"`
 }
 
+// ResponseDraft represents AI-generated customer response with versioning
+type ResponseDraft struct {
+	ID                          uuid.UUID  `json:"id" db:"id"`
+	DecisionID                  uuid.UUID  `json:"decision_id" db:"decision_id"`
+	DraftContent                string     `json:"draft_content" db:"draft_content"`
+	Tone                        string     `json:"tone" db:"tone"`
+	KeyPoints                   []string   `json:"key_points" db:"key_points"`
+	EstimatedSatisfactionImpact *string    `json:"estimated_satisfaction_impact,omitempty" db:"estimated_satisfaction_impact"`
+	FollowUpRecommendations     []string   `json:"follow_up_recommendations" db:"follow_up_recommendations"`
+	Version                     int        `json:"version" db:"version"`
+	CreatedBy                   uuid.UUID  `json:"created_by" db:"created_by"`
+	CreatedAt                   time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt                   time.Time  `json:"updated_at" db:"updated_at"`
+	GenerationMetadata          *string    `json:"generation_metadata,omitempty" db:"generation_metadata"`
+	BasedOnOptionID             *uuid.UUID `json:"based_on_option_id,omitempty" db:"based_on_option_id"`
+	TeamConsensusScore          *float64   `json:"team_consensus_score,omitempty" db:"team_consensus_score"`
+}
+
+// GenerateResponseDraftRequest represents request to generate customer response draft
+type GenerateResponseDraftRequest struct {
+	DecisionOutcome          DecisionOutcomeInput          `json:"decision_outcome" validate:"required"`
+	CommunicationPreferences CommunicationPreferencesInput `json:"communication_preferences" validate:"required"`
+	RegenerateFromVersion    *int                          `json:"regenerate_from_version,omitempty"`
+}
+
+// DecisionOutcomeInput represents the team's decision
+type DecisionOutcomeInput struct {
+	SelectedOptionID string `json:"selected_option_id" validate:"required"`
+	Reasoning        string `json:"reasoning" validate:"required"`
+}
+
+// CommunicationPreferencesInput specifies tone and channel
+type CommunicationPreferencesInput struct {
+	Tone    string `json:"tone" validate:"required,oneof=professional_empathetic formal_corporate friendly_apologetic concise_factual"`
+	Channel string `json:"channel" validate:"required,oneof=email phone chat meeting"`
+	Urgency string `json:"urgency" validate:"required,oneof=same_day next_day weekly"`
+}
+
 // OutcomeTracking represents comprehensive outcome tracking
 type OutcomeTracking struct {
 	ID         uuid.UUID  `json:"id" db:"id"`

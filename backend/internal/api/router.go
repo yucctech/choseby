@@ -43,6 +43,8 @@ func SetupRouter(db *database.DB, cfg *config.Config) *gin.Engine {
 	decisionsHandler := handlers.NewDecisionsHandler(db, authService)
 	evaluationsHandler := handlers.NewEvaluationsHandler(db, authService)
 	aiHandler := handlers.NewAIHandler(db, authService, cfg.DeepSeekAPIKey)
+	responseDraftHandler := handlers.NewResponseDraftHandler(db, authService, cfg.DeepSeekAPIKey)
+	outcomeHandler := handlers.NewOutcomeHandler(db, authService)
 	teamHandler := handlers.NewTeamHandler(db, authService)
 	analyticsHandler := handlers.NewAnalyticsHandler(db, authService)
 	healthHandler := handlers.NewHealthHandler(db)
@@ -91,6 +93,16 @@ func SetupRouter(db *database.DB, cfg *config.Config) *gin.Engine {
 			ai.POST("/classify", aiHandler.ClassifyIssue)
 			ai.POST("/generate-options", aiHandler.GenerateOptions)
 		}
+
+		// Response Draft Endpoints for AI-generated customer responses
+		decisions.POST("/:id/generate-response-draft", responseDraftHandler.GenerateResponseDraft)
+		decisions.GET("/:id/drafts", responseDraftHandler.GetDrafts)
+
+		// Outcome Tracking Endpoints for AI learning and continuous improvement
+		decisions.POST("/:id/outcome", outcomeHandler.RecordOutcome)
+		decisions.GET("/:id/outcome", outcomeHandler.GetOutcome)
+		decisions.POST("/:id/ai-feedback", outcomeHandler.RecordAIFeedback)
+		decisions.GET("/:id/ai-feedback", outcomeHandler.GetAIFeedback)
 
 		// Team Management Endpoints
 		team := protected.Group("/team")

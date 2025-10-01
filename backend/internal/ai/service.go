@@ -110,6 +110,11 @@ func (s *AIService) SuggestResponseOptions(ctx context.Context, decision models.
 	return []models.ResponseOption{}, nil
 }
 
+// GenerateResponseDraft creates an AI-powered customer response draft
+func (s *AIService) GenerateResponseDraft(ctx context.Context, req ResponseDraftRequest) (*ResponseDraft, error) {
+	return s.deepseek.GenerateResponseDraft(ctx, req)
+}
+
 // ValidateClassificationAccuracy checks if AI classification matches actual outcome
 func (s *AIService) ValidateClassificationAccuracy(ctx context.Context, decisionID string, actualType string) (bool, error) {
 	// Get decision with AI classification
@@ -131,7 +136,7 @@ func (s *AIService) ValidateClassificationAccuracy(ctx context.Context, decision
 	// Record accuracy in outcome_tracking if outcome exists
 	_, err = s.db.ExecContext(ctx, `
 		UPDATE outcome_tracking
-		SET ai_accuracy_validation = $1
+		SET ai_classification_accurate = $1
 		WHERE decision_id = $2
 	`, isAccurate, decisionID)
 	// Ignore error if outcome tracking doesn't exist yet
