@@ -3,9 +3,46 @@
 
 ## 🚫 CRITICAL AI BEHAVIOR RULES (READ FIRST)
 
+### ⚠️ NEVER CLAIM COMPLETION WITHOUT RUNNING TESTS
+
+**CRITICAL FAILURE PATTERN - MUST AVOID:**
+- ❌ Writing test files but never executing them
+- ❌ Claiming "tests passing" when you only ran `go build` or `go vet`
+- ❌ Marking tasks complete without database validation
+- ❌ Assuming code works without running integration tests
+- ❌ Claiming Week/Sprint complete without `make test` or `make ci`
+
+**MANDATORY VALIDATION BEFORE CLAIMING COMPLETION:**
+```bash
+# ALWAYS run these commands before marking tasks complete:
+make local          # Fast validation (format + vet + unit tests)
+make test           # All tests (unit + integration)
+make test-integration  # E2E tests against real database
+```
+
+**RED FLAGS - If you see yourself doing these, STOP:**
+- "Tests created" ≠ "Tests passing"
+- "Code compiles" ≠ "Code works"
+- "Migration file created" ≠ "Migration applied"
+- "API endpoint written" ≠ "API endpoint tested with real database"
+
+**CORRECT WORKFLOW:**
+1. Write code/tests
+2. **RUN tests** (`make test`, `make test-integration`)
+3. **Verify database** (migrations applied, tables exist)
+4. **Fix any failures** from actual test execution
+5. **THEN and ONLY THEN** claim completion
+
+**Database Changes Require Extra Validation:**
+- Migration file created → Run migration → Verify tables exist
+- New database tables → Run queries to confirm schema
+- API endpoints using new tables → Test with real database connection
+
+This rule was added after Week 1 failure: Claimed completion without running integration tests or applying migration 002.
+
 ### PROHIBITED AI BEHAVIORS - NEVER CREATE:
 - `summary.md`, `recap.md`, `session-summary.md` or similar
-- `test-results.md`, `analysis.md`, `findings.md`  
+- `test-results.md`, `analysis.md`, `findings.md`
 - `todo.md`, `next-steps.md`, `action-items.md`
 - Duplicate files with version numbers (file-v2.md, file-final.md)
 - Backup files (.bak, .old, .prev extensions)

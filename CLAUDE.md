@@ -16,11 +16,28 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 Every new Claude Code session MUST read these files in this exact sequence:
 
-1. **`docs/SESSION_CONTEXT.md`** - ESSENTIAL AI behavior rules and project guidelines
+1. **`docs/SESSION_CONTEXT.md`** - ⚠️ **CRITICAL AI BEHAVIOR RULES** - NEVER claim completion without running tests
 2. **`docs/technical/implementation-summary.md`** - **"CLAUDE CODE START HERE"** - Complete implementation guide
 3. **`docs/technical/api-specifications.md`** - Complete REST API endpoint specifications
 4. **`docs/technical/database-schema.md`** - PostgreSQL schema ready for implementation
 5. **`docs/technical/frontend-components.md`** - React component specifications with customer response workflows
+
+### ⚠️ NEVER CLAIM COMPLETION WITHOUT RUNNING TESTS
+
+**Before marking ANY task complete, you MUST:**
+```bash
+cd backend
+make local  # Fast validation (10 sec)
+make test   # All tests (unit + integration)
+```
+
+**RED FLAGS - Stop if you see yourself doing these:**
+- ❌ "Tests created" ≠ "Tests passing"
+- ❌ "Code compiles" (`go build`) ≠ "Code works" (`make test`)
+- ❌ "Migration file created" ≠ "Migration applied to database"
+- ❌ Marking Week/Sprint complete without running integration tests
+
+**This rule was added after Week 1 failure: Claimed completion without running tests or applying migration.**
 
 ---
 

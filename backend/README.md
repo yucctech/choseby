@@ -17,6 +17,20 @@ make run
 
 ## Testing (Important!)
 
+### ⚠️ CRITICAL: NEVER Claim Completion Without Running Tests
+
+**MANDATORY before marking any task complete:**
+```bash
+make local  # Format check + go vet + unit tests (10 sec)
+make test   # All tests (unit + integration)
+```
+
+**RED FLAGS - If you see these, you're doing it wrong:**
+- ❌ "Tests created" ≠ "Tests passing"
+- ❌ "Code compiles" ≠ "Code works"
+- ❌ "Migration file created" ≠ "Migration applied to database"
+- ❌ `go build` succeeds ≠ `make test` passes
+
 **Before every push:**
 ```bash
 make local  # Format check + go vet + fast tests (10 sec)
