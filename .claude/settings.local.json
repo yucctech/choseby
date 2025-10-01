@@ -23,7 +23,9 @@
       "Bash(psql:*)",
       "WebSearch",
       "WebFetch(domain:mickey.dev)",
-      "WebFetch(domain:stackoverflow.com)"
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(make test-integration:*)",
+      "mcp__supabase__get_project"
     ],
     "deny": [],
     "ask": []

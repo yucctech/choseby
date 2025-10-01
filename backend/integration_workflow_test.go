@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -383,13 +384,15 @@ func TestCustomerResponseWorkflowE2E(t *testing.T) {
 // Helper functions
 
 func getTestDatabaseURL() string {
-	// Use environment variable or default test database
-	// For real integration tests, use a test database instance
+	// Read from environment variable for real integration tests
+	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
+		return dbURL
+	}
+	// Fallback to localhost for local testing
 	return "postgres://test:test@localhost:5432/choseby_test?sslmode=disable"
 }
 
 func getTestDeepSeekAPIKey() string {
-	// Return empty string to skip AI tests if not configured
-	// For real integration tests, set DEEPSEEK_API_KEY environment variable
-	return ""
+	// Read from environment variable for AI integration tests
+	return os.Getenv("DEEPSEEK_API_KEY")
 }
