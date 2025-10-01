@@ -1,0 +1,170 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - cyclop
+    - dupl
+    - durationcheck
+    - errname
+    - errorlint
+    - exhaustive
+    - exportloopref
+    - forbidigo
+    - funlen
+    - gci
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gofmt
+    - gofumpt
+    - goheader
+    - goimports
+    - gomnd
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - grouper
+    - importas
+    - interfacebloat
+    - ireturn
+    - lll
+    - maintidx
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - stylecheck
+    - tagliatelle
+    - tenv
+    - testableexamples
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+    - wrapcheck
+
+linters-settings:
+  cyclop:
+    max-complexity: 15
+
+  funlen:
+    lines: 100
+    statements: 50
+
+  gocognit:
+    min-complexity: 20
+
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+
+  gocyclo:
+    min-complexity: 15
+
+  gomnd:
+    settings:
+      mnd:
+        checks:
+          - argument
+          - case
+          - condition
+          - operation
+          - return
+          - assign
+
+  gosec:
+    excludes:
+      - G104 # Audit errors not checked
+      - G204 # Subprocess launched with variable
+
+  lll:
+    line-length: 120
+
+  misspell:
+    locale: US
+
+  nolintlint:
+    require-explanation: true
+    require-specific: true
+
+  revive:
+    rules:
+      - name: exported
+        disabled: false
+
+  tagliatelle:
+    case:
+      rules:
+        json: snake
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gomnd
+        - goconst
+        - funlen
+        - gocyclo
+        - gocognit
+        - cyclop
+
+    - path: main\.go
+      linters:
+        - gochecknoglobals
+
+    - path: internal/models/
+      linters:
+        - lll
+        - tagliatelle
+
+  max-issues-per-linter: 0
+  max-same-issues: 0

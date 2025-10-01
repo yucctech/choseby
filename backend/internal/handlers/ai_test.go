@@ -57,9 +57,9 @@ func (s *AIHandlerTestSuite) TestClassifyIssue_NoAPIKey() {
 
 	req := map[string]interface{}{
 		"customer_context": map[string]interface{}{
-			"name":                       "Acme Corp",
-			"tier":                       "enterprise",
-			"value":                      50000.0,
+			"name":                         "Acme Corp",
+			"tier":                         "enterprise",
+			"value":                        50000.0,
 			"relationship_duration_months": 24,
 		},
 		"issue_description": "Customer requesting full refund due to service issues",
@@ -90,9 +90,9 @@ func (s *AIHandlerTestSuite) TestClassifyIssue_NotAuthenticated() {
 
 	req := map[string]interface{}{
 		"customer_context": map[string]interface{}{
-			"name":                       "Acme Corp",
-			"tier":                       "enterprise",
-			"value":                      50000.0,
+			"name":                         "Acme Corp",
+			"tier":                         "enterprise",
+			"value":                        50000.0,
 			"relationship_duration_months": 24,
 		},
 		"issue_description": "Customer requesting full refund due to service issues",
@@ -147,9 +147,9 @@ func (s *AIHandlerTestSuite) TestClassifyIssue_ValidRequest() {
 	// Test with valid request - will return fallback since we can't mock external API
 	req := map[string]interface{}{
 		"customer_context": map[string]interface{}{
-			"name":                       "Acme Corp",
-			"tier":                       "enterprise",
-			"value":                      50000.0,
+			"name":                         "Acme Corp",
+			"tier":                         "enterprise",
+			"value":                        50000.0,
 			"relationship_duration_months": 24,
 		},
 		"issue_description": "Customer requesting full refund due to service issues",

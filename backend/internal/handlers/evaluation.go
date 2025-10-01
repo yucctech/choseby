@@ -292,10 +292,10 @@ func (h *EvaluationHandler) GetEvaluationSummary(c *gin.Context) {
 	// Audit log could be implemented here for compliance
 
 	response := map[string]interface{}{
-		"decision_id":        decisionID,
-		"aggregate_results":  aggregateResults,
-		"conflicts":          conflicts,
-		"summary_generated":  "anonymous aggregation only",
+		"decision_id":       decisionID,
+		"aggregate_results": aggregateResults,
+		"conflicts":         conflicts,
+		"summary_generated": "anonymous aggregation only",
 	}
 
 	c.JSON(http.StatusOK, response)

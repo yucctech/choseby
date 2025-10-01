@@ -102,8 +102,8 @@ func (h *EvaluationsHandler) SubmitEvaluation(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":            "Evaluation submitted successfully",
-		"evaluations_count":  evaluationCount,
+		"message":           "Evaluation submitted successfully",
+		"evaluations_count": evaluationCount,
 	})
 }
 
@@ -208,7 +208,7 @@ func (h *EvaluationsHandler) GetResults(c *gin.Context) {
 		// Calculate consensus level (inverse of variance, normalized)
 		consensus := 1.0
 		if analysis.ScoreVariance > 0 {
-			consensus = math.Max(0, 1.0 - (analysis.ScoreVariance / 10.0))
+			consensus = math.Max(0, 1.0-(analysis.ScoreVariance/10.0))
 		}
 
 		// Determine conflict level based on variance
@@ -316,11 +316,11 @@ func (h *EvaluationsHandler) GetEvaluationStatus(c *gin.Context) {
 	participationRate := float64(completedEvaluations) / float64(totalMembers)
 
 	status := gin.H{
-		"user_evaluated":       userEvaluated,
-		"total_members":        totalMembers,
+		"user_evaluated":        userEvaluated,
+		"total_members":         totalMembers,
 		"completed_evaluations": completedEvaluations,
-		"participation_rate":   participationRate,
-		"can_view_results":     completedEvaluations > 0,
+		"participation_rate":    participationRate,
+		"can_view_results":      completedEvaluations > 0,
 	}
 
 	c.JSON(http.StatusOK, status)

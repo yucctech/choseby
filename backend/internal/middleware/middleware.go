@@ -76,13 +76,13 @@ func RateLimit(limit, window int) gin.HandlerFunc {
 		elapsed := time.Since(b.lastRefill).Seconds()
 		tokensToAdd := int(elapsed * float64(limit) / float64(window))
 		if tokensToAdd > 0 {
-			b.tokens = min(limit, b.tokens + tokensToAdd)
+			b.tokens = min(limit, b.tokens+tokensToAdd)
 			b.lastRefill = time.Now()
 		}
 
 		if b.tokens <= 0 {
 			c.JSON(http.StatusTooManyRequests, gin.H{
-				"error": "rate_limit_exceeded",
+				"error":   "rate_limit_exceeded",
 				"message": "Too many requests. Please try again later.",
 			})
 			c.Abort()

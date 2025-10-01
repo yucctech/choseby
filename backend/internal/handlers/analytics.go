@@ -216,8 +216,8 @@ func (h *AnalyticsHandler) GetDashboard(c *gin.Context) {
 
 	// Calculate team efficiency metrics
 	var teamEfficiency struct {
-		AvgEvaluationTime    float64 `json:"avg_evaluation_time" db:"avg_evaluation_time"`
-		ParticipationRate    float64 `json:"participation_rate" db:"participation_rate"`
+		AvgEvaluationTime      float64 `json:"avg_evaluation_time" db:"avg_evaluation_time"`
+		ParticipationRate      float64 `json:"participation_rate" db:"participation_rate"`
 		ConflictResolutionRate float64 `json:"conflict_resolution_rate" db:"conflict_resolution_rate"`
 	}
 
@@ -261,26 +261,26 @@ func (h *AnalyticsHandler) GetDashboard(c *gin.Context) {
 
 	// Build final analytics response
 	analytics := models.DashboardAnalytics{
-		Period:                    period,
-		TotalDecisions:            totalDecisions,
+		Period:                     period,
+		TotalDecisions:             totalDecisions,
 		AverageResolutionTimeHours: avgResolutionHours,
-		CustomerSatisfactionAvg:   avgCustomerSatisfaction,
-		DecisionTypes:             decisionTypesMap,
-		UrgencyBreakdown:          urgencyBreakdownMap,
+		CustomerSatisfactionAvg:    avgCustomerSatisfaction,
+		DecisionTypes:              decisionTypesMap,
+		UrgencyBreakdown:           urgencyBreakdownMap,
 	}
 
 	// Extended analytics response with additional metrics
 	response := gin.H{
-		"analytics":         analytics,
-		"recent_activity":   recentActivity,
-		"weekly_trends":     weeklyTrends,
-		"customer_tiers":    customerTiers,
-		"team_efficiency":   teamEfficiency,
+		"analytics":       analytics,
+		"recent_activity": recentActivity,
+		"weekly_trends":   weeklyTrends,
+		"customer_tiers":  customerTiers,
+		"team_efficiency": teamEfficiency,
 		"summary": gin.H{
-			"total_decisions":       totalDecisions,
-			"avg_resolution_hours":  avgResolutionHours,
-			"avg_satisfaction":      avgCustomerSatisfaction,
-			"participation_rate":    teamEfficiency.ParticipationRate,
+			"total_decisions":      totalDecisions,
+			"avg_resolution_hours": avgResolutionHours,
+			"avg_satisfaction":     avgCustomerSatisfaction,
+			"participation_rate":   teamEfficiency.ParticipationRate,
 		},
 	}
 
@@ -307,12 +307,12 @@ func (h *AnalyticsHandler) GetTeamPerformance(c *gin.Context) {
 
 	// Individual team member performance
 	type MemberPerformance struct {
-		MemberID         uuid.UUID `json:"member_id" db:"member_id"`
-		Name             string    `json:"name" db:"name"`
-		Role             string    `json:"role" db:"role"`
-		EvaluationsCount int       `json:"evaluations_count" db:"evaluations_count"`
-		AvgResponseTime  float64   `json:"avg_response_time" db:"avg_response_time"`
-		ParticipationRate float64  `json:"participation_rate" db:"participation_rate"`
+		MemberID          uuid.UUID `json:"member_id" db:"member_id"`
+		Name              string    `json:"name" db:"name"`
+		Role              string    `json:"role" db:"role"`
+		EvaluationsCount  int       `json:"evaluations_count" db:"evaluations_count"`
+		AvgResponseTime   float64   `json:"avg_response_time" db:"avg_response_time"`
+		ParticipationRate float64   `json:"participation_rate" db:"participation_rate"`
 	}
 
 	var memberPerformance []MemberPerformance

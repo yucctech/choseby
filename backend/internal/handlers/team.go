@@ -45,13 +45,13 @@ func (h *TeamHandler) GetMembers(c *gin.Context) {
 
 	// Get all active team members
 	type TeamMemberInfo struct {
-		ID                      uuid.UUID `json:"id" db:"id"`
-		Name                    string    `json:"name" db:"name"`
-		Email                   string    `json:"email" db:"email"`
-		Role                    string    `json:"role" db:"role"`
-		EscalationAuthority     int       `json:"escalation_authority" db:"escalation_authority"`
-		IsActive                bool      `json:"is_active" db:"is_active"`
-		CreatedAt               time.Time `json:"created_at" db:"created_at"`
+		ID                  uuid.UUID `json:"id" db:"id"`
+		Name                string    `json:"name" db:"name"`
+		Email               string    `json:"email" db:"email"`
+		Role                string    `json:"role" db:"role"`
+		EscalationAuthority int       `json:"escalation_authority" db:"escalation_authority"`
+		IsActive            bool      `json:"is_active" db:"is_active"`
+		CreatedAt           time.Time `json:"created_at" db:"created_at"`
 	}
 
 	var members []TeamMemberInfo

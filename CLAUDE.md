@@ -77,6 +77,10 @@ Every new Claude Code session MUST read these files in this exact sequence:
   - React component specifications for customer response workflows
 - **Implementation Guide**: `docs/technical/implementation-summary.md`
   - Step-by-step development roadmap for Claude Code
+- **Testing Infrastructure**: `backend/README.md#testing`
+  - Modern Go testing setup with GitHub Actions CI/CD
+  - Run `make local` before pushing code (10 second validation)
+  - 22.5% baseline coverage → 60%+ target after customers
 
 ---
 
@@ -206,10 +210,23 @@ Every new Claude Code session MUST read these files in this exact sequence:
 - Customer response outcome tracking for satisfaction correlation and improvement
 
 ### **Testing Strategy**
-- Customer response workflow end-to-end testing
-- Customer response team role-based access testing
-- Customer response AI integration testing with DeepSeek API
-- Customer response platform performance testing under team load
+**Before ANY code push:**
+```bash
+cd backend
+make local  # 10 seconds - format, vet, fast tests
+```
+
+**Testing infrastructure:**
+- GitHub Actions runs automatically on push (safety net)
+- golangci-lint with 50+ code quality checks
+- 22.5% baseline coverage → 60%+ target
+- See `backend/README.md#testing` for complete workflow
+
+**Philosophy:**
+- Fast local validation (`make local`) before push
+- GitHub Actions as mandatory enforcement
+- Focus on feature delivery, not perfect coverage
+- Increase test quality as customer base grows
 
 ---
 

@@ -2,8 +2,8 @@ package scripts
 
 import (
 	"fmt"
-	"os"
 	"golang.org/x/crypto/bcrypt"
+	"os"
 )
 
 func HashPassword() {

@@ -46,33 +46,33 @@ func (s *TestSuite) TearDownTest() {
 func MockTeamMember() map[string]interface{} {
 	return map[string]interface{}{
 		"id":                   "550e8400-e29b-41d4-a716-446655440000",
-		"team_id":             "550e8400-e29b-41d4-a716-446655440001",
-		"name":                "John Doe",
-		"email":               "john@example.com",
-		"role":                "customer_success_manager",
+		"team_id":              "550e8400-e29b-41d4-a716-446655440001",
+		"name":                 "John Doe",
+		"email":                "john@example.com",
+		"role":                 "customer_success_manager",
 		"escalation_authority": 5,
-		"created_at":          time.Now(),
+		"created_at":           time.Now(),
 	}
 }
 
 // MockCustomerDecision creates test customer decision data
 func MockCustomerDecision() map[string]interface{} {
 	return map[string]interface{}{
-		"id":             "550e8400-e29b-41d4-a716-446655440002",
-		"team_id":        "550e8400-e29b-41d4-a716-446655440001",
-		"customer_name":  "Acme Corp",
-		"decision_type":  "refund_request",
-		"urgency_level":  4,
-		"status":         "created",
-		"current_phase":  1,
-		"created_at":     time.Now(),
+		"id":            "550e8400-e29b-41d4-a716-446655440002",
+		"team_id":       "550e8400-e29b-41d4-a716-446655440001",
+		"customer_name": "Acme Corp",
+		"decision_type": "refund_request",
+		"urgency_level": 4,
+		"status":        "created",
+		"current_phase": 1,
+		"created_at":    time.Now(),
 	}
 }
 
 // MockEvaluation creates test evaluation data
 func MockEvaluation() map[string]interface{} {
 	return map[string]interface{}{
-		"id":                  "550e8400-e29b-41d4-a716-446655440003",
+		"id":                 "550e8400-e29b-41d4-a716-446655440003",
 		"decision_id":        "550e8400-e29b-41d4-a716-446655440002",
 		"user_id":            "550e8400-e29b-41d4-a716-446655440000",
 		"overall_confidence": 4,

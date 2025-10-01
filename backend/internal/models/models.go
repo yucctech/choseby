@@ -1,10 +1,10 @@
 package models
 
 import (
-	"time"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -23,18 +23,18 @@ type Team struct {
 
 // TeamMember represents a customer response team member
 type TeamMember struct {
-	ID                        uuid.UUID            `json:"id" db:"id"`
-	TeamID                    uuid.UUID            `json:"team_id" db:"team_id"`
-	Email                     string               `json:"email" db:"email"`
-	Name                      string               `json:"name" db:"name"`
-	PasswordHash              string               `json:"-" db:"password_hash"`
-	Role                      string               `json:"role" db:"role"`
-	ExpertiseAreas            []string             `json:"expertise_areas,omitempty" db:"expertise_areas"`
-	EscalationAuthority       int                  `json:"escalation_authority" db:"escalation_authority"`
-	NotificationPreferences   NotificationPrefs    `json:"notification_preferences" db:"notification_preferences"`
-	IsActive                  bool                 `json:"is_active" db:"is_active"`
-	CreatedAt                 time.Time            `json:"created_at" db:"created_at"`
-	UpdatedAt                 time.Time            `json:"updated_at" db:"updated_at"`
+	ID                      uuid.UUID         `json:"id" db:"id"`
+	TeamID                  uuid.UUID         `json:"team_id" db:"team_id"`
+	Email                   string            `json:"email" db:"email"`
+	Name                    string            `json:"name" db:"name"`
+	PasswordHash            string            `json:"-" db:"password_hash"`
+	Role                    string            `json:"role" db:"role"`
+	ExpertiseAreas          []string          `json:"expertise_areas,omitempty" db:"expertise_areas"`
+	EscalationAuthority     int               `json:"escalation_authority" db:"escalation_authority"`
+	NotificationPreferences NotificationPrefs `json:"notification_preferences" db:"notification_preferences"`
+	IsActive                bool              `json:"is_active" db:"is_active"`
+	CreatedAt               time.Time         `json:"created_at" db:"created_at"`
+	UpdatedAt               time.Time         `json:"updated_at" db:"updated_at"`
 }
 
 // NotificationPrefs represents notification preferences
@@ -65,38 +65,38 @@ func (n *NotificationPrefs) Scan(value interface{}) error {
 
 // CustomerDecision represents a customer response decision
 type CustomerDecision struct {
-	ID                       uuid.UUID      `json:"id" db:"id"`
-	TeamID                   uuid.UUID      `json:"team_id" db:"team_id"`
-	CreatedBy                uuid.UUID      `json:"created_by" db:"created_by"`
+	ID        uuid.UUID `json:"id" db:"id"`
+	TeamID    uuid.UUID `json:"team_id" db:"team_id"`
+	CreatedBy uuid.UUID `json:"created_by" db:"created_by"`
 
 	// Customer Context
-	CustomerName             string         `json:"customer_name" db:"customer_name"`
-	CustomerID               *string        `json:"customer_id,omitempty" db:"customer_id"`
-	CustomerEmail            *string        `json:"customer_email,omitempty" db:"customer_email"`
-	CustomerTier             string         `json:"customer_tier" db:"customer_tier"`
-	CustomerValue            *float64       `json:"customer_value,omitempty" db:"customer_value"`
-	RelationshipDurationMonths int          `json:"relationship_duration_months" db:"relationship_duration_months"`
+	CustomerName               string   `json:"customer_name" db:"customer_name"`
+	CustomerID                 *string  `json:"customer_id,omitempty" db:"customer_id"`
+	CustomerEmail              *string  `json:"customer_email,omitempty" db:"customer_email"`
+	CustomerTier               string   `json:"customer_tier" db:"customer_tier"`
+	CustomerValue              *float64 `json:"customer_value,omitempty" db:"customer_value"`
+	RelationshipDurationMonths int      `json:"relationship_duration_months" db:"relationship_duration_months"`
 
 	// Decision Details
-	Title                    string         `json:"title" db:"title"`
-	Description              string         `json:"description" db:"description"`
-	DecisionType             string         `json:"decision_type" db:"decision_type"`
-	UrgencyLevel             int            `json:"urgency_level" db:"urgency_level"`
-	FinancialImpact          *float64       `json:"financial_impact,omitempty" db:"financial_impact"`
+	Title           string   `json:"title" db:"title"`
+	Description     string   `json:"description" db:"description"`
+	DecisionType    string   `json:"decision_type" db:"decision_type"`
+	UrgencyLevel    int      `json:"urgency_level" db:"urgency_level"`
+	FinancialImpact *float64 `json:"financial_impact,omitempty" db:"financial_impact"`
 
 	// Workflow Status
-	Status                   string         `json:"status" db:"status"`
-	CurrentPhase             int            `json:"current_phase" db:"current_phase"`
-	ExpectedResolutionDate   *time.Time     `json:"expected_resolution_date,omitempty" db:"expected_resolution_date"`
-	ActualResolutionDate     *time.Time     `json:"actual_resolution_date,omitempty" db:"actual_resolution_date"`
+	Status                 string     `json:"status" db:"status"`
+	CurrentPhase           int        `json:"current_phase" db:"current_phase"`
+	ExpectedResolutionDate *time.Time `json:"expected_resolution_date,omitempty" db:"expected_resolution_date"`
+	ActualResolutionDate   *time.Time `json:"actual_resolution_date,omitempty" db:"actual_resolution_date"`
 
 	// AI Analysis
-	AIClassification         *AIClassification `json:"ai_classification,omitempty" db:"ai_classification"`
-	AIRecommendations        *AIRecommendations `json:"ai_recommendations,omitempty" db:"ai_recommendations"`
-	AIConfidenceScore        *float64       `json:"ai_confidence_score,omitempty" db:"ai_confidence_score"`
+	AIClassification  *AIClassification  `json:"ai_classification,omitempty" db:"ai_classification"`
+	AIRecommendations *AIRecommendations `json:"ai_recommendations,omitempty" db:"ai_recommendations"`
+	AIConfidenceScore *float64           `json:"ai_confidence_score,omitempty" db:"ai_confidence_score"`
 
-	CreatedAt                time.Time      `json:"created_at" db:"created_at"`
-	UpdatedAt                time.Time      `json:"updated_at" db:"updated_at"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 // AIClassification represents AI analysis of customer issue
@@ -176,16 +176,16 @@ type DecisionCriterion struct {
 
 // ResponseOption represents a customer response option
 type ResponseOption struct {
-	ID                    uuid.UUID `json:"id" db:"id"`
-	DecisionID           uuid.UUID `json:"decision_id" db:"decision_id"`
-	Title                string    `json:"title" db:"title"`
-	Description          string    `json:"description" db:"description"`
-	FinancialCost        float64   `json:"financial_cost" db:"financial_cost"`
-	ImplementationEffort string    `json:"implementation_effort" db:"implementation_effort"`
-	RiskLevel            string    `json:"risk_level" db:"risk_level"`
-	AIGenerated          bool      `json:"ai_generated" db:"ai_generated"`
+	ID                   uuid.UUID  `json:"id" db:"id"`
+	DecisionID           uuid.UUID  `json:"decision_id" db:"decision_id"`
+	Title                string     `json:"title" db:"title"`
+	Description          string     `json:"description" db:"description"`
+	FinancialCost        float64    `json:"financial_cost" db:"financial_cost"`
+	ImplementationEffort string     `json:"implementation_effort" db:"implementation_effort"`
+	RiskLevel            string     `json:"risk_level" db:"risk_level"`
+	AIGenerated          bool       `json:"ai_generated" db:"ai_generated"`
 	CreatedBy            *uuid.UUID `json:"created_by,omitempty" db:"created_by"`
-	CreatedAt            time.Time `json:"created_at" db:"created_at"`
+	CreatedAt            time.Time  `json:"created_at" db:"created_at"`
 }
 
 // Evaluation represents team member evaluation
@@ -203,20 +203,20 @@ type Evaluation struct {
 
 // DecisionOutcome represents the result and customer satisfaction
 type DecisionOutcome struct {
-	ID                         uuid.UUID  `json:"id" db:"id"`
-	DecisionID                 uuid.UUID  `json:"decision_id" db:"decision_id"`
-	SelectedOptionID           uuid.UUID  `json:"selected_option_id" db:"selected_option_id"`
-	ResponseSentAt             *time.Time `json:"response_sent_at,omitempty" db:"response_sent_at"`
-	CustomerSatisfactionScore  *int       `json:"customer_satisfaction_score,omitempty" db:"customer_satisfaction_score"`
-	EscalationOccurred         bool       `json:"escalation_occurred" db:"escalation_occurred"`
-	ResolutionTimeHours        *int       `json:"resolution_time_hours,omitempty" db:"resolution_time_hours"`
-	FollowUpRequired           bool       `json:"follow_up_required" db:"follow_up_required"`
-	FollowUpDate               *time.Time `json:"follow_up_date,omitempty" db:"follow_up_date"`
-	OutcomeNotes               *string    `json:"outcome_notes,omitempty" db:"outcome_notes"`
-	FinancialImpactActual      *float64   `json:"financial_impact_actual,omitempty" db:"financial_impact_actual"`
-	CustomerRetained           *bool      `json:"customer_retained,omitempty" db:"customer_retained"`
-	CreatedAt                  time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt                  time.Time  `json:"updated_at" db:"updated_at"`
+	ID                        uuid.UUID  `json:"id" db:"id"`
+	DecisionID                uuid.UUID  `json:"decision_id" db:"decision_id"`
+	SelectedOptionID          uuid.UUID  `json:"selected_option_id" db:"selected_option_id"`
+	ResponseSentAt            *time.Time `json:"response_sent_at,omitempty" db:"response_sent_at"`
+	CustomerSatisfactionScore *int       `json:"customer_satisfaction_score,omitempty" db:"customer_satisfaction_score"`
+	EscalationOccurred        bool       `json:"escalation_occurred" db:"escalation_occurred"`
+	ResolutionTimeHours       *int       `json:"resolution_time_hours,omitempty" db:"resolution_time_hours"`
+	FollowUpRequired          bool       `json:"follow_up_required" db:"follow_up_required"`
+	FollowUpDate              *time.Time `json:"follow_up_date,omitempty" db:"follow_up_date"`
+	OutcomeNotes              *string    `json:"outcome_notes,omitempty" db:"outcome_notes"`
+	FinancialImpactActual     *float64   `json:"financial_impact_actual,omitempty" db:"financial_impact_actual"`
+	CustomerRetained          *bool      `json:"customer_retained,omitempty" db:"customer_retained"`
+	CreatedAt                 time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt                 time.Time  `json:"updated_at" db:"updated_at"`
 }
 
 // AuthToken represents authentication tokens
@@ -244,12 +244,12 @@ type AuditLog struct {
 
 // RegisterRequest represents team registration request
 type RegisterRequest struct {
-	Email     string `json:"email" validate:"required,email"`
-	Name      string `json:"name" validate:"required"`
-	Password  string `json:"password" validate:"required,min=8"`
-	TeamName  string `json:"team_name" validate:"required"`
-	Company   string `json:"company" validate:"required"`
-	Role      string `json:"role" validate:"required"`
+	Email    string `json:"email" validate:"required,email"`
+	Name     string `json:"name" validate:"required"`
+	Password string `json:"password" validate:"required,min=8"`
+	TeamName string `json:"team_name" validate:"required"`
+	Company  string `json:"company" validate:"required"`
+	Role     string `json:"role" validate:"required"`
 }
 
 // LoginRequest represents login request
@@ -296,12 +296,12 @@ type EvaluationScore struct {
 
 // EvaluationResults represents analysis results
 type EvaluationResults struct {
-	OptionScores       []OptionScore `json:"option_scores"`
-	ParticipationRate  float64       `json:"participation_rate"`
-	CompletedBy        []string      `json:"completed_by"`
-	PendingFrom        []string      `json:"pending_from"`
-	RecommendedOption  *uuid.UUID    `json:"recommended_option,omitempty"`
-	TeamConsensus      float64       `json:"team_consensus"`
+	OptionScores      []OptionScore `json:"option_scores"`
+	ParticipationRate float64       `json:"participation_rate"`
+	CompletedBy       []string      `json:"completed_by"`
+	PendingFrom       []string      `json:"pending_from"`
+	RecommendedOption *uuid.UUID    `json:"recommended_option,omitempty"`
+	TeamConsensus     float64       `json:"team_consensus"`
 }
 
 type OptionScore struct {
@@ -316,10 +316,10 @@ type OptionScore struct {
 
 // Analytics DTOs
 type DashboardAnalytics struct {
-	Period                    string            `json:"period"`
-	TotalDecisions            int               `json:"total_decisions"`
-	AverageResolutionTimeHours float64          `json:"average_resolution_time_hours"`
-	CustomerSatisfactionAvg   float64           `json:"customer_satisfaction_avg"`
-	DecisionTypes             map[string]int    `json:"decision_types"`
-	UrgencyBreakdown          map[string]int    `json:"urgency_breakdown"`
+	Period                     string         `json:"period"`
+	TotalDecisions             int            `json:"total_decisions"`
+	AverageResolutionTimeHours float64        `json:"average_resolution_time_hours"`
+	CustomerSatisfactionAvg    float64        `json:"customer_satisfaction_avg"`
+	DecisionTypes              map[string]int `json:"decision_types"`
+	UrgencyBreakdown           map[string]int `json:"urgency_breakdown"`
 }

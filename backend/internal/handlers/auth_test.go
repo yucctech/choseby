@@ -176,7 +176,7 @@ func (s *AuthHandlerTestSuite) TestLogin_Success() {
 	// Mock user lookup
 	rows := sqlmock.NewRows([]string{"id", "team_id", "name", "email", "password_hash", "role"}).
 		AddRow("550e8400-e29b-41d4-a716-446655440000", "550e8400-e29b-41d4-a716-446655440001",
-			   "John Doe", "test@example.com", "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", "customer_success_manager")
+			"John Doe", "test@example.com", "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", "customer_success_manager")
 
 	s.Mock.ExpectQuery(regexp.QuoteMeta(`SELECT id, team_id, name, email, password_hash, role FROM team_members WHERE email = $1`)).
 		WithArgs("test@example.com").

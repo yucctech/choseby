@@ -241,10 +241,10 @@ func (h *DecisionsHandler) GetDecision(c *gin.Context) {
 
 	// Get evaluations (anonymized)
 	type AnonymousEvaluation struct {
-		OptionID     uuid.UUID `json:"option_id" db:"option_id"`
-		CriteriaID   uuid.UUID `json:"criteria_id" db:"criteria_id"`
-		Score        int       `json:"score" db:"score"`
-		EvaluatorRole string   `json:"evaluator_role" db:"evaluator_role"`
+		OptionID      uuid.UUID `json:"option_id" db:"option_id"`
+		CriteriaID    uuid.UUID `json:"criteria_id" db:"criteria_id"`
+		Score         int       `json:"score" db:"score"`
+		EvaluatorRole string    `json:"evaluator_role" db:"evaluator_role"`
 	}
 
 	var evaluations []AnonymousEvaluation

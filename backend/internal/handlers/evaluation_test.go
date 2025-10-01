@@ -116,12 +116,12 @@ func (s *EvaluationHandlerTestSuite) TestSubmitEvaluation_Success() {
 	// Mock evaluation scores insertion
 	s.Mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO evaluation_scores`)).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), req.Evaluations[0].OptionID, req.Evaluations[0].CriteriaID,
-			   req.Evaluations[0].Score, req.Evaluations[0].Comment, req.Evaluations[0].Confidence).
+			req.Evaluations[0].Score, req.Evaluations[0].Comment, req.Evaluations[0].Confidence).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	s.Mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO evaluation_scores`)).
 		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), req.Evaluations[1].OptionID, req.Evaluations[1].CriteriaID,
-			   req.Evaluations[1].Score, req.Evaluations[1].Comment, req.Evaluations[1].Confidence).
+			req.Evaluations[1].Score, req.Evaluations[1].Comment, req.Evaluations[1].Confidence).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	s.Mock.ExpectCommit()

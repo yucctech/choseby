@@ -37,10 +37,10 @@ func NewAIHandler(db *database.DB, authService *auth.AuthService, apiKey string)
 
 // DeepSeek API structures
 type DeepSeekRequest struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
-	MaxTokens int      `json:"max_tokens"`
-	Temperature float64 `json:"temperature"`
+	Model       string    `json:"model"`
+	Messages    []Message `json:"messages"`
+	MaxTokens   int       `json:"max_tokens"`
+	Temperature float64   `json:"temperature"`
 }
 
 type Message struct {
@@ -79,10 +79,10 @@ func (h *AIHandler) ClassifyIssue(c *gin.Context) {
 
 	type ClassifyRequest struct {
 		CustomerContext struct {
-			Name                   string  `json:"name" validate:"required"`
-			Tier                   string  `json:"tier" validate:"required"`
-			Value                  float64 `json:"value"`
-			RelationshipDurationMonths int `json:"relationship_duration_months"`
+			Name                       string  `json:"name" validate:"required"`
+			Tier                       string  `json:"tier" validate:"required"`
+			Value                      float64 `json:"value"`
+			RelationshipDurationMonths int     `json:"relationship_duration_months"`
 		} `json:"customer_context" validate:"required"`
 		IssueDescription string   `json:"issue_description" validate:"required"`
 		TeamRoles        []string `json:"team_roles" validate:"required"`
@@ -129,7 +129,7 @@ Focus on customer retention, relationship value, and urgency based on the issue 
 	classification, err := h.callDeepSeekAPI(prompt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "AI classification failed",
+			"error":    "AI classification failed",
 			"fallback": h.getFallbackClassification(req),
 		})
 		return
@@ -157,10 +157,10 @@ func (h *AIHandler) GenerateOptions(c *gin.Context) {
 
 	type GenerateOptionsRequest struct {
 		DecisionContext struct {
-			CustomerName   string  `json:"customer_name" validate:"required"`
-			CustomerTier   string  `json:"customer_tier" validate:"required"`
-			DecisionType   string  `json:"decision_type" validate:"required"`
-			Description    string  `json:"description" validate:"required"`
+			CustomerName    string  `json:"customer_name" validate:"required"`
+			CustomerTier    string  `json:"customer_tier" validate:"required"`
+			DecisionType    string  `json:"decision_type" validate:"required"`
+			Description     string  `json:"description" validate:"required"`
 			FinancialImpact float64 `json:"financial_impact"`
 		} `json:"decision_context" validate:"required"`
 		Criteria []struct {
@@ -213,7 +213,7 @@ Focus on balancing customer satisfaction, cost control, and long-term relationsh
 	optionsResponse, err := h.callDeepSeekForOptions(prompt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "AI option generation failed",
+			"error":    "AI option generation failed",
 			"fallback": h.getFallbackOptions(req.DecisionContext.DecisionType),
 		})
 		return

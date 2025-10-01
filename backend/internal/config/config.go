@@ -15,14 +15,14 @@ type Config struct {
 	DatabasePoolSize int
 
 	// JWT
-	JWTSecret             string
-	JWTExpiration         int
+	JWTSecret              string
+	JWTExpiration          int
 	RefreshTokenExpiration int
 
 	// AI Integration
-	DeepSeekAPIKey    string
-	DeepSeekAPIURL    string
-	AIRequestTimeout  int
+	DeepSeekAPIKey   string
+	DeepSeekAPIURL   string
+	AIRequestTimeout int
 
 	// API Configuration
 	APIRateLimit  int
@@ -70,14 +70,14 @@ func Load() *Config {
 		DatabasePoolSize: getEnvInt("DATABASE_POOL_SIZE", 20),
 
 		// JWT
-		JWTSecret:             jwtSecret,
-		JWTExpiration:         getEnvInt("JWT_EXPIRATION", 3600),
+		JWTSecret:              jwtSecret,
+		JWTExpiration:          getEnvInt("JWT_EXPIRATION", 3600),
 		RefreshTokenExpiration: getEnvInt("REFRESH_TOKEN_EXPIRATION", 604800),
 
 		// AI Integration
-		DeepSeekAPIKey:    deepSeekAPIKey,
-		DeepSeekAPIURL:    getEnv("DEEPSEEK_API_URL", "https://api.deepseek.com/v1"),
-		AIRequestTimeout:  getEnvInt("AI_REQUEST_TIMEOUT", 30),
+		DeepSeekAPIKey:   deepSeekAPIKey,
+		DeepSeekAPIURL:   getEnv("DEEPSEEK_API_URL", "https://api.deepseek.com/v1"),
+		AIRequestTimeout: getEnvInt("AI_REQUEST_TIMEOUT", 30),
 
 		// API Configuration
 		APIRateLimit:  getEnvInt("API_RATE_LIMIT", 1000),

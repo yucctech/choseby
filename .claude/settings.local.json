@@ -12,7 +12,11 @@
       "mcp__supabase__list_tables",
       "mcp__supabase__execute_sql",
       "Bash(python:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Add modern Go testing infrastructure\n\nAdd professional testing setup following industry best practices:\n\nTESTING INFRASTRUCTURE:\n- GitHub Actions CI/CD with PostgreSQL service\n- golangci-lint with 50+ code quality checks\n- Security scanning with gosec\n- Automatic coverage tracking (22.5% baseline)\n\nDEVELOPER EXPERIENCE:\n- Professional Makefile with fast validation\n- ''make local'' - 10 second check before push\n- All testing documentation in backend/README.md\n- Zero configuration required on GitHub\n\nPRAGMATIC MVP APPROACH:\n- Optional git hooks for fast feedback\n- Mandatory GitHub Actions as safety net\n- Focus on shipping features, not perfect tests\n- 15% minimum coverage → 60%+ target after customers\n\nCost: $0/month (GitHub Actions free tier)\n\nThis balances MVP speed with production-grade safety.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(make fmt:*)",
+      "Bash(gofmt:*)"
     ],
     "deny": [],
     "ask": []

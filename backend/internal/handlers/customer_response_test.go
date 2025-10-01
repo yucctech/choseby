@@ -112,8 +112,8 @@ func (s *CustomerResponseHandlerTestSuite) TestCreateDecision_Success() {
 	// Mock decision creation
 	s.Mock.ExpectExec(regexp.QuoteMeta(`INSERT INTO customer_decisions`)).
 		WithArgs(sqlmock.AnyArg(), teamID, sqlmock.AnyArg(), "Acme Corp", "refund_request",
-			   "Customer requesting full refund due to service issues", 4, "created", 1,
-			   "enterprise", 50000.0, 24, 5000.0, sqlmock.AnyArg()).
+			"Customer requesting full refund due to service issues", 4, "created", 1,
+			"enterprise", 50000.0, 24, 5000.0, sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	reqBody, _ := json.Marshal(req)
