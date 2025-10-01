@@ -24,16 +24,47 @@ make local  # Format check + go vet + fast tests (10 sec)
 
 **GitHub Actions runs automatically** on every push as safety net.
 
+### Test Types & Organization
+
+**Go uses idiomatic `*_test.go` files alongside source code:**
+
+```
+backend/
+├── integration_workflow_test.go          # E2E tests (build tag: integration)
+├── performance_benchmark_test.go         # Benchmarks (build tag: integration)
+├── internal/
+│   ├── handlers/
+│   │   ├── auth.go
+│   │   ├── auth_test.go                  # Unit tests (no tag, runs by default)
+│   │   ├── customer_response.go
+│   │   └── customer_response_test.go
+│   └── database/
+│       ├── database.go
+│       └── database_test.go
+```
+
+**Build Tags for Test Separation:**
+- **Unit tests**: No build tag → run by default with `make test-unit`
+- **Integration tests**: `//go:build integration` → run with `make test-integration`
+- **Both syntaxes used** for Go 1.17+ compatibility:
+  ```go
+  //go:build integration
+  // +build integration
+  ```
+
 ### Common Commands
 
 ```bash
-make help          # Show all commands
-make local         # Quick validation before push ⭐
-make test          # Run all tests
-make test-coverage # View HTML coverage report
-make lint          # Run linter (50+ checks)
-make fmt           # Auto-format code
-make ci            # Full validation (matches GitHub Actions)
+make help           # Show all commands
+make local          # Quick validation before push ⭐
+make test           # Run all tests (unit + integration)
+make test-unit      # Fast unit tests only
+make test-integration  # Slow E2E tests only
+make test-coverage  # View HTML coverage report
+make benchmark      # Run performance benchmarks
+make lint           # Run linter (50+ checks)
+make fmt            # Auto-format code
+make ci             # Full validation (matches GitHub Actions)
 ```
 
 ### When Tests Fail
@@ -61,6 +92,7 @@ git push
 - **Target:** 15% minimum (MVP) → 60%+ (production)
 - **Focus:** Ship features first, improve coverage gradually
 - **Strategy:** Fast local feedback (`make local`) + mandatory GitHub Actions
+- **Test Organization:** Go-idiomatic scattered `*_test.go` files (NOT separate `test/` folder)
 
 ## Architecture
 
@@ -88,8 +120,7 @@ backend/
 │   ├── database/              # DB connection
 │   ├── auth/                  # Authentication
 │   └── middleware/            # HTTP middleware
-├── Makefile                   # Dev commands
-└── TESTING_QUICK_START.md     # Testing guide
+└── Makefile                   # Dev commands
 ```
 
 ## Environment Variables
