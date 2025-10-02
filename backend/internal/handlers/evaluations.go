@@ -182,8 +182,11 @@ func (h *EvaluationsHandler) GetResults(c *gin.Context) {
 			ro.title as option_title,
 			COALESCE(AVG(e.score::float), 0) as avg_score,
 			COALESCE(
-				SUM(e.score::float * dc.weight) / NULLIF(SUM(dc.weight), 0),
-				AVG(e.score::float)
+				COALESCE(
+					SUM(e.score::float * dc.weight) / NULLIF(SUM(dc.weight), 0),
+					AVG(e.score::float)
+				),
+				0
 			) as weighted_score,
 			COUNT(DISTINCT e.evaluator_id) as evaluators,
 			COALESCE(VARIANCE(e.score::float), 0) as score_variance
@@ -195,7 +198,7 @@ func (h *EvaluationsHandler) GetResults(c *gin.Context) {
 		ORDER BY weighted_score DESC
 	`, decisionID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate results"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to calculate results", "details": err.Error()})
 		return
 	}
 

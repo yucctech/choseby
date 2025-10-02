@@ -16,11 +16,13 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 Every new Claude Code session MUST read these files in this exact sequence:
 
-1. **`docs/SESSION_CONTEXT.md`** - ⚠️ **CRITICAL AI BEHAVIOR RULES** - NEVER claim completion without running tests
-2. **`docs/technical/implementation-summary.md`** - **"CLAUDE CODE START HERE"** - Complete implementation guide
-3. **`docs/technical/api-specifications.md`** - Complete REST API endpoint specifications
-4. **`docs/technical/database-schema.md`** - PostgreSQL schema ready for implementation
-5. **`docs/technical/frontend-components.md`** - React component specifications with customer response workflows
+1. **`.claude/session-start.md`** - ⚠️ **MANDATORY FIRST READ** - Session start procedure & verification requirements
+2. **`.claude/completion-checklist.md`** - ⚠️ **MANDATORY VERIFICATION SYSTEM** - Prevents false completion claims
+3. **`docs/SESSION_CONTEXT.md`** - ⚠️ **CRITICAL AI BEHAVIOR RULES** - NEVER claim completion without running tests
+4. **`docs/technical/implementation-summary.md`** - **"CLAUDE CODE START HERE"** - Complete implementation guide
+5. **`docs/technical/api-specifications.md`** - Complete REST API endpoint specifications
+6. **`docs/technical/database-schema.md`** - PostgreSQL schema ready for implementation
+7. **`docs/technical/frontend-components.md`** - React component specifications with customer response workflows
 
 ### ⚠️ NEVER CLAIM COMPLETION WITHOUT RUNNING TESTS
 

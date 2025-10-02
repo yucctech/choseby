@@ -332,7 +332,7 @@ func (h *DecisionsHandler) UpdateCriteria(c *gin.Context) {
 	// Delete existing criteria
 	_, err = h.db.ExecContext(c, `DELETE FROM decision_criteria WHERE decision_id = $1`, decisionID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update criteria"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update criteria", "details": err.Error()})
 		return
 	}
 
@@ -354,7 +354,7 @@ func (h *DecisionsHandler) UpdateCriteria(c *gin.Context) {
 			VALUES (:id, :decision_id, :name, :description, :weight, :created_by, :created_at)
 		`, criterion)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create criterion"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create criterion", "details": err.Error()})
 			return
 		}
 
