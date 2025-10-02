@@ -56,14 +56,7 @@ func (s *AIHandlerTestSuite) TestClassifyIssue_NoAPIKey() {
 	router.POST("/ai/classify", handlerNoKey.ClassifyIssue)
 
 	req := map[string]interface{}{
-		"customer_context": map[string]interface{}{
-			"name":                         "Acme Corp",
-			"tier":                         "enterprise",
-			"value":                        50000.0,
-			"relationship_duration_months": 24,
-		},
-		"issue_description": "Customer requesting full refund due to service issues",
-		"team_roles":        []string{"customer_success_manager", "support_manager"},
+		"decisionId": "550e8400-e29b-41d4-a716-446655440001",
 	}
 
 	reqBody, _ := json.Marshal(req)
@@ -89,14 +82,7 @@ func (s *AIHandlerTestSuite) TestClassifyIssue_NotAuthenticated() {
 	router.POST("/ai/classify", s.Handler.ClassifyIssue)
 
 	req := map[string]interface{}{
-		"customer_context": map[string]interface{}{
-			"name":                         "Acme Corp",
-			"tier":                         "enterprise",
-			"value":                        50000.0,
-			"relationship_duration_months": 24,
-		},
-		"issue_description": "Customer requesting full refund due to service issues",
-		"team_roles":        []string{"customer_success_manager", "support_manager"},
+		"decisionId": "550e8400-e29b-41d4-a716-446655440001",
 	}
 
 	reqBody, _ := json.Marshal(req)
@@ -146,14 +132,7 @@ func (s *AIHandlerTestSuite) TestClassifyIssue_ValidationError() {
 func (s *AIHandlerTestSuite) TestClassifyIssue_ValidRequest() {
 	// Test with valid request - will return fallback since we can't mock external API
 	req := map[string]interface{}{
-		"customer_context": map[string]interface{}{
-			"name":                         "Acme Corp",
-			"tier":                         "enterprise",
-			"value":                        50000.0,
-			"relationship_duration_months": 24,
-		},
-		"issue_description": "Customer requesting full refund due to service issues",
-		"team_roles":        []string{"customer_success_manager", "support_manager"},
+		"decisionId": "550e8400-e29b-41d4-a716-446655440001",
 	}
 
 	reqBody, _ := json.Marshal(req)

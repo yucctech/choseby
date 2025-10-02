@@ -34,14 +34,17 @@ func (h *AIHandler) ClassifyIssue(c *gin.Context) {
 		return
 	}
 
-	decisionID := c.Param("decisionId")
-	if decisionID == "" {
+	var req struct {
+		DecisionID string `json:"decisionId" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Decision ID required"})
 		return
 	}
 
 	// Use the AI service to enhance the decision
-	classification, recommendations, err := h.aiService.EnhanceDecisionWithAI(c.Request.Context(), decisionID)
+	classification, recommendations, err := h.aiService.EnhanceDecisionWithAI(c.Request.Context(), req.DecisionID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "AI classification failed",
@@ -65,7 +68,16 @@ func (h *AIHandler) GenerateOptions(c *gin.Context) {
 		return
 	}
 
-	decisionID := c.Param("decisionId")
+	var req struct {
+		DecisionID string `json:"decisionId" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Decision ID required"})
+		return
+	}
+
+	decisionID := req.DecisionID
 	if decisionID == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Decision ID required"})
 		return
