@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "title": "Charged twice for same subscription",
+    "description": "I was charged $299 twice on the same day for my annual subscription. I only authorized one payment. This is causing issues with my company card and I need this resolved immediately.",
+    "expected_classification": "billing_dispute",
+    "expected_urgency": 4,
+    "context": {
+      "customer_tier": "enterprise",
+      "customer_value": 10000,
+      "previous_issues": 1
+    }
+  },
+  {
+    "id": 2,
+    "title": "Service has been down for 3 hours",
+    "description": "Our entire team cannot access the platform since 2pm. We have a major client presentation at 5pm and need this resolved ASAP. This is completely unacceptable for an enterprise customer.",
+    "expected_classification": "service_outage",
+    "expected_urgency": 5,
+    "context": {
+      "customer_tier": "enterprise",
+      "customer_value": 50000,
+      "previous_issues": 0
+    }
+  },
+  {
+    "id": 3,
+    "title": "Request full refund - not satisfied",
+    "description": "After using your product for 2 months, I'm not satisfied with the ROI. The features promised in the sales demo aren't working as expected. I want a full refund for the annual plan I purchased.",
+    "expected_classification": "refund_full",
+    "expected_urgency": 3,
+    "context": {
+      "customer_tier": "standard",
+      "customer_value": 3000,
+      "previous_issues": 3
+    }
+  },
+  {
+    "id": 4,
+    "title": "Cancelling subscription - moving to competitor",
+    "description": "We've decided to move to CompetitorX. Please cancel our subscription effective immediately. We're not happy with the recent price increase and lack of new features.",
+    "expected_classification": "churn_risk",
+    "expected_urgency": 4,
+    "context": {
+      "customer_tier": "gold",
+      "customer_value": 15000,
+      "previous_issues": 2
+    }
+  },
+  {
+    "id": 5,
+    "title": "Need custom SSO integration for enterprise rollout",
+    "description": "We're planning to deploy your platform across 500 users next quarter. We need SAML SSO integration which isn't in your standard plan. Can this be added as a custom feature?",
+    "expected_classification": "feature_request",
+    "expected_urgency": 2,
+    "context": {
+      "customer_tier": "enterprise",
+      "customer_value": 75000,
+      "previous_issues": 0
+    }
+  },
+  {
+    "id": 6,
+    "title": "GDPR data deletion request",
+    "description": "As per GDPR Article 17, I request complete deletion of all my personal data from your systems within 30 days. Please confirm receipt and provide documentation of deletion.",
+    "expected_classification": "data_privacy",
+    "expected_urgency": 3,
+    "context": {
+      "customer_tier": "standard",
+      "customer_value": 500,
+      "previous_issues": 0
+    }
+  },
+  {
+    "id": 7,
+    "title": "Partial credit for service interruption last week",
+    "description": "We experienced 6 hours of downtime last Tuesday which impacted our operations. While I appreciate the quick resolution, I believe we deserve partial credit given our SLA guarantees 99.9% uptime.",
+    "expected_classification": "refund_partial",
+    "expected_urgency": 2,
+    "context": {
+      "customer_tier": "platinum",
+      "customer_value": 100000,
+      "previous_issues": 1
+    }
+  },
+  {
+    "id": 8,
+    "title": "URGENT: Need to speak with CEO immediately",
+    "description": "I've been trying to resolve a billing issue for 3 weeks through support with no resolution. This is unacceptable. I need to escalate this to the CEO or someone who can actually make decisions.",
+    "expected_classification": "escalation",
+    "expected_urgency": 5,
+    "context": {
+      "customer_tier": "platinum",
+      "customer_value": 150000,
+      "previous_issues": 5
+    }
+  },
+  {
+    "id": 9,
+    "title": "How do I export my data?",
+    "description": "I'm trying to export all my customer data to CSV but can't find the export button in the dashboard. Can you point me to the right place or documentation?",
+    "expected_classification": "general_inquiry",
+    "expected_urgency": 1,
+    "context": {
+      "customer_tier": "standard",
+      "customer_value": 1000,
+      "previous_issues": 0
+    }
+  },
+  {
+    "id": 10,
+    "title": "Need to modify contract terms for expansion",
+    "description": "We want to expand from 50 to 200 users but need to adjust our contract pricing. Our current agreement locks us into per-user pricing that doesn't make sense at this scale. Can we negotiate new terms?",
+    "expected_classification": "contract_change",
+    "expected_urgency": 3,
+    "context": {
+      "customer_tier": "gold",
+      "customer_value": 25000,
+      "previous_issues": 1
+    }
+  }
+]

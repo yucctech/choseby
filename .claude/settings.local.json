@@ -30,7 +30,8 @@
       "Bash(bash:*)",
       "Bash(cat:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres.igrmbkienznttmunapix:9C.2%40eVGaVLWAse@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require&search_path=public\" go test -v -timeout 10m -tags=integration -run \"TestCustomerResponseWorkflowE2E\")",
-      "Bash(make test:*)"
+      "Bash(make test:*)",
+      "Bash(ollama:*)"
     ],
     "deny": [],
     "ask": []
