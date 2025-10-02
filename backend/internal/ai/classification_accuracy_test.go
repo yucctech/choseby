@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"choseby-backend/internal/models"
@@ -49,8 +50,8 @@ func TestClassificationAccuracyWithRealScenarios(t *testing.T) {
 	assert.NoError(t, err, "Should load test scenarios")
 
 	// Use local Ollama client (no API key needed)
-	client := NewOllamaClient("deepseek-r1:1.5b")
-	t.Logf("Using local Ollama model: deepseek-r1:1.5b")
+	client := NewOllamaClient("deepseek-r1:7b")
+	t.Logf("Using local Ollama model: deepseek-r1:7b")
 
 	// Load available response types (mock data based on migration 001)
 	responseTypes := getMockResponseTypes()
@@ -79,8 +80,10 @@ func TestClassificationAccuracyWithRealScenarios(t *testing.T) {
 				return
 			}
 
-			// Validate result
-			correct := classification.DecisionType == scenario.ExpectedClassification
+			// Validate result (case-insensitive and trim whitespace for robustness)
+			actualType := strings.TrimSpace(strings.ToLower(classification.DecisionType))
+			expectedType := strings.TrimSpace(strings.ToLower(scenario.ExpectedClassification))
+			correct := actualType == expectedType
 			urgencyAccurate := abs(classification.UrgencyLevel-scenario.ExpectedUrgency) <= 1 // Allow ±1 for urgency
 
 			result := ClassificationResult{

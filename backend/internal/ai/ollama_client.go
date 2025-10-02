@@ -114,27 +114,23 @@ func (c *OllamaClient) ClassifyCustomerIssue(ctx context.Context, issue string, 
 		typeList += td + "\n"
 	}
 
-	prompt := fmt.Sprintf(`You are a customer service AI assistant. Analyze the following customer issue and classify it.
+	prompt := fmt.Sprintf(`Classify this customer issue into one of the available types.
 
-Customer Issue: %s
+CUSTOMER ISSUE:
+Title: %s
 Description: %s
 
-Available response types:
+AVAILABLE TYPES:
 %s
 
-Task:
-1. Classify the issue into one of the available response types based on keywords and context
-2. Determine urgency level (1-5, where 5 is most urgent)
-3. Provide confidence score (0.0-1.0)
-4. List any risk factors that should be considered
+INSTRUCTIONS:
+1. Match the issue to ONE of the type codes above based on keywords
+2. Rate urgency 1-5 (1=low, 5=critical)
+3. Give confidence 0.0-1.0 (how certain you are)
+4. List 1-3 risk factors
 
-Respond ONLY with valid JSON in this exact format (no markdown, no explanations):
-{
-  "decision_type": "type_code_here",
-  "urgency_level": 4,
-  "confidence_score": 0.85,
-  "risk_factors": ["factor1", "factor2"]
-}`,
+OUTPUT FORMAT (JSON only, no other text):
+{"decision_type":"type_code","urgency_level":4,"confidence_score":0.85,"risk_factors":["risk1","risk2"]}`,
 		issue, description, typeList)
 
 	response, err := c.generate(ctx, prompt)

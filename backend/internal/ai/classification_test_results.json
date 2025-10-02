@@ -5,9 +5,9 @@
     "expected_classification": "billing_dispute",
     "actual_classification": "billing_dispute",
     "correct": true,
-    "confidence_score": 0.85,
+    "confidence_score": 0.9,
     "expected_urgency": 4,
-    "actual_urgency": 4,
+    "actual_urgency": 5,
     "urgency_accurate": true
   },
   {
@@ -29,7 +29,7 @@
     "correct": true,
     "confidence_score": 0.85,
     "expected_urgency": 3,
-    "actual_urgency": 4,
+    "actual_urgency": 3,
     "urgency_accurate": true
   },
   {
@@ -38,7 +38,7 @@
     "expected_classification": "churn_risk",
     "actual_classification": "churn_risk",
     "correct": true,
-    "confidence_score": 0.85,
+    "confidence_score": 0.95,
     "expected_urgency": 4,
     "actual_urgency": 4,
     "urgency_accurate": true
@@ -49,10 +49,10 @@
     "expected_classification": "feature_request",
     "actual_classification": "feature_request",
     "correct": true,
-    "confidence_score": 0.85,
+    "confidence_score": 0.95,
     "expected_urgency": 2,
-    "actual_urgency": 4,
-    "urgency_accurate": false
+    "actual_urgency": 2,
+    "urgency_accurate": true
   },
   {
     "scenario_id": 6,
@@ -69,9 +69,9 @@
     "scenario_id": 7,
     "title": "Partial credit for service interruption last week",
     "expected_classification": "refund_partial",
-    "actual_classification": "refund_partial",
-    "correct": true,
-    "confidence_score": 0.75,
+    "actual_classification": "service_outage",
+    "correct": false,
+    "confidence_score": 0.9,
     "expected_urgency": 2,
     "actual_urgency": 3,
     "urgency_accurate": true
@@ -82,7 +82,7 @@
     "expected_classification": "escalation",
     "actual_classification": "escalation",
     "correct": true,
-    "confidence_score": 0.85,
+    "confidence_score": 0.95,
     "expected_urgency": 5,
     "actual_urgency": 4,
     "urgency_accurate": true
@@ -91,11 +91,11 @@
     "scenario_id": 9,
     "title": "How do I export my data?",
     "expected_classification": "general_inquiry",
-    "actual_classification": "data_privacy",
+    "actual_classification": "feature_request",
     "correct": false,
     "confidence_score": 0.85,
     "expected_urgency": 1,
-    "actual_urgency": 4,
+    "actual_urgency": 3,
     "urgency_accurate": false
   },
   {
@@ -104,7 +104,7 @@
     "expected_classification": "contract_change",
     "actual_classification": "contract_change",
     "correct": true,
-    "confidence_score": 0.85,
+    "confidence_score": 0.95,
     "expected_urgency": 3,
     "actual_urgency": 4,
     "urgency_accurate": true
