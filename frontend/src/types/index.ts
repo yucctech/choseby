@@ -2,6 +2,13 @@
 // Based on backend Go models and database schema
 
 // ========================================
+// UI TYPES
+// ========================================
+
+export type DeviceType = 'mobile' | 'tablet' | 'desktop';
+export type ScreenSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+
+// ========================================
 // USER & TEAM TYPES
 // ========================================
 
