@@ -61,6 +61,15 @@ func SetupRouter(db *database.DB, cfg *config.Config) *gin.Engine {
 		public.POST("/auth/login", authHandler.Login)
 	}
 
+	// Auth routes (requires authentication)
+	authRoutes := router.Group("/api/v1/auth")
+	authRoutes.Use(middleware.AuthRequired(authService))
+	{
+		authRoutes.GET("/me", authHandler.GetProfile)
+		authRoutes.PUT("/profile", authHandler.UpdateProfile)
+		authRoutes.POST("/logout", authHandler.Logout)
+	}
+
 	// Protected routes - customer response platform
 	protected := router.Group("/api/v1")
 	protected.Use(middleware.AuthRequired(authService))
