@@ -65,7 +65,7 @@ export default function LoginPage() {
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <Link href="/">
-            <h1 className="text-4xl font-bold text-primary-600 mb-2">Choseby</h1>
+            <h1 className="text-4xl font-bold text-primary-600 mb-2" data-testid="app-title">Choseby</h1>
           </Link>
           <p className="text-gray-600">Customer Response Decision Intelligence</p>
         </div>
@@ -75,6 +75,7 @@ export default function LoginPage() {
           {/* Toggle Tabs */}
           <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
             <button
+              data-testid="tab-signin"
               onClick={() => {
                 setIsLogin(true);
                 setError(null);
@@ -88,6 +89,7 @@ export default function LoginPage() {
               Sign In
             </button>
             <button
+              data-testid="tab-signup"
               onClick={() => {
                 setIsLogin(false);
                 setError(null);
@@ -103,13 +105,15 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" data-testid="auth-form">
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="name-input" className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name
                 </label>
                 <Input
+                  id="name-input"
+                  data-testid="input-name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
@@ -120,10 +124,12 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="email-input" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <Input
+                id="email-input"
+                data-testid="input-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
@@ -133,10 +139,12 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password-input" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <Input
+                id="password-input"
+                data-testid="input-password"
                 type="password"
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
@@ -146,12 +154,13 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm" data-testid="error-message">
                 {error}
               </div>
             )}
 
             <Button
+              data-testid="submit-button"
               type="submit"
               className="w-full"
               disabled={loading}

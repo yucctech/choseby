@@ -53,7 +53,17 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "mcp__browsermcp__browser_navigate",
-      "mcp__browsermcp__browser_click"
+      "mcp__browsermcp__browser_click",
+      "Bash(npm install:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(npx playwright test:*)",
+      "Bash(for file in decisions/page.tsx decisions/new/page.tsx \"decisions/[id]/page.tsx\" team/page.tsx analytics/page.tsx)",
+      "Bash(do head -3 \"$file\")",
+      "Bash($env:DATABASE_URL=\"postgresql://postgres.igrmbkienznttmunapix:9C.2@eVGaVLWAse@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require&search_path=public\")",
+      "Bash(DATABASE_URL=\"postgresql://postgres.igrmbkienznttmunapix:9C.2%40eVGaVLWAse@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require&search_path=public\" go run scripts/seed_demo_user.go)",
+      "Bash(git reset:*)",
+      "Bash(go vet:*)",
+      "mcp__browsermcp__browser_type"
     ],
     "deny": [],
     "ask": []
