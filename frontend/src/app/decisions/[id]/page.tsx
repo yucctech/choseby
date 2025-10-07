@@ -6,10 +6,19 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Progress } from '@/components/ui/Progress';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { api } from '@/lib/api-client';
 import type { CustomerDecision, DecisionCriteria, ResponseOption, TeamEvaluation } from '@/types';
 
 export default function DecisionDetailPage() {
+  return (
+    <ProtectedRoute>
+      <DecisionDetailContent />
+    </ProtectedRoute>
+  );
+}
+
+function DecisionDetailContent() {
   const params = useParams();
   const router = useRouter();
   const decisionId = params.id as string;

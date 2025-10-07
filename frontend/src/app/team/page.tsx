@@ -6,10 +6,19 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { api } from '@/lib/api-client';
 import type { Team, TeamMember, User } from '@/types';
 
 export default function TeamManagementPage() {
+  return (
+    <ProtectedRoute>
+      <TeamManagementContent />
+    </ProtectedRoute>
+  );
+}
+
+function TeamManagementContent() {
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);

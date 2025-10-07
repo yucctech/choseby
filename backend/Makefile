@@ -137,6 +137,10 @@ db-reset: ## Reset database
 	migrate -path ./migrations -database "$(DATABASE_URL)" drop -f
 	migrate -path ./migrations -database "$(DATABASE_URL)" up
 
+db-seed: ## Seed demo user for testing
+	@echo "$(GREEN)Seeding demo user...$(NC)"
+	$(GOCMD) run scripts/seed_demo_user.go
+
 # Docker targets
 docker: ## Build Docker image
 	@echo "$(GREEN)Building Docker image...$(NC)"

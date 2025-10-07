@@ -5,10 +5,19 @@ import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { api } from '@/lib/api-client';
 import type { DashboardMetrics, ResponseTimeMetrics, CustomerSatisfactionMetrics, CustomerTier } from '@/types';
 
 export default function AnalyticsPage() {
+  return (
+    <ProtectedRoute>
+      <AnalyticsContent />
+    </ProtectedRoute>
+  );
+}
+
+function AnalyticsContent() {
   const router = useRouter();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [responseTimeMetrics, setResponseTimeMetrics] = useState<ResponseTimeMetrics | null>(null);

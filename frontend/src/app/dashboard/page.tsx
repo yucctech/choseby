@@ -5,10 +5,19 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { api } from '@/lib/api-client';
 import type { DashboardMetrics, CustomerDecision } from '@/types';
 
 export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
+  );
+}
+
+function DashboardContent() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [recentDecisions, setRecentDecisions] = useState<CustomerDecision[]>([]);
   const [loading, setLoading] = useState(true);

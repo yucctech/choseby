@@ -7,10 +7,19 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { api } from '@/lib/api-client';
 import type { CustomerDecision, PaginatedResponse } from '@/types';
 
 export default function DecisionsListPage() {
+  return (
+    <ProtectedRoute>
+      <DecisionsListContent />
+    </ProtectedRoute>
+  );
+}
+
+function DecisionsListContent() {
   const router = useRouter();
   const [decisions, setDecisions] = useState<CustomerDecision[]>([]);
   const [loading, setLoading] = useState(true);

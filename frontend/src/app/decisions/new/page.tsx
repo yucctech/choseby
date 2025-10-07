@@ -6,10 +6,19 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { api } from '@/lib/api-client';
 import type { CustomerTier, UrgencyLevel, WorkflowType, AIClassification } from '@/types';
 
 export default function NewDecisionPage() {
+  return (
+    <ProtectedRoute>
+      <NewDecisionContent />
+    </ProtectedRoute>
+  );
+}
+
+function NewDecisionContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [classifying, setClassifying] = useState(false);
