@@ -157,11 +157,14 @@ async function addOptions() {
 async function submitEvaluation(optionIndex, scores) {
   console.log(`👤 Step 5.${optionIndex + 1}: Submit team evaluation (Phase 4)...`);
 
-  // Build scores object mapping criterion_id to score
-  const criteriaScores = {};
-  criteriaIds.forEach((criterionId, index) => {
-    criteriaScores[criterionId] = scores[index];
-  });
+  // Build evaluations array - one evaluation per criterion
+  const evaluations = criteriaIds.map((criterionId, index) => ({
+    option_id: optionIds[optionIndex],
+    criteria_id: criterionId,
+    score: scores[index],
+    confidence: 3,
+    comment: `Evaluation for option ${optionIndex + 1} - criterion ${index + 1}`
+  }));
 
   const response = await fetch(`${API_URL}/decisions/${createdDecisionId}/evaluate`, {
     method: 'POST',
@@ -169,12 +172,7 @@ async function submitEvaluation(optionIndex, scores) {
       'Authorization': `Bearer ${authToken}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      option_id: optionIds[optionIndex],
-      scores: criteriaScores,
-      comments: `Evaluation for option ${optionIndex + 1} - This is a test evaluation`,
-      is_anonymous: true
-    })
+    body: JSON.stringify({ evaluations })
   });
 
   if (!response.ok) {
@@ -183,7 +181,7 @@ async function submitEvaluation(optionIndex, scores) {
 
   const data = await response.json();
   console.log(`✅ Submitted anonymous evaluation for option ${optionIndex + 1}`);
-  console.log(`   Scores: ${JSON.stringify(scores)}\n`);
+  console.log(`   Scores: ${JSON.stringify(scores)}, Count: ${data.evaluations_count}\n`);
 }
 
 async function verifyDecisionState() {

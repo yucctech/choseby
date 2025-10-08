@@ -270,17 +270,20 @@ export const options = {
 };
 
 export const evaluations = {
-  async submit(decisionId: string, evaluation: Partial<TeamEvaluation>): Promise<TeamEvaluation> {
-    const response = await apiRequest<APIResponse<TeamEvaluation>>(`/decisions/${decisionId}/evaluate`, {
+  async submit(decisionId: string, evaluation: any): Promise<{message: string; evaluations_count: number}> {
+    return apiRequest<{message: string; evaluations_count: number}>(`/decisions/${decisionId}/evaluate`, {
       method: 'POST',
       body: JSON.stringify(evaluation),
     });
-    if (!response.data) throw new Error('Failed to submit evaluation');
-    return response.data;
+  },
+
+  async getResults(decisionId: string): Promise<any> {
+    return apiRequest<any>(`/decisions/${decisionId}/results`);
   },
 
   async list(decisionId: string): Promise<TeamEvaluation[]> {
-    const response = await apiRequest<APIResponse<TeamEvaluation[]>>(`/decisions/${decisionId}/results`);
+    // This would be for listing individual evaluations, not results
+    const response = await apiRequest<APIResponse<TeamEvaluation[]>>(`/decisions/${decisionId}/evaluations`);
     return response.data || [];
   },
 };

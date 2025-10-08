@@ -178,12 +178,16 @@ function DecisionDetailContent() {
         return;
       }
 
-      await api.evaluations.submit(decisionId, {
+      // Transform scores from {criteria_id: score} to array of evaluation objects
+      const evaluations = Object.entries(criteriaScores).map(([criteriaId, score]) => ({
         option_id: selectedOptionForEval,
-        scores: criteriaScores,
-        comments: evaluationComments || undefined,
-        is_anonymous: true,
-      });
+        criteria_id: criteriaId,
+        score: score,
+        confidence: 3, // Default confidence level
+        comment: evaluationComments || undefined,
+      }));
+
+      await api.evaluations.submit(decisionId, { evaluations });
 
       await loadDecisionData();
       setShowEvaluationForm(false);
