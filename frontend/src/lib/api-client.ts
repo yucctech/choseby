@@ -317,10 +317,19 @@ export const responseTypes = {
 // ========================================
 
 export const analytics = {
+  async getDashboard(period: '7d' | '30d' | '90d' = '30d'): Promise<any> {
+    return apiRequest<any>(`/analytics/dashboard?period=${period}`);
+  },
+
   async getDashboardMetrics(teamId: string): Promise<DashboardMetrics> {
-    const response = await apiRequest<APIResponse<DashboardMetrics>>(`/teams/${teamId}/metrics`);
-    if (!response.data) throw new Error('Failed to get metrics');
-    return response.data;
+    const data = await this.getDashboard();
+    return {
+      totalDecisions: data.summary?.total_decisions || 0,
+      inProgress: data.analytics?.total_decisions || 0,
+      avgResponseTimeHours: data.summary?.avg_resolution_hours || 0,
+      customerSatisfactionAvg: data.summary?.avg_satisfaction || 0,
+      recentDecisions: data.recent_activity || [],
+    };
   },
 
   async getResponseTimeMetrics(teamId: string, startDate?: string, endDate?: string) {

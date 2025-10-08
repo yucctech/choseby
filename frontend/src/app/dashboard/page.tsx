@@ -31,14 +31,19 @@ function DashboardContent() {
       try {
         setLoading(true);
 
-        // Load metrics
-        const metricsData = await api.analytics.getDashboardMetrics(teamId);
-        setMetrics(metricsData);
+        // Load dashboard data (includes metrics and recent decisions)
+        const dashboardData = await api.analytics.getDashboard();
 
-        // Load recent decisions
-        const decisionsData = await api.decisions.list(teamId, { page: 1, pageSize: 5 });
-        setRecentDecisions(decisionsData.data);
+        // Map to metrics format
+        setMetrics({
+          totalDecisions: dashboardData.summary?.total_decisions || 0,
+          inProgress: dashboardData.summary?.total_decisions || 0,
+          avgResponseTimeHours: dashboardData.summary?.avg_resolution_hours || 0,
+          customerSatisfactionAvg: dashboardData.summary?.avg_satisfaction || 0,
+          recentDecisions: dashboardData.recent_activity || [],
+        });
 
+        setRecentDecisions(dashboardData.recent_activity || []);
         setError(null);
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
@@ -49,7 +54,7 @@ function DashboardContent() {
     };
 
     loadDashboardData();
-  }, [teamId]);
+  }, []);
 
   const getUrgencyColor = (level: number) => {
     if (level >= 4) return 'bg-urgency-critical text-white';

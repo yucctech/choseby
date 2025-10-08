@@ -257,7 +257,11 @@ func (h *AnalyticsHandler) GetDashboard(c *gin.Context) {
 		completedEvaluations = 0
 	}
 
-	teamEfficiency.ParticipationRate = float64(completedEvaluations) / float64(totalEvaluationSlots) * 100
+	if totalEvaluationSlots > 0 {
+		teamEfficiency.ParticipationRate = float64(completedEvaluations) / float64(totalEvaluationSlots) * 100
+	} else {
+		teamEfficiency.ParticipationRate = 0
+	}
 
 	// Build final analytics response
 	analytics := models.DashboardAnalytics{
