@@ -49,6 +49,12 @@ function DecisionDetailContent() {
     { title: '', description: '', financial_cost: 0, implementation_effort: 'medium', risk_level: 'medium', estimated_satisfaction_impact: 3 }
   ]);
 
+  // Evaluation submission state
+  const [showEvaluationForm, setShowEvaluationForm] = useState(false);
+  const [selectedOptionForEval, setSelectedOptionForEval] = useState<string>('');
+  const [criteriaScores, setCriteriaScores] = useState<Record<string, number>>({});
+  const [evaluationComments, setEvaluationComments] = useState('');
+
   useEffect(() => {
     loadDecisionData();
   }, [decisionId]);
@@ -155,6 +161,47 @@ function DecisionDetailContent() {
     const newData = [...optionsFormData];
     newData[index] = { ...newData[index], [field]: value };
     setOptionsFormData(newData);
+  };
+
+  // Evaluation submission handlers
+  const handleSubmitEvaluation = async () => {
+    try {
+      if (!selectedOptionForEval) {
+        alert('Please select an option to evaluate');
+        return;
+      }
+
+      // Check if all criteria have scores
+      const missingScores = criteria.filter(c => !criteriaScores[c.id]);
+      if (missingScores.length > 0) {
+        alert('Please provide scores for all criteria');
+        return;
+      }
+
+      await api.evaluations.submit(decisionId, {
+        option_id: selectedOptionForEval,
+        scores: criteriaScores,
+        comments: evaluationComments || undefined,
+        is_anonymous: true,
+      });
+
+      await loadDecisionData();
+      setShowEvaluationForm(false);
+      setSelectedOptionForEval('');
+      setCriteriaScores({});
+      setEvaluationComments('');
+      alert('Evaluation submitted successfully! ✅');
+    } catch (err) {
+      console.error('Failed to submit evaluation:', err);
+      alert('Failed to submit evaluation');
+    }
+  };
+
+  const handleCriteriaScoreChange = (criterionId: string, score: number) => {
+    setCriteriaScores(prev => ({
+      ...prev,
+      [criterionId]: score,
+    }));
   };
 
   const getPhaseStatus = (phaseNumber: number) => {
@@ -597,23 +644,148 @@ function DecisionDetailContent() {
                   </p>
                 </div>
 
-                <div className="space-y-3 mb-4">
-                  {evaluations.map((evaluation) => (
-                    <div key={evaluation.id} className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-600">
-                        Anonymous evaluation submitted on {new Date(evaluation.submitted_at).toLocaleDateString()}
-                      </p>
+                {!showEvaluationForm ? (
+                  <div>
+                    <div className="space-y-3 mb-4">
+                      {evaluations.map((evaluation) => (
+                        <div key={evaluation.id} className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-600">
+                            Anonymous evaluation submitted on {new Date(evaluation.submitted_at).toLocaleDateString()}
+                          </p>
+                          {evaluation.comments && (
+                            <p className="text-sm text-gray-700 mt-2 italic">&ldquo;{evaluation.comments}&rdquo;</p>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                {evaluations.length === 0 && (
-                  <p className="text-gray-500 text-sm mb-4">No evaluations submitted yet</p>
+                    {evaluations.length === 0 && (
+                      <p className="text-gray-500 text-sm mb-4">No evaluations submitted yet</p>
+                    )}
+
+                    <div className="flex gap-3">
+                      <Button onClick={() => setShowEvaluationForm(true)}>
+                        + Submit Your Evaluation
+                      </Button>
+                      {evaluations.length > 0 && (
+                        <Button variant="outline" onClick={() => handlePhaseComplete(4)}>
+                          Continue to Results →
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Option Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select Option to Evaluate *
+                      </label>
+                      <div className="space-y-2">
+                        {options.map((option) => (
+                          <div
+                            key={option.id}
+                            onClick={() => setSelectedOptionForEval(option.id)}
+                            className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                              selectedOptionForEval === option.id
+                                ? 'border-primary-500 bg-primary-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900">{option.title}</h4>
+                                <p className="text-sm text-gray-600 mt-1">{option.description}</p>
+                              </div>
+                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                selectedOptionForEval === option.id
+                                  ? 'border-primary-500 bg-primary-500'
+                                  : 'border-gray-300'
+                              }`}>
+                                {selectedOptionForEval === option.id && (
+                                  <div className="w-2 h-2 bg-white rounded-full" />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Criteria Scoring */}
+                    {selectedOptionForEval && (
+                      <div>
+                        <h3 className="text-lg font-semibold mb-3">Score Against Criteria</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Rate the selected option against each criterion (1-5, where 5 is best)
+                        </p>
+                        <div className="space-y-4">
+                          {criteria.map((criterion) => (
+                            <div key={criterion.id} className="p-4 bg-gray-50 rounded-lg">
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-gray-900">{criterion.name}</h4>
+                                  {criterion.description && (
+                                    <p className="text-sm text-gray-600 mt-1">{criterion.description}</p>
+                                  )}
+                                  <p className="text-xs text-gray-500 mt-1">Weight: {criterion.weight}</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((score) => (
+                                  <button
+                                    key={score}
+                                    type="button"
+                                    onClick={() => handleCriteriaScoreChange(criterion.id, score)}
+                                    className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all ${
+                                      criteriaScores[criterion.id] === score
+                                        ? 'bg-primary-500 text-white shadow-md'
+                                        : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
+                                    }`}
+                                  >
+                                    {score}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Optional Comments */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Additional Comments (Optional)
+                      </label>
+                      <textarea
+                        value={evaluationComments}
+                        onChange={(e) => setEvaluationComments(e.target.value)}
+                        placeholder="Share your reasoning, concerns, or additional insights..."
+                        rows={4}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                      <Button onClick={handleSubmitEvaluation}>
+                        Submit Evaluation
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowEvaluationForm(false);
+                          setSelectedOptionForEval('');
+                          setCriteriaScores({});
+                          setEvaluationComments('');
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
                 )}
-
-                <Button onClick={() => handlePhaseComplete(4)}>
-                  Continue to Results →
-                </Button>
               </Card>
             )}
 
