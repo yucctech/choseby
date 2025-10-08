@@ -271,7 +271,7 @@ export const options = {
 
 export const evaluations = {
   async submit(decisionId: string, evaluation: Partial<TeamEvaluation>): Promise<TeamEvaluation> {
-    const response = await apiRequest<APIResponse<TeamEvaluation>>(`/decisions/${decisionId}/evaluations`, {
+    const response = await apiRequest<APIResponse<TeamEvaluation>>(`/decisions/${decisionId}/evaluate`, {
       method: 'POST',
       body: JSON.stringify(evaluation),
     });
@@ -280,7 +280,7 @@ export const evaluations = {
   },
 
   async list(decisionId: string): Promise<TeamEvaluation[]> {
-    const response = await apiRequest<APIResponse<TeamEvaluation[]>>(`/decisions/${decisionId}/evaluations`);
+    const response = await apiRequest<APIResponse<TeamEvaluation[]>>(`/decisions/${decisionId}/results`);
     return response.data || [];
   },
 };
