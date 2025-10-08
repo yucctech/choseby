@@ -63,7 +63,11 @@
       "Bash(DATABASE_URL=\"postgresql://postgres.igrmbkienznttmunapix:9C.2%40eVGaVLWAse@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require&search_path=public\" go run scripts/seed_demo_user.go)",
       "Bash(git reset:*)",
       "Bash(go vet:*)",
-      "mcp__browsermcp__browser_type"
+      "mcp__browsermcp__browser_type",
+      "Bash(test:*)",
+      "Bash(timeout 10 bash -c 'until curl -s http://localhost:8080/api/v1/health > /dev/null 2>&1; do sleep 1; done')",
+      "Bash(timeout:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDIiLCJlbWFpbCI6IiIsInJvbGUiOiJjdXN0b21lcl9zdWNjZXNzX21hbmFnZXIiLCJ0ZWFtX2lkIjoiIiwiZXhwIjoxNzU5OTI4NzIyLCJpYXQiOjE3NTk5MjUxMjJ9.c7zaByd2WYGN2LrY79_8hoYd9djEZZhvEiUHW4x1o18\")"
     ],
     "deny": [],
     "ask": []

@@ -100,7 +100,8 @@ export const auth = {
   },
 
   async getCurrentUser(): Promise<User> {
-    return apiRequest<User>('/auth/me');
+    const data = await apiRequest<{ user: User; team?: any }>('/auth/me');
+    return data.user;
   },
 };
 
