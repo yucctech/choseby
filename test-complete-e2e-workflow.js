@@ -1,6 +1,25 @@
 /**
  * Complete E2E Workflow Test - Phases 1-6
  * Tests the ACTUAL customer response decision workflow
+ *
+ * ⚠️ IMPORTANT TEST LIMITATION:
+ * This test uses a SINGLE user token (demo@choseby.com) to simulate 3 team members.
+ * Due to database unique constraint (decision_id, evaluator_id, option_id, criteria_id),
+ * multiple submissions from the same user trigger RE-EVALUATION behavior, not accumulation.
+ *
+ * CURRENT BEHAVIOR:
+ * - Member 1 submits → 12 evaluations inserted
+ * - Member 2 submits → DELETE 12, INSERT 12 (still 12 total) - RE-EVALUATION
+ * - Member 3 submits → DELETE 12, INSERT 12 (still 12 total) - RE-EVALUATION
+ * Result: Only last submission persists (12 evaluations from 1 evaluator)
+ *
+ * PRODUCTION BEHAVIOR (with 3 different team member tokens):
+ * - Member 1 (token1) submits → 12 evaluations
+ * - Member 2 (token2) submits → 24 total evaluations (accumulated)
+ * - Member 3 (token3) submits → 36 total evaluations (accumulated)
+ *
+ * This test validates the RE-EVALUATION feature, not multi-user accumulation.
+ * For true multi-user testing, create 3 different team member accounts.
  */
 
 const API_URL = 'http://localhost:8080/api/v1';
