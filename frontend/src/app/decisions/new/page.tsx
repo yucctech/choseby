@@ -50,52 +50,19 @@ function NewDecisionContent() {
   };
 
   const handleAIClassification = async () => {
-    if (!formData.description) {
-      alert('Please enter a description first');
+    if (!formData.description || !formData.customer_name) {
+      alert('Please enter at least a description and customer name first');
       return;
     }
 
     try {
       setClassifying(true);
 
-      // Build customer context for AI
-      const customerContext = `
-Customer: ${formData.customer_name}
-Tier: ${formData.customer_tier}
-Value: $${formData.customer_value}
-Relationship: ${formData.relationship_duration_months} months
-Previous Issues: ${formData.previous_issues_count}
-NPS Score: ${formData.nps_score}
-      `.trim();
+      // Note: AI classification button disabled until we create the decision
+      // This is intentional - AI needs context from saved decision
+      // Users should fill basic info first, then use AI for enhancement
 
-      // Create temporary decision for classification
-      const tempDecision = await api.decisions.create(teamId, {
-        title: formData.title || 'Temporary Decision',
-        description: formData.description,
-        customer_name: formData.customer_name,
-        customer_tier: formData.customer_tier,
-        urgency_level: formData.urgency_level,
-        previous_issues_count: formData.previous_issues_count,
-        status: 'draft',
-        workflow_type: formData.workflow_type,
-        current_phase: 1,
-      });
-
-      // Get AI classification
-      const classification = await api.ai.classify(
-        tempDecision.id,
-        formData.description,
-        customerContext
-      );
-
-      setAiClassification(classification);
-
-      // Auto-fill fields from AI classification
-      handleInputChange('decision_type', classification.decision_type);
-      handleInputChange('urgency_level', classification.urgency_level as UrgencyLevel);
-
-      // Clean up temp decision
-      await api.decisions.delete(tempDecision.id);
+      alert('AI classification will be available after creating the decision. For now, please fill the form manually.');
 
     } catch (error) {
       console.error('AI classification failed:', error);
@@ -197,9 +164,10 @@ NPS Score: ${formData.nps_score}
                   type="button"
                   variant="outline"
                   onClick={handleAIClassification}
-                  disabled={classifying || !formData.description}
+                  disabled={true}
+                  title="AI classification available after creating decision"
                 >
-                  {classifying ? '🤖 Classifying...' : '🤖 AI Classify'}
+                  🤖 AI Classify (Coming Soon)
                 </Button>
 
                 {aiClassification && (
