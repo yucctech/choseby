@@ -35,20 +35,39 @@ func (h *OutcomeHandler) RecordOutcome(c *gin.Context) {
 	}
 
 	type OutcomeRequest struct {
-		SelectedOptionID          string     `json:"selected_option_id"`
-		DecisionDate              *time.Time `json:"decision_date,omitempty"`
-		ResponseSentDate          *time.Time `json:"response_sent_date,omitempty"`
-		TimeToFirstResponseHours  *float64   `json:"time_to_first_response_hours,omitempty"`
-		TimeToResolutionHours     *float64   `json:"time_to_resolution_hours,omitempty"`
-		CustomerSatisfactionScore *int       `json:"customer_satisfaction_score,omitempty" validate:"omitempty,min=1,max=5"`
-		NPSScoreChange            *int       `json:"nps_score_change,omitempty"`
-		CustomerFeedback          *string    `json:"customer_feedback,omitempty"`
-		TeamConsensusScore        *float64   `json:"team_consensus_score,omitempty"`
-		AIAccuracyRating          *int       `json:"ai_accuracy_rating,omitempty"`
-		ActualCost                *float64   `json:"actual_cost,omitempty"`
-		RevenueImpact             *float64   `json:"revenue_impact,omitempty"`
-		LessonsLearned            *string    `json:"lessons_learned,omitempty"`
-		WouldDecideSameAgain      *bool      `json:"would_decide_same_again,omitempty"`
+		// Time tracking
+		FirstResponseAt          *time.Time `json:"first_response_at,omitempty"`
+		ResolutionAt             *time.Time `json:"resolution_at,omitempty"`
+		TimeToFirstResponseHours *float64   `json:"time_to_first_response_hours,omitempty"`
+		TimeToResolutionHours    *float64   `json:"time_to_resolution_hours,omitempty"`
+
+		// Satisfaction metrics
+		CustomerSatisfactionScore *int  `json:"customer_satisfaction_score,omitempty" validate:"omitempty,min=1,max=5"`
+		NPSChange                 *int  `json:"nps_change,omitempty"`
+		CustomerRetained          *bool `json:"customer_retained,omitempty"`
+
+		// Team & AI metrics
+		TeamConsensusScore        *float64 `json:"team_consensus_score,omitempty"`
+		AIAccuracyValidation      *bool    `json:"ai_accuracy_validation,omitempty"`
+		OptionEffectivenessRating *int     `json:"option_effectiveness_rating,omitempty" validate:"omitempty,min=1,max=5"`
+
+		// Escalation
+		EscalationOccurred *bool `json:"escalation_occurred,omitempty"`
+
+		// Learning & feedback (actual schema fields)
+		WhatWorkedWell   *string `json:"what_worked_well,omitempty"`
+		WhatCouldImprove *string `json:"what_could_improve,omitempty"`
+		LessonsLearned   *string `json:"lessons_learned,omitempty"`
+
+		// Financial impact
+		EstimatedFinancialImpact *float64 `json:"estimated_financial_impact,omitempty"`
+		ActualFinancialImpact    *float64 `json:"actual_financial_impact,omitempty"`
+		ROIRatio                 *float64 `json:"roi_ratio,omitempty"`
+
+		// AI draft tracking
+		AIClassificationAccurate *bool `json:"ai_classification_accurate,omitempty"`
+		ResponseDraftUsed        *bool `json:"response_draft_used,omitempty"`
+		ResponseDraftVersion     *int  `json:"response_draft_version,omitempty"`
 	}
 
 	var req OutcomeRequest
@@ -86,19 +105,27 @@ func (h *OutcomeHandler) RecordOutcome(c *gin.Context) {
 		outcomeID := uuid.New()
 		_, err = h.db.ExecContext(c, `
 			INSERT INTO outcome_tracking (
-				id, decision_id, decision_created_at, first_response_at, resolution_at,
+				id, decision_id, decision_created_at,
+				first_response_at, resolution_at,
 				time_to_first_response_hours, time_to_resolution_hours,
-				customer_satisfaction_score, nps_change, escalation_occurred,
-				team_consensus_score, lessons_learned,
-				estimated_financial_impact, actual_financial_impact,
+				customer_satisfaction_score, nps_change, customer_retained,
+				escalation_occurred, team_consensus_score,
+				ai_accuracy_validation, option_effectiveness_rating,
+				what_worked_well, what_could_improve, lessons_learned,
+				estimated_financial_impact, actual_financial_impact, roi_ratio,
+				ai_classification_accurate, response_draft_used, response_draft_version,
 				created_at, updated_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)
 		`,
-			outcomeID, decisionID, decision.CreatedAt, req.ResponseSentDate, req.ResponseSentDate,
+			outcomeID, decisionID, decision.CreatedAt,
+			req.FirstResponseAt, req.ResolutionAt,
 			req.TimeToFirstResponseHours, req.TimeToResolutionHours,
-			req.CustomerSatisfactionScore, req.NPSScoreChange, false,
-			req.TeamConsensusScore, req.LessonsLearned,
-			req.ActualCost, req.RevenueImpact,
+			req.CustomerSatisfactionScore, req.NPSChange, req.CustomerRetained,
+			req.EscalationOccurred, req.TeamConsensusScore,
+			req.AIAccuracyValidation, req.OptionEffectivenessRating,
+			req.WhatWorkedWell, req.WhatCouldImprove, req.LessonsLearned,
+			req.EstimatedFinancialImpact, req.ActualFinancialImpact, req.ROIRatio,
+			req.AIClassificationAccurate, req.ResponseDraftUsed, req.ResponseDraftVersion,
 			now, now,
 		)
 		if err != nil {
@@ -117,23 +144,38 @@ func (h *OutcomeHandler) RecordOutcome(c *gin.Context) {
 		// Update existing outcome
 		_, err = h.db.ExecContext(c, `
 			UPDATE outcome_tracking SET
-				first_response_at = $1,
-				resolution_at = $2,
-				time_to_first_response_hours = $3,
-				time_to_resolution_hours = $4,
-				customer_satisfaction_score = $5,
-				nps_change = $6,
-				team_consensus_score = $7,
-				lessons_learned = $8,
-				actual_financial_impact = $9,
-				updated_at = $10
-			WHERE id = $11
+				first_response_at = COALESCE($1, first_response_at),
+				resolution_at = COALESCE($2, resolution_at),
+				time_to_first_response_hours = COALESCE($3, time_to_first_response_hours),
+				time_to_resolution_hours = COALESCE($4, time_to_resolution_hours),
+				customer_satisfaction_score = COALESCE($5, customer_satisfaction_score),
+				nps_change = COALESCE($6, nps_change),
+				customer_retained = COALESCE($7, customer_retained),
+				escalation_occurred = COALESCE($8, escalation_occurred),
+				team_consensus_score = COALESCE($9, team_consensus_score),
+				ai_accuracy_validation = COALESCE($10, ai_accuracy_validation),
+				option_effectiveness_rating = COALESCE($11, option_effectiveness_rating),
+				what_worked_well = COALESCE($12, what_worked_well),
+				what_could_improve = COALESCE($13, what_could_improve),
+				lessons_learned = COALESCE($14, lessons_learned),
+				estimated_financial_impact = COALESCE($15, estimated_financial_impact),
+				actual_financial_impact = COALESCE($16, actual_financial_impact),
+				roi_ratio = COALESCE($17, roi_ratio),
+				ai_classification_accurate = COALESCE($18, ai_classification_accurate),
+				response_draft_used = COALESCE($19, response_draft_used),
+				response_draft_version = COALESCE($20, response_draft_version),
+				updated_at = $21
+			WHERE id = $22
 		`,
-			req.ResponseSentDate, req.ResponseSentDate,
+			req.FirstResponseAt, req.ResolutionAt,
 			req.TimeToFirstResponseHours, req.TimeToResolutionHours,
-			req.CustomerSatisfactionScore, req.NPSScoreChange,
-			req.TeamConsensusScore, req.LessonsLearned,
-			req.RevenueImpact, now, existingID,
+			req.CustomerSatisfactionScore, req.NPSChange, req.CustomerRetained,
+			req.EscalationOccurred, req.TeamConsensusScore,
+			req.AIAccuracyValidation, req.OptionEffectivenessRating,
+			req.WhatWorkedWell, req.WhatCouldImprove, req.LessonsLearned,
+			req.EstimatedFinancialImpact, req.ActualFinancialImpact, req.ROIRatio,
+			req.AIClassificationAccurate, req.ResponseDraftUsed, req.ResponseDraftVersion,
+			now, existingID,
 		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update outcome", "details": err.Error()})
@@ -182,20 +224,35 @@ func (h *OutcomeHandler) GetOutcome(c *gin.Context) {
 		TimeToResolutionHours     *float64   `json:"time_to_resolution_hours" db:"time_to_resolution_hours"`
 		CustomerSatisfactionScore *int       `json:"customer_satisfaction_score" db:"customer_satisfaction_score"`
 		NPSChange                 *int       `json:"nps_change" db:"nps_change"`
+		CustomerRetained          *bool      `json:"customer_retained" db:"customer_retained"`
+		EscalationOccurred        *bool      `json:"escalation_occurred" db:"escalation_occurred"`
 		TeamConsensusScore        *float64   `json:"team_consensus_score" db:"team_consensus_score"`
+		AIAccuracyValidation      *bool      `json:"ai_accuracy_validation" db:"ai_accuracy_validation"`
+		OptionEffectivenessRating *int       `json:"option_effectiveness_rating" db:"option_effectiveness_rating"`
+		WhatWorkedWell            *string    `json:"what_worked_well" db:"what_worked_well"`
+		WhatCouldImprove          *string    `json:"what_could_improve" db:"what_could_improve"`
 		LessonsLearned            *string    `json:"lessons_learned" db:"lessons_learned"`
 		EstimatedFinancialImpact  *float64   `json:"estimated_financial_impact" db:"estimated_financial_impact"`
 		ActualFinancialImpact     *float64   `json:"actual_financial_impact" db:"actual_financial_impact"`
+		ROIRatio                  *float64   `json:"roi_ratio" db:"roi_ratio"`
+		AIClassificationAccurate  *bool      `json:"ai_classification_accurate" db:"ai_classification_accurate"`
+		ResponseDraftUsed         *bool      `json:"response_draft_used" db:"response_draft_used"`
+		ResponseDraftVersion      *int       `json:"response_draft_version" db:"response_draft_version"`
 		CreatedAt                 time.Time  `json:"created_at" db:"created_at"`
 		UpdatedAt                 time.Time  `json:"updated_at" db:"updated_at"`
 	}
 
 	var outcome OutcomeResponse
 	err = h.db.GetContext(c, &outcome, `
-		SELECT id, decision_id, decision_created_at, first_response_at, resolution_at,
+		SELECT id, decision_id, decision_created_at,
+		       first_response_at, resolution_at,
 		       time_to_first_response_hours, time_to_resolution_hours,
-		       customer_satisfaction_score, nps_change, team_consensus_score,
-		       lessons_learned, estimated_financial_impact, actual_financial_impact,
+		       customer_satisfaction_score, nps_change, customer_retained,
+		       escalation_occurred, team_consensus_score,
+		       ai_accuracy_validation, option_effectiveness_rating,
+		       what_worked_well, what_could_improve, lessons_learned,
+		       estimated_financial_impact, actual_financial_impact, roi_ratio,
+		       ai_classification_accurate, response_draft_used, response_draft_version,
 		       created_at, updated_at
 		FROM outcome_tracking
 		WHERE decision_id = $1

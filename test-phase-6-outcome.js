@@ -44,19 +44,26 @@ async function recordOutcome() {
   console.log('📝 Recording decision outcome...');
 
   const outcomeData = {
-    selected_option_id: optionId,
-    decision_date: new Date().toISOString(),
-    response_sent_date: new Date().toISOString(),
-    customer_satisfaction_score: 5,
-    nps_score_change: 20,
-    customer_feedback: 'Customer very satisfied with the prompt response and resolution. Expressed appreciation for the premium support upgrade.',
-    team_consensus_score: 0.93,
-    actual_cost: 5000,
-    revenue_impact: 12000,
-    lessons_learned: 'Quick premium support upgrade was more valuable than partial refund. Customer valued proactive approach and long-term relationship commitment.',
-    would_decide_same_again: true,
+    first_response_at: new Date().toISOString(),
+    resolution_at: new Date().toISOString(),
     time_to_first_response_hours: 2,
-    time_to_resolution_hours: 6
+    time_to_resolution_hours: 6,
+    customer_satisfaction_score: 5,
+    nps_change: 20,
+    customer_retained: true,
+    escalation_occurred: false,
+    team_consensus_score: 0.93,
+    ai_accuracy_validation: true,
+    option_effectiveness_rating: 5,
+    what_worked_well: 'Quick premium support upgrade was highly effective. Customer appreciated proactive approach.',
+    what_could_improve: 'Could have communicated timeline expectations earlier.',
+    lessons_learned: 'Premium support upgrade more valuable than partial refund. Customer valued long-term relationship commitment.',
+    estimated_financial_impact: 4500,
+    actual_financial_impact: 5000,
+    roi_ratio: 2.4,
+    ai_classification_accurate: true,
+    response_draft_used: true,
+    response_draft_version: 1
   };
 
   const response = await fetch(`${API_URL}/decisions/${DECISION_ID}/outcome`, {
@@ -95,17 +102,17 @@ async function verifyOutcome() {
   console.log('✅ Outcome retrieved successfully!\n');
 
   console.log('📊 OUTCOME SUMMARY:');
-  console.log(`   Selected Option: ${outcome.selected_option_id}`);
   console.log(`   Customer Satisfaction: ${outcome.customer_satisfaction_score}/5`);
-  console.log(`   NPS Change: ${outcome.nps_score_change > 0 ? '+' : ''}${outcome.nps_score_change}`);
+  console.log(`   NPS Change: ${outcome.nps_change > 0 ? '+' : ''}${outcome.nps_change}`);
   console.log(`   Team Consensus: ${(outcome.team_consensus_score * 100).toFixed(0)}%`);
-  console.log(`   Would Decide Same Again: ${outcome.would_decide_same_again ? 'Yes' : 'No'}`);
+  console.log(`   Customer Retained: ${outcome.customer_retained ? 'Yes' : 'No'}`);
+  console.log(`   Escalation Occurred: ${outcome.escalation_occurred ? 'Yes' : 'No'}`);
   console.log();
 
   console.log('💰 FINANCIAL IMPACT:');
-  console.log(`   Actual Cost: $${outcome.actual_cost}`);
-  console.log(`   Revenue Impact: $${outcome.revenue_impact}`);
-  console.log(`   Net Impact: $${outcome.revenue_impact - outcome.actual_cost}`);
+  console.log(`   Estimated Impact: $${outcome.estimated_financial_impact}`);
+  console.log(`   Actual Impact: $${outcome.actual_financial_impact}`);
+  console.log(`   ROI Ratio: ${outcome.roi_ratio}x`);
   console.log();
 
   console.log('⏱️  TIMING METRICS:');
@@ -113,12 +120,23 @@ async function verifyOutcome() {
   console.log(`   Time to Resolution: ${outcome.time_to_resolution_hours} hours`);
   console.log();
 
-  console.log('📝 CUSTOMER FEEDBACK:');
-  console.log(`   "${outcome.customer_feedback}"`);
+  console.log('✅ WHAT WORKED WELL:');
+  console.log(`   "${outcome.what_worked_well}"`);
+  console.log();
+
+  console.log('🔧 WHAT COULD IMPROVE:');
+  console.log(`   "${outcome.what_could_improve}"`);
   console.log();
 
   console.log('💡 LESSONS LEARNED:');
   console.log(`   "${outcome.lessons_learned}"`);
+  console.log();
+
+  console.log('🤖 AI VALIDATION:');
+  console.log(`   AI Classification Accurate: ${outcome.ai_classification_accurate ? 'Yes' : 'No'}`);
+  console.log(`   AI Accuracy Validation: ${outcome.ai_accuracy_validation ? 'Yes' : 'No'}`);
+  console.log(`   Option Effectiveness: ${outcome.option_effectiveness_rating}/5`);
+  console.log(`   Response Draft Used: ${outcome.response_draft_used ? 'Yes' : 'No'} (v${outcome.response_draft_version || 0})`);
   console.log();
 
   return outcome;
@@ -142,15 +160,11 @@ async function testPhase6Outcome() {
 
     const validations = [
       {
-        test: outcome.selected_option_id === optionId,
-        name: 'Selected option recorded correctly'
-      },
-      {
         test: outcome.customer_satisfaction_score === 5,
         name: 'Customer satisfaction score recorded'
       },
       {
-        test: outcome.nps_score_change === 20,
+        test: outcome.nps_change === 20,
         name: 'NPS change tracked'
       },
       {
@@ -158,28 +172,64 @@ async function testPhase6Outcome() {
         name: 'Team consensus score stored'
       },
       {
-        test: outcome.actual_cost === 5000,
-        name: 'Actual cost recorded'
+        test: outcome.actual_financial_impact === 5000,
+        name: 'Actual financial impact recorded'
       },
       {
-        test: outcome.revenue_impact === 12000,
-        name: 'Revenue impact tracked'
+        test: outcome.estimated_financial_impact === 4500,
+        name: 'Estimated financial impact recorded'
       },
       {
-        test: outcome.customer_feedback && outcome.customer_feedback.length > 0,
-        name: 'Customer feedback captured'
+        test: outcome.roi_ratio === 2.4,
+        name: 'ROI ratio calculated'
+      },
+      {
+        test: outcome.what_worked_well && outcome.what_worked_well.length > 0,
+        name: 'What worked well captured'
+      },
+      {
+        test: outcome.what_could_improve && outcome.what_could_improve.length > 0,
+        name: 'What could improve documented'
       },
       {
         test: outcome.lessons_learned && outcome.lessons_learned.length > 0,
         name: 'Lessons learned documented'
       },
       {
-        test: outcome.would_decide_same_again === true,
-        name: 'Decision reflection recorded'
+        test: outcome.customer_retained === true,
+        name: 'Customer retention status recorded'
+      },
+      {
+        test: outcome.escalation_occurred === false,
+        name: 'Escalation status tracked'
+      },
+      {
+        test: outcome.ai_classification_accurate === true,
+        name: 'AI classification accuracy recorded'
+      },
+      {
+        test: outcome.ai_accuracy_validation === true,
+        name: 'AI accuracy validation recorded'
+      },
+      {
+        test: outcome.option_effectiveness_rating === 5,
+        name: 'Option effectiveness rating captured'
+      },
+      {
+        test: outcome.response_draft_used === true,
+        name: 'Response draft usage tracked'
+      },
+      {
+        test: outcome.response_draft_version === 1,
+        name: 'Response draft version recorded'
       },
       {
         test: outcome.time_to_first_response_hours === 2,
-        name: 'Response time metrics captured'
+        name: 'Time to first response captured'
+      },
+      {
+        test: outcome.time_to_resolution_hours === 6,
+        name: 'Time to resolution captured'
       }
     ];
 
