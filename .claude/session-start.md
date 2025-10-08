@@ -6,21 +6,28 @@
 
 ## IMMEDIATE ACTIONS (First 30 seconds)
 
-### Step 1: Read Completion Checklist (MANDATORY)
+### Step 1: Read Database Schema (MANDATORY - NEW!)
+```bash
+cat docs/schema/CURRENT_DATABASE_SCHEMA.md
+```
+
+**Purpose**: ⚠️ **SINGLE SOURCE OF TRUTH** for database schema. Check BEFORE touching any handler/model code.
+
+### Step 2: Read Completion Checklist (MANDATORY)
 ```bash
 cat .claude/completion-checklist.md
 ```
 
 **Purpose**: Understand verification requirements before claiming anything is "done"
 
-### Step 2: Read Session Context
+### Step 3: Read Session Context
 ```bash
 cat docs/SESSION_CONTEXT.md
 ```
 
 **Purpose**: Understand behavioral rules and prohibited patterns
 
-### Step 3: Identify Current Task
+### Step 4: Identify Current Task
 ```bash
 cat docs/current/active-tasks.md
 ```
@@ -50,6 +57,9 @@ cat docs/current/active-tasks.md
 - [ ] You created a file but didn't execute/run it
 - [ ] You're using words like "should work" or "will pass"
 - [ ] You're claiming completion but haven't checked the result
+- [ ] **NEW**: You're writing handler code without checking `docs/schema/CURRENT_DATABASE_SCHEMA.md`
+- [ ] **NEW**: You're assuming a database field exists without verifying the schema
+- [ ] **NEW**: You're creating frontend types without checking actual backend response format
 
 ### ✅ GREEN FLAGS - You're about to claim completion correctly if:
 
