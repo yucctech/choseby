@@ -38,17 +38,13 @@ function DecisionDetailContent() {
     try {
       setLoading(true);
 
-      const [decisionData, criteriaData, optionsData, evaluationsData] = await Promise.all([
-        api.decisions.get(decisionId),
-        api.criteria.list(decisionId),
-        api.options.list(decisionId),
-        api.evaluations.list(decisionId),
-      ]);
+      // Backend returns everything in a single call: {decision, criteria, options, evaluations}
+      const data = await api.decisions.get(decisionId);
 
-      setDecision(decisionData);
-      setCriteria(criteriaData);
-      setOptions(optionsData);
-      setEvaluations(evaluationsData);
+      setDecision(data.decision);
+      setCriteria(data.criteria || []);
+      setOptions(data.options || []);
+      setEvaluations(data.evaluations || []);
       setError(null);
     } catch (err) {
       console.error('Failed to load decision:', err);
@@ -82,11 +78,10 @@ function DecisionDetailContent() {
 
   const getTierColor = (tier: string) => {
     const colors: Record<string, string> = {
-      bronze: 'bg-tier-bronze text-white',
-      silver: 'bg-tier-silver text-gray-900',
-      gold: 'bg-tier-gold text-gray-900',
-      platinum: 'bg-tier-platinum text-gray-900',
-      enterprise: 'bg-tier-enterprise text-white',
+      basic: 'bg-gray-500 text-white',
+      standard: 'bg-blue-500 text-white',
+      premium: 'bg-purple-500 text-white',
+      enterprise: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white',
     };
     return colors[tier] || 'bg-gray-500 text-white';
   };
