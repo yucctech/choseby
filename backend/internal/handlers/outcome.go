@@ -35,17 +35,20 @@ func (h *OutcomeHandler) RecordOutcome(c *gin.Context) {
 	}
 
 	type OutcomeRequest struct {
-		CustomerSatisfactionScore *int       `json:"customer_satisfaction_score" validate:"omitempty,min=1,max=10"`
-		EscalationOccurred        bool       `json:"escalation_occurred"`
-		EscalationLevel           *string    `json:"escalation_level,omitempty" validate:"omitempty,oneof=none supervisor management executive legal"`
-		FinancialImpactActual     *float64   `json:"financial_impact_actual,omitempty"`
-		ResolutionTimeHours       *int       `json:"resolution_time_hours,omitempty"`
-		CustomerRetentionImpact   *string    `json:"customer_retention_impact,omitempty" validate:"omitempty,oneof=positive neutral negative churn_risk churn_occurred"`
-		FollowUpRequired          bool       `json:"follow_up_required"`
-		FollowUpScheduledDate     *time.Time `json:"follow_up_scheduled_date,omitempty"`
-		OutcomeNotes              *string    `json:"outcome_notes,omitempty"`
-		ResponseDraftUsed         bool       `json:"response_draft_used"`
-		ResponseDraftVersion      *int       `json:"response_draft_version,omitempty"`
+		SelectedOptionID          string     `json:"selected_option_id"`
+		DecisionDate              *time.Time `json:"decision_date,omitempty"`
+		ResponseSentDate          *time.Time `json:"response_sent_date,omitempty"`
+		TimeToFirstResponseHours  *float64   `json:"time_to_first_response_hours,omitempty"`
+		TimeToResolutionHours     *float64   `json:"time_to_resolution_hours,omitempty"`
+		CustomerSatisfactionScore *int       `json:"customer_satisfaction_score,omitempty" validate:"omitempty,min=1,max=5"`
+		NPSScoreChange            *int       `json:"nps_score_change,omitempty"`
+		CustomerFeedback          *string    `json:"customer_feedback,omitempty"`
+		TeamConsensusScore        *float64   `json:"team_consensus_score,omitempty"`
+		AIAccuracyRating          *int       `json:"ai_accuracy_rating,omitempty"`
+		ActualCost                *float64   `json:"actual_cost,omitempty"`
+		RevenueImpact             *float64   `json:"revenue_impact,omitempty"`
+		LessonsLearned            *string    `json:"lessons_learned,omitempty"`
+		WouldDecideSameAgain      *bool      `json:"would_decide_same_again,omitempty"`
 	}
 
 	var req OutcomeRequest
@@ -68,9 +71,13 @@ func (h *OutcomeHandler) RecordOutcome(c *gin.Context) {
 
 	// Check if outcome already exists
 	var existingID *uuid.UUID
-	err = h.db.GetContext(c, &existingID, `
-		SELECT id FROM outcome_tracking WHERE decision_id = $1
+	var existingOutcome models.OutcomeTracking
+	err = h.db.GetContext(c, &existingOutcome, `
+		SELECT * FROM outcome_tracking WHERE decision_id = $1
 	`, decisionID)
+	if err == nil {
+		existingID = &existingOutcome.ID
+	}
 
 	now := time.Now()
 
@@ -79,17 +86,19 @@ func (h *OutcomeHandler) RecordOutcome(c *gin.Context) {
 		outcomeID := uuid.New()
 		_, err = h.db.ExecContext(c, `
 			INSERT INTO outcome_tracking (
-				id, decision_id, customer_satisfaction_score, escalation_occurred,
-				escalation_level, financial_impact_actual, resolution_time_hours,
-				customer_retention_impact, follow_up_required, follow_up_scheduled_date,
-				outcome_notes, response_draft_used, response_draft_version,
+				id, decision_id, decision_created_at, first_response_at, resolution_at,
+				time_to_first_response_hours, time_to_resolution_hours,
+				customer_satisfaction_score, nps_change, escalation_occurred,
+				team_consensus_score, lessons_learned,
+				estimated_financial_impact, actual_financial_impact,
 				created_at, updated_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 		`,
-			outcomeID, decisionID, req.CustomerSatisfactionScore, req.EscalationOccurred,
-			req.EscalationLevel, req.FinancialImpactActual, req.ResolutionTimeHours,
-			req.CustomerRetentionImpact, req.FollowUpRequired, req.FollowUpScheduledDate,
-			req.OutcomeNotes, req.ResponseDraftUsed, req.ResponseDraftVersion,
+			outcomeID, decisionID, decision.CreatedAt, req.ResponseSentDate, req.ResponseSentDate,
+			req.TimeToFirstResponseHours, req.TimeToResolutionHours,
+			req.CustomerSatisfactionScore, req.NPSScoreChange, false,
+			req.TeamConsensusScore, req.LessonsLearned,
+			req.ActualCost, req.RevenueImpact,
 			now, now,
 		)
 		if err != nil {
@@ -98,31 +107,33 @@ func (h *OutcomeHandler) RecordOutcome(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusCreated, gin.H{
-			"message":    "Outcome recorded successfully",
-			"outcome_id": outcomeID,
+			"message": "Outcome recorded successfully",
+			"data": gin.H{
+				"id":          outcomeID,
+				"decision_id": decisionID,
+			},
 		})
 	} else {
 		// Update existing outcome
 		_, err = h.db.ExecContext(c, `
 			UPDATE outcome_tracking SET
-				customer_satisfaction_score = $1,
-				escalation_occurred = $2,
-				escalation_level = $3,
-				financial_impact_actual = $4,
-				resolution_time_hours = $5,
-				customer_retention_impact = $6,
-				follow_up_required = $7,
-				follow_up_scheduled_date = $8,
-				outcome_notes = $9,
-				response_draft_used = $10,
-				response_draft_version = $11,
-				updated_at = $12
-			WHERE id = $13
+				first_response_at = $1,
+				resolution_at = $2,
+				time_to_first_response_hours = $3,
+				time_to_resolution_hours = $4,
+				customer_satisfaction_score = $5,
+				nps_change = $6,
+				team_consensus_score = $7,
+				lessons_learned = $8,
+				actual_financial_impact = $9,
+				updated_at = $10
+			WHERE id = $11
 		`,
-			req.CustomerSatisfactionScore, req.EscalationOccurred, req.EscalationLevel,
-			req.FinancialImpactActual, req.ResolutionTimeHours, req.CustomerRetentionImpact,
-			req.FollowUpRequired, req.FollowUpScheduledDate, req.OutcomeNotes,
-			req.ResponseDraftUsed, req.ResponseDraftVersion, now, existingID,
+			req.ResponseSentDate, req.ResponseSentDate,
+			req.TimeToFirstResponseHours, req.TimeToResolutionHours,
+			req.CustomerSatisfactionScore, req.NPSScoreChange,
+			req.TeamConsensusScore, req.LessonsLearned,
+			req.RevenueImpact, now, existingID,
 		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update outcome", "details": err.Error()})
@@ -130,8 +141,11 @@ func (h *OutcomeHandler) RecordOutcome(c *gin.Context) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"message":    "Outcome updated successfully",
-			"outcome_id": existingID,
+			"message": "Outcome updated successfully",
+			"data": gin.H{
+				"id":          existingID,
+				"decision_id": decisionID,
+			},
 		})
 	}
 }
@@ -157,17 +171,43 @@ func (h *OutcomeHandler) GetOutcome(c *gin.Context) {
 		return
 	}
 
-	// Get outcome
-	var outcome models.OutcomeTracking
+	// Get outcome - Use specific fields to avoid issues with nullable columns
+	type OutcomeResponse struct {
+		ID                        uuid.UUID  `json:"id" db:"id"`
+		DecisionID                uuid.UUID  `json:"decision_id" db:"decision_id"`
+		DecisionCreatedAt         time.Time  `json:"decision_created_at" db:"decision_created_at"`
+		FirstResponseAt           *time.Time `json:"first_response_at" db:"first_response_at"`
+		ResolutionAt              *time.Time `json:"resolution_at" db:"resolution_at"`
+		TimeToFirstResponseHours  *float64   `json:"time_to_first_response_hours" db:"time_to_first_response_hours"`
+		TimeToResolutionHours     *float64   `json:"time_to_resolution_hours" db:"time_to_resolution_hours"`
+		CustomerSatisfactionScore *int       `json:"customer_satisfaction_score" db:"customer_satisfaction_score"`
+		NPSChange                 *int       `json:"nps_change" db:"nps_change"`
+		TeamConsensusScore        *float64   `json:"team_consensus_score" db:"team_consensus_score"`
+		LessonsLearned            *string    `json:"lessons_learned" db:"lessons_learned"`
+		EstimatedFinancialImpact  *float64   `json:"estimated_financial_impact" db:"estimated_financial_impact"`
+		ActualFinancialImpact     *float64   `json:"actual_financial_impact" db:"actual_financial_impact"`
+		CreatedAt                 time.Time  `json:"created_at" db:"created_at"`
+		UpdatedAt                 time.Time  `json:"updated_at" db:"updated_at"`
+	}
+
+	var outcome OutcomeResponse
 	err = h.db.GetContext(c, &outcome, `
-		SELECT * FROM outcome_tracking WHERE decision_id = $1
+		SELECT id, decision_id, decision_created_at, first_response_at, resolution_at,
+		       time_to_first_response_hours, time_to_resolution_hours,
+		       customer_satisfaction_score, nps_change, team_consensus_score,
+		       lessons_learned, estimated_financial_impact, actual_financial_impact,
+		       created_at, updated_at
+		FROM outcome_tracking
+		WHERE decision_id = $1
 	`, decisionID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No outcome recorded yet"})
 		return
 	}
 
-	c.JSON(http.StatusOK, outcome)
+	c.JSON(http.StatusOK, gin.H{
+		"data": outcome,
+	})
 }
 
 // RecordAIFeedback records feedback on AI recommendation accuracy
