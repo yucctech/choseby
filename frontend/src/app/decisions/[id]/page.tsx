@@ -30,6 +30,12 @@ function DecisionDetailContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Criteria management state
+  const [showCriteriaForm, setShowCriteriaForm] = useState(false);
+  const [criteriaFormData, setCriteriaFormData] = useState<Array<{name: string; description: string; weight: number}>>([
+    { name: '', description: '', weight: 1.0 }
+  ]);
+
   useEffect(() => {
     loadDecisionData();
   }, [decisionId]);
@@ -67,6 +73,41 @@ function DecisionDetailContent() {
       console.error('Failed to update phase:', err);
       alert('Failed to update phase');
     }
+  };
+
+  const handleSaveCriteria = async () => {
+    try {
+      // Filter out empty criteria
+      const validCriteria = criteriaFormData.filter(c => c.name.trim() !== '');
+
+      if (validCriteria.length === 0) {
+        alert('Please add at least one criterion');
+        return;
+      }
+
+      await api.decisions.updateCriteria(decisionId, { criteria: validCriteria });
+      await loadDecisionData();
+      setShowCriteriaForm(false);
+      setCriteriaFormData([{ name: '', description: '', weight: 1.0 }]);
+    } catch (err) {
+      console.error('Failed to save criteria:', err);
+      alert('Failed to save criteria');
+    }
+  };
+
+  const handleAddCriterion = () => {
+    setCriteriaFormData([...criteriaFormData, { name: '', description: '', weight: 1.0 }]);
+  };
+
+  const handleRemoveCriterion = (index: number) => {
+    const newData = criteriaFormData.filter((_, i) => i !== index);
+    setCriteriaFormData(newData.length > 0 ? newData : [{ name: '', description: '', weight: 1.0 }]);
+  };
+
+  const handleCriterionChange = (index: number, field: 'name' | 'description' | 'weight', value: string | number) => {
+    const newData = [...criteriaFormData];
+    newData[index] = { ...newData[index], [field]: value };
+    setCriteriaFormData(newData);
   };
 
   const getPhaseStatus = (phaseNumber: number) => {
@@ -236,12 +277,12 @@ function DecisionDetailContent() {
                 <h2 className="text-xl font-semibold mb-4">⚖️ Phase 2: Criteria Establishment</h2>
                 <p className="text-gray-600 mb-4">Define the criteria that will be used to evaluate response options.</p>
 
-                {criteria.length === 0 ? (
+                {!showCriteriaForm && criteria.length === 0 ? (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
                     <p className="text-gray-600 mb-4">No criteria defined yet</p>
-                    <Button>+ Add Criterion</Button>
+                    <Button onClick={() => setShowCriteriaForm(true)}>+ Add Criteria</Button>
                   </div>
-                ) : (
+                ) : !showCriteriaForm ? (
                   <div className="space-y-3 mb-4">
                     {criteria.map((criterion) => (
                       <div key={criterion.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
@@ -252,12 +293,88 @@ function DecisionDetailContent() {
                         <Badge>Weight: {criterion.weight}</Badge>
                       </div>
                     ))}
+                    <Button variant="outline" onClick={() => setShowCriteriaForm(true)}>Edit Criteria</Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4 mb-4">
+                    {criteriaFormData.map((criterion, index) => (
+                      <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Criterion Name *
+                            </label>
+                            <input
+                              type="text"
+                              value={criterion.name}
+                              onChange={(e) => handleCriterionChange(index, 'name', e.target.value)}
+                              placeholder="e.g., Customer Satisfaction Impact"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Description
+                            </label>
+                            <textarea
+                              value={criterion.description}
+                              onChange={(e) => handleCriterionChange(index, 'description', e.target.value)}
+                              placeholder="How will this criterion be evaluated?"
+                              rows={2}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <div className="flex-1">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Weight (0.1 - 5.0)
+                              </label>
+                              <input
+                                type="number"
+                                min="0.1"
+                                max="5.0"
+                                step="0.1"
+                                value={criterion.weight}
+                                onChange={(e) => handleCriterionChange(index, 'weight', parseFloat(e.target.value) || 1.0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              />
+                            </div>
+
+                            {criteriaFormData.length > 1 && (
+                              <Button
+                                variant="outline"
+                                onClick={() => handleRemoveCriterion(index)}
+                                className="mt-6"
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="flex gap-3">
+                      <Button variant="outline" onClick={handleAddCriterion}>
+                        + Add Another Criterion
+                      </Button>
+                      <Button onClick={handleSaveCriteria}>
+                        Save Criteria
+                      </Button>
+                      <Button variant="outline" onClick={() => setShowCriteriaForm(false)}>
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 )}
 
-                <Button onClick={() => handlePhaseComplete(2)}>
-                  Continue to Options →
-                </Button>
+                {criteria.length > 0 && !showCriteriaForm && (
+                  <Button onClick={() => handlePhaseComplete(2)}>
+                    Continue to Options →
+                  </Button>
+                )}
               </Card>
             )}
 

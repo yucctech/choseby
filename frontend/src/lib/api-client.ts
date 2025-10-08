@@ -187,6 +187,20 @@ export const decisions = {
       method: 'DELETE',
     });
   },
+
+  async updateCriteria(decisionId: string, data: { criteria: Array<{ name: string; description?: string; weight: number }> }): Promise<{ criteria: DecisionCriteria[] }> {
+    return apiRequest<{ criteria: DecisionCriteria[] }>(`/decisions/${decisionId}/criteria`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateOptions(decisionId: string, data: { options: Array<{ title: string; description: string; financial_cost?: number; implementation_effort?: string; risk_level?: string }> }): Promise<{ options: ResponseOption[] }> {
+    return apiRequest<{ options: ResponseOption[] }>(`/decisions/${decisionId}/options`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // ========================================
