@@ -73,29 +73,29 @@ func (h *AnalyticsHandler) GetDashboard(c *gin.Context) {
 		totalDecisions = 0
 	}
 
-	// Calculate average resolution time
+	// Calculate average resolution time from outcome_tracking
 	var avgResolutionHours float64
 	err = h.db.GetContext(c, &avgResolutionHours, `
-		SELECT COALESCE(AVG(do.resolution_time_hours), 0)
-		FROM decision_outcomes do
-		JOIN customer_decisions cd ON do.decision_id = cd.id
+		SELECT COALESCE(AVG(ot.time_to_resolution_hours), 0)
+		FROM outcome_tracking ot
+		JOIN customer_decisions cd ON ot.decision_id = cd.id
 		WHERE cd.team_id = $1
 		AND cd.created_at >= $2
-		AND do.resolution_time_hours IS NOT NULL
+		AND ot.time_to_resolution_hours IS NOT NULL
 	`, teamID, startDate)
 	if err != nil {
 		avgResolutionHours = 0
 	}
 
-	// Calculate average customer satisfaction
+	// Calculate average customer satisfaction from outcome_tracking
 	var avgCustomerSatisfaction float64
 	err = h.db.GetContext(c, &avgCustomerSatisfaction, `
-		SELECT COALESCE(AVG(do.customer_satisfaction_score::float), 0)
-		FROM decision_outcomes do
-		JOIN customer_decisions cd ON do.decision_id = cd.id
+		SELECT COALESCE(AVG(ot.customer_satisfaction_score::float), 0)
+		FROM outcome_tracking ot
+		JOIN customer_decisions cd ON ot.decision_id = cd.id
 		WHERE cd.team_id = $1
 		AND cd.created_at >= $2
-		AND do.customer_satisfaction_score IS NOT NULL
+		AND ot.customer_satisfaction_score IS NOT NULL
 	`, teamID, startDate)
 	if err != nil {
 		avgCustomerSatisfaction = 0
@@ -184,10 +184,10 @@ func (h *AnalyticsHandler) GetDashboard(c *gin.Context) {
 		SELECT
 			DATE_TRUNC('week', cd.created_at)::date as week,
 			COUNT(cd.id) as decision_count,
-			COALESCE(AVG(do.resolution_time_hours), 0) as avg_resolution_time,
-			COALESCE(AVG(do.customer_satisfaction_score::float), 0) as avg_satisfaction
+			COALESCE(AVG(ot.time_to_resolution_hours), 0) as avg_resolution_time,
+			COALESCE(AVG(ot.customer_satisfaction_score::float), 0) as avg_satisfaction
 		FROM customer_decisions cd
-		LEFT JOIN decision_outcomes do ON cd.id = do.decision_id
+		LEFT JOIN outcome_tracking ot ON cd.id = ot.decision_id
 		WHERE cd.team_id = $1 AND cd.created_at >= $2
 		GROUP BY DATE_TRUNC('week', cd.created_at)
 		ORDER BY week DESC

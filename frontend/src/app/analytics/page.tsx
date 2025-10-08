@@ -19,50 +19,19 @@ export default function AnalyticsPage() {
 
 function AnalyticsContent() {
   const router = useRouter();
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [responseTimeMetrics, setResponseTimeMetrics] = useState<ResponseTimeMetrics | null>(null);
-  const [satisfactionMetrics, setSatisfactionMetrics] = useState<CustomerSatisfactionMetrics | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
-
-  // TODO: Get actual team ID from auth context
-  const teamId = 'demo-team-id';
+  const [period, setPeriod] = useState<'7d' | '30d' | '90d'>('30d');
 
   useEffect(() => {
     loadAnalytics();
-  }, [dateRange]);
+  }, [period]);
 
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-
-      const now = new Date();
-      let startDate: string | undefined;
-
-      switch (dateRange) {
-        case '7d':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-          break;
-        case '30d':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-          break;
-        case '90d':
-          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
-          break;
-        case 'all':
-          startDate = undefined;
-          break;
-      }
-
-      const [dashboardData, responseTimeData, satisfactionData] = await Promise.all([
-        api.analytics.getDashboardMetrics(teamId),
-        api.analytics.getResponseTimeMetrics(teamId, startDate, now.toISOString()),
-        api.analytics.getCustomerSatisfactionMetrics(teamId, startDate, now.toISOString()),
-      ]);
-
-      setMetrics(dashboardData);
-      setResponseTimeMetrics(responseTimeData as ResponseTimeMetrics);
-      setSatisfactionMetrics(satisfactionData as CustomerSatisfactionMetrics);
+      const data = await api.analytics.getDashboard(period);
+      setAnalyticsData(data);
     } catch (error) {
       console.error('Failed to load analytics:', error);
     } finally {
@@ -94,13 +63,12 @@ function AnalyticsContent() {
             <div className="flex gap-3">
               <select
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value as any)}
+                value={period}
+                onChange={(e) => setPeriod(e.target.value as any)}
               >
                 <option value="7d">Last 7 days</option>
                 <option value="30d">Last 30 days</option>
                 <option value="90d">Last 90 days</option>
-                <option value="all">All time</option>
               </select>
               <Button variant="outline" onClick={() => router.push('/dashboard')}>
                 ← Dashboard
@@ -117,8 +85,8 @@ function AnalyticsContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Decisions</p>
-                <p className="text-3xl font-bold text-gray-900">{metrics?.total_decisions || 0}</p>
-                <p className="text-xs text-green-600 mt-1">↑ 12% from last period</p>
+                <p className="text-3xl font-bold text-gray-900">{analyticsData?.summary?.total_decisions || 0}</p>
+                <p className="text-xs text-gray-500 mt-1">{period.replace('d', ' days')}</p>
               </div>
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,9 +99,9 @@ function AnalyticsContent() {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Avg Response Time</p>
-                <p className="text-3xl font-bold text-green-600">{responseTimeMetrics?.avg_time_to_first_response?.toFixed(1) || 0}h</p>
-                <p className="text-xs text-green-600 mt-1">↓ 45% faster</p>
+                <p className="text-sm text-gray-600 mb-1">Avg Resolution Time</p>
+                <p className="text-3xl font-bold text-green-600">{analyticsData?.summary?.avg_resolution_hours?.toFixed(1) || 0}h</p>
+                <p className="text-xs text-gray-500 mt-1">Resolution speed</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,8 +115,8 @@ function AnalyticsContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Customer Satisfaction</p>
-                <p className="text-3xl font-bold text-purple-600">{satisfactionMetrics?.avg_satisfaction_score?.toFixed(1) || 0}/5</p>
-                <p className="text-xs text-green-600 mt-1">↑ 0.3 improvement</p>
+                <p className="text-3xl font-bold text-purple-600">{analyticsData?.summary?.avg_satisfaction?.toFixed(1) || 0}/5</p>
+                <p className="text-xs text-gray-500 mt-1">Average score</p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,13 +129,13 @@ function AnalyticsContent() {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">NPS Change</p>
-                <p className="text-3xl font-bold text-blue-600">+{satisfactionMetrics?.avg_nps_change?.toFixed(0) || 0}</p>
-                <p className="text-xs text-green-600 mt-1">Positive trend</p>
+                <p className="text-sm text-gray-600 mb-1">Team Participation</p>
+                <p className="text-3xl font-bold text-blue-600">{analyticsData?.summary?.participation_rate?.toFixed(0) || 0}%</p>
+                <p className="text-xs text-gray-500 mt-1">Engagement rate</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
             </div>
@@ -175,117 +143,96 @@ function AnalyticsContent() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Response Time Breakdown */}
+          {/* Decision Types Breakdown */}
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Response Time Metrics</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-600">Average First Response</p>
-                  <p className="text-2xl font-bold text-gray-900">{responseTimeMetrics?.avg_time_to_first_response?.toFixed(1) || 0}h</p>
+            <h2 className="text-xl font-semibold mb-6">Decision Types</h2>
+            <div className="space-y-3">
+              {analyticsData?.analytics?.decision_types && Object.entries(analyticsData.analytics.decision_types).map(([type, count]: [string, any]) => (
+                <div key={type} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900 capitalize">{type.replace(/_/g, ' ')}</p>
+                    <p className="text-sm text-gray-600">{count} decisions</p>
+                  </div>
+                  <Badge className="bg-primary-100 text-primary-700">{count}</Badge>
                 </div>
-                <div className="text-green-600 text-sm font-medium">↓ 45%</div>
-              </div>
-
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-600">Average Resolution Time</p>
-                  <p className="text-2xl font-bold text-gray-900">{responseTimeMetrics?.avg_time_to_resolution?.toFixed(1) || 0}h</p>
-                </div>
-                <div className="text-green-600 text-sm font-medium">↓ 60%</div>
-              </div>
-
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-600">Median Response Time</p>
-                  <p className="text-2xl font-bold text-gray-900">{responseTimeMetrics?.median_response_time?.toFixed(1) || 0}h</p>
-                </div>
-                <div className="text-green-600 text-sm font-medium">↓ 50%</div>
-              </div>
-
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-600">95th Percentile</p>
-                  <p className="text-2xl font-bold text-gray-900">{responseTimeMetrics?.percentile_95?.toFixed(1) || 0}h</p>
-                </div>
-                <div className="text-gray-500 text-sm font-medium">Tracking</div>
-              </div>
+              ))}
             </div>
 
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-900">
-                <strong>💡 Insight:</strong> Response times improved by 60% after implementing AI classification and structured workflows.
-              </p>
-            </div>
+            {(!analyticsData?.analytics?.decision_types || Object.keys(analyticsData.analytics.decision_types).length === 0) && (
+              <div className="text-center py-8 text-gray-500">
+                <p>No decision type data available for this period</p>
+              </div>
+            )}
           </Card>
 
-          {/* Customer Satisfaction Breakdown */}
+          {/* Urgency Level Breakdown */}
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Customer Satisfaction Metrics</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-600">Overall Satisfaction</p>
-                  <p className="text-2xl font-bold text-gray-900">{satisfactionMetrics?.avg_satisfaction_score?.toFixed(1) || 0}/5</p>
-                </div>
-                <div className="text-green-600 text-sm font-medium">+0.3</div>
-              </div>
-
-              <div className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="text-sm text-gray-600">NPS Score Change</p>
-                  <p className="text-2xl font-bold text-gray-900">+{satisfactionMetrics?.avg_nps_change?.toFixed(0) || 0}</p>
-                </div>
-                <div className="text-green-600 text-sm font-medium">↑ Improving</div>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-600 mb-3">Satisfaction by Customer Tier</p>
-                <div className="space-y-2">
-                  {satisfactionMetrics?.satisfaction_by_tier && Object.entries(satisfactionMetrics.satisfaction_by_tier).map(([tier, score]) => (
-                    <div key={tier} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge className="text-xs capitalize">{tier}</Badge>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 w-32">
-                          <div
-                            className="bg-primary-600 h-2 rounded-full"
-                            style={{ width: `${(score / 5) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                      <span className="text-sm font-medium">{score.toFixed(1)}/5</span>
+            <h2 className="text-xl font-semibold mb-6">Urgency Distribution</h2>
+            <div className="space-y-3">
+              {analyticsData?.analytics?.urgency_breakdown && Object.entries(analyticsData.analytics.urgency_breakdown).map(([level, count]: [string, any]) => {
+                const urgencyLabels: {[key: string]: string} = {
+                  '1': 'Very Low',
+                  '2': 'Low',
+                  '3': 'Medium',
+                  '4': 'High',
+                  '5': 'Critical'
+                };
+                const urgencyColors: {[key: string]: string} = {
+                  '1': 'bg-gray-100 text-gray-700',
+                  '2': 'bg-blue-100 text-blue-700',
+                  '3': 'bg-yellow-100 text-yellow-700',
+                  '4': 'bg-orange-100 text-orange-700',
+                  '5': 'bg-red-100 text-red-700'
+                };
+                return (
+                  <div key={level} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Level {level} - {urgencyLabels[level]}</p>
+                      <p className="text-sm text-gray-600">{count} decisions</p>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <Badge className={urgencyColors[level]}>{count}</Badge>
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="mt-6 p-4 bg-purple-50 rounded-lg">
-              <p className="text-sm text-purple-900">
-                <strong>💡 Insight:</strong> Enterprise and platinum tier customers show highest satisfaction with structured decision workflows.
-              </p>
-            </div>
+            {(!analyticsData?.analytics?.urgency_breakdown || Object.keys(analyticsData.analytics.urgency_breakdown).length === 0) && (
+              <div className="text-center py-8 text-gray-500">
+                <p>No urgency data available for this period</p>
+              </div>
+            )}
           </Card>
         </div>
 
-        {/* Decision Type Analysis */}
+        {/* Recent Activity */}
         <Card className="p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-6">Satisfaction by Response Type</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            {satisfactionMetrics?.satisfaction_by_response_type && Object.entries(satisfactionMetrics.satisfaction_by_response_type).map(([type, score]) => (
-              <div key={type} className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-2">{type.replace('_', ' ')}</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-green-600 h-2 rounded-full"
-                      style={{ width: `${(score / 5) * 100}%` }}
-                    />
+          <h2 className="text-xl font-semibold mb-6">Recent Decisions</h2>
+          <div className="space-y-2">
+            {analyticsData?.recent_activity && analyticsData.recent_activity.length > 0 ? (
+              analyticsData.recent_activity.map((decision: any) => (
+                <div key={decision.id} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => router.push(`/decisions/${decision.id}`)}>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900">{decision.title}</p>
+                    <p className="text-sm text-gray-600">{decision.customer_name}</p>
                   </div>
-                  <span className="text-lg font-bold">{score.toFixed(1)}/5</span>
+                  <div className="flex items-center gap-3">
+                    <Badge className={
+                      decision.urgency_level >= 4 ? 'bg-red-100 text-red-700' :
+                      decision.urgency_level === 3 ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-green-100 text-green-700'
+                    }>
+                      Level {decision.urgency_level}
+                    </Badge>
+                    <span className="text-sm text-gray-500">{new Date(decision.created_at).toLocaleDateString()}</span>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>No recent decisions available</p>
               </div>
-            ))}
+            )}
           </div>
         </Card>
 
