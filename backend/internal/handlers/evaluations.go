@@ -53,28 +53,7 @@ func (h *EvaluationsHandler) SubmitEvaluation(c *gin.Context) {
 		return
 	}
 
-	// Check if user has already submitted an evaluation for this decision
-	var existingCount int
-	err = h.db.GetContext(c, &existingCount, `
-		SELECT COUNT(*) FROM evaluations WHERE decision_id = $1 AND evaluator_id = $2
-	`, decisionID, userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing evaluations"})
-		return
-	}
-
-	// Delete existing evaluations for this user and decision (allow re-evaluation)
-	if existingCount > 0 {
-		_, err = h.db.ExecContext(c, `
-			DELETE FROM evaluations WHERE decision_id = $1 AND evaluator_id = $2
-		`, decisionID, userID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update existing evaluation"})
-			return
-		}
-	}
-
-	// Insert new evaluations
+	// Insert new evaluations (accumulate, don't overwrite)
 	evaluationCount := 0
 	for _, eval := range req.Evaluations {
 		evaluation := models.Evaluation{
