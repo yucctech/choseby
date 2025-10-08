@@ -84,11 +84,10 @@ function DecisionsListContent() {
 
   const getTierColor = (tier: string) => {
     const colors: Record<string, string> = {
-      bronze: 'bg-tier-bronze text-white',
-      silver: 'bg-tier-silver text-gray-900',
-      gold: 'bg-tier-gold text-gray-900',
-      platinum: 'bg-tier-platinum text-gray-900',
-      enterprise: 'bg-tier-enterprise text-white',
+      basic: 'bg-gray-500 text-white',
+      standard: 'bg-blue-500 text-white',
+      premium: 'bg-purple-500 text-white',
+      enterprise: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white',
     };
     return colors[tier] || 'bg-gray-500 text-white';
   };

@@ -33,7 +33,7 @@ function NewDecisionContent() {
     description: '',
     customer_name: '',
     customer_email: '',
-    customer_tier: 'silver' as CustomerTier,
+    customer_tier: 'standard' as CustomerTier,
     customer_value: 0,
     urgency_level: 3 as UrgencyLevel,
     customer_impact_scope: 'single_user',
@@ -134,11 +134,10 @@ NPS Score: ${formData.nps_score}
 
   const getTierColor = (tier: CustomerTier) => {
     const colors: Record<CustomerTier, string> = {
-      bronze: 'bg-tier-bronze',
-      silver: 'bg-tier-silver',
-      gold: 'bg-tier-gold',
-      platinum: 'bg-tier-platinum',
-      enterprise: 'bg-tier-enterprise',
+      basic: 'bg-gray-500',
+      standard: 'bg-blue-500',
+      premium: 'bg-purple-500',
+      enterprise: 'bg-gradient-to-r from-purple-600 to-pink-600',
     };
     return colors[tier];
   };
@@ -251,7 +250,7 @@ NPS Score: ${formData.nps_score}
                   Customer Tier <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
-                  {(['bronze', 'silver', 'gold', 'platinum', 'enterprise'] as CustomerTier[]).map((tier) => (
+                  {(['basic', 'standard', 'premium', 'enterprise'] as CustomerTier[]).map((tier) => (
                     <button
                       key={tier}
                       type="button"

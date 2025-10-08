@@ -40,7 +40,7 @@ export interface TeamMember {
 // CUSTOMER RESPONSE DECISION TYPES
 // ========================================
 
-export type CustomerTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'enterprise';
+export type CustomerTier = 'basic' | 'standard' | 'premium' | 'enterprise';
 export type UrgencyLevel = 1 | 2 | 3 | 4 | 5;
 export type DecisionStatus = 'draft' | 'in_progress' | 'completed' | 'archived';
 export type WorkflowType = 'full_decide' | 'quick_input' | 'ai_only';

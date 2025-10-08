@@ -206,7 +206,8 @@ func (h *DecisionsHandler) CreateDecision(c *gin.Context) {
 		)
 	`, decision)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create decision"})
+		c.Error(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create decision", "details": err.Error()})
 		return
 	}
 
