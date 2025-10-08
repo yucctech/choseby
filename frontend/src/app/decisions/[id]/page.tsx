@@ -36,6 +36,19 @@ function DecisionDetailContent() {
     { name: '', description: '', weight: 1.0 }
   ]);
 
+  // Options management state
+  const [showOptionsForm, setShowOptionsForm] = useState(false);
+  const [optionsFormData, setOptionsFormData] = useState<Array<{
+    title: string;
+    description: string;
+    financial_cost: number;
+    implementation_effort: string;
+    risk_level: string;
+    estimated_satisfaction_impact: number;
+  }>>([
+    { title: '', description: '', financial_cost: 0, implementation_effort: 'medium', risk_level: 'medium', estimated_satisfaction_impact: 3 }
+  ]);
+
   useEffect(() => {
     loadDecisionData();
   }, [decisionId]);
@@ -108,6 +121,40 @@ function DecisionDetailContent() {
     const newData = [...criteriaFormData];
     newData[index] = { ...newData[index], [field]: value };
     setCriteriaFormData(newData);
+  };
+
+  // Options management handlers
+  const handleSaveOptions = async () => {
+    try {
+      const validOptions = optionsFormData.filter(o => o.title.trim() !== '' && o.description.trim() !== '');
+      if (validOptions.length === 0) {
+        alert('Please add at least one option with title and description');
+        return;
+      }
+
+      await api.decisions.updateOptions(decisionId, { options: validOptions });
+      await loadDecisionData();
+      setShowOptionsForm(false);
+      setOptionsFormData([{ title: '', description: '', financial_cost: 0, implementation_effort: 'medium', risk_level: 'medium', estimated_satisfaction_impact: 3 }]);
+    } catch (err) {
+      console.error('Failed to save options:', err);
+      alert('Failed to save options');
+    }
+  };
+
+  const handleAddOption = () => {
+    setOptionsFormData([...optionsFormData, { title: '', description: '', financial_cost: 0, implementation_effort: 'medium', risk_level: 'medium', estimated_satisfaction_impact: 3 }]);
+  };
+
+  const handleRemoveOption = (index: number) => {
+    const newData = optionsFormData.filter((_, i) => i !== index);
+    setOptionsFormData(newData.length > 0 ? newData : [{ title: '', description: '', financial_cost: 0, implementation_effort: 'medium', risk_level: 'medium', estimated_satisfaction_impact: 3 }]);
+  };
+
+  const handleOptionChange = (index: number, field: string, value: string | number) => {
+    const newData = [...optionsFormData];
+    newData[index] = { ...newData[index], [field]: value };
+    setOptionsFormData(newData);
   };
 
   const getPhaseStatus = (phaseNumber: number) => {
@@ -384,31 +431,157 @@ function DecisionDetailContent() {
                 <h2 className="text-xl font-semibold mb-4">💡 Phase 3: Consider Options</h2>
                 <p className="text-gray-600 mb-4">Define possible response options for this customer issue.</p>
 
-                {options.length === 0 ? (
+                {!showOptionsForm && options.length === 0 ? (
                   <div className="text-center py-8 bg-gray-50 rounded-lg">
                     <p className="text-gray-600 mb-4">No options defined yet</p>
-                    <Button>+ Add Option</Button>
+                    <Button onClick={() => setShowOptionsForm(true)}>+ Add Options</Button>
+                  </div>
+                ) : !showOptionsForm ? (
+                  <div>
+                    <div className="space-y-4 mb-4">
+                      {options.map((option) => (
+                        <div key={option.id} className="p-4 border border-gray-200 rounded-lg">
+                          <h4 className="font-medium mb-2">{option.title}</h4>
+                          <p className="text-sm text-gray-600 mb-3">{option.description}</p>
+                          <div className="flex gap-2 flex-wrap">
+                            <Badge>Cost: ${option.financial_cost}</Badge>
+                            <Badge>Effort: {option.implementation_effort}</Badge>
+                            <Badge>Risk: {option.risk_level}</Badge>
+                            <Badge>Impact: {option.estimated_satisfaction_impact}/5</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="outline" onClick={() => setShowOptionsForm(true)}>
+                      Edit Options
+                    </Button>
                   </div>
                 ) : (
                   <div className="space-y-4 mb-4">
-                    {options.map((option) => (
-                      <div key={option.id} className="p-4 border border-gray-200 rounded-lg">
-                        <h4 className="font-medium mb-2">{option.title}</h4>
-                        <p className="text-sm text-gray-600 mb-3">{option.description}</p>
-                        <div className="flex gap-2 flex-wrap">
-                          <Badge>Cost: ${option.financial_cost}</Badge>
-                          <Badge>Effort: {option.implementation_effort}</Badge>
-                          <Badge>Risk: {option.risk_level}</Badge>
-                          <Badge>Impact: {option.estimated_satisfaction_impact}/5</Badge>
+                    {optionsFormData.map((option, index) => (
+                      <div key={index} className="p-4 border border-gray-200 rounded-lg bg-white">
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="font-medium text-gray-900">Option {index + 1}</h4>
+                          {optionsFormData.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveOption(index)}
+                              className="text-red-600 hover:text-red-800 text-sm font-medium"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Title *
+                            </label>
+                            <input
+                              type="text"
+                              value={option.title}
+                              onChange={(e) => handleOptionChange(index, 'title', e.target.value)}
+                              placeholder="e.g., Full refund with apology"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Description *
+                            </label>
+                            <textarea
+                              value={option.description}
+                              onChange={(e) => handleOptionChange(index, 'description', e.target.value)}
+                              placeholder="Describe this response option in detail..."
+                              rows={3}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            />
+                          </div>
+
+                          <div className="grid md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Financial Cost ($)
+                              </label>
+                              <input
+                                type="number"
+                                value={option.financial_cost}
+                                onChange={(e) => handleOptionChange(index, 'financial_cost', parseFloat(e.target.value) || 0)}
+                                placeholder="0"
+                                min="0"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Implementation Effort
+                              </label>
+                              <select
+                                value={option.implementation_effort}
+                                onChange={(e) => handleOptionChange(index, 'implementation_effort', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              >
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Risk Level
+                              </label>
+                              <select
+                                value={option.risk_level}
+                                onChange={(e) => handleOptionChange(index, 'risk_level', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              >
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Expected Satisfaction Impact (1-5)
+                              </label>
+                              <input
+                                type="number"
+                                value={option.estimated_satisfaction_impact}
+                                onChange={(e) => handleOptionChange(index, 'estimated_satisfaction_impact', parseInt(e.target.value) || 3)}
+                                min="1"
+                                max="5"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ))}
+
+                    <div className="flex gap-3">
+                      <Button variant="outline" onClick={handleAddOption}>
+                        + Add Another Option
+                      </Button>
+                      <Button onClick={handleSaveOptions}>
+                        Save Options
+                      </Button>
+                      <Button variant="outline" onClick={() => setShowOptionsForm(false)}>
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 )}
 
-                <Button onClick={() => handlePhaseComplete(3)}>
-                  Continue to Evaluation →
-                </Button>
+                {!showOptionsForm && options.length > 0 && (
+                  <Button onClick={() => handlePhaseComplete(3)} className="mt-4">
+                    Continue to Evaluation →
+                  </Button>
+                )}
               </Card>
             )}
 
