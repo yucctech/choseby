@@ -55,6 +55,10 @@ function DecisionDetailContent() {
   const [criteriaScores, setCriteriaScores] = useState<Record<string, number>>({});
   const [evaluationComments, setEvaluationComments] = useState('');
 
+  // Results analysis state
+  const [results, setResults] = useState<any>(null);
+  const [loadingResults, setLoadingResults] = useState(false);
+
   useEffect(() => {
     loadDecisionData();
   }, [decisionId]);
@@ -206,6 +210,19 @@ function DecisionDetailContent() {
       ...prev,
       [criterionId]: score,
     }));
+  };
+
+  // Results analysis handlers
+  const loadResults = async () => {
+    try {
+      setLoadingResults(true);
+      const resultsData = await api.evaluations.getResults(decisionId);
+      setResults(resultsData);
+    } catch (err) {
+      console.error('Failed to load results:', err);
+    } finally {
+      setLoadingResults(false);
+    }
   };
 
   const getPhaseStatus = (phaseNumber: number) => {
@@ -799,13 +816,133 @@ function DecisionDetailContent() {
                 <h2 className="text-xl font-semibold mb-4">📊 Phase 5: Results Analysis</h2>
                 <p className="text-gray-600 mb-4">Review team consensus and make final decision.</p>
 
-                <div className="text-center py-8 bg-gray-50 rounded-lg mb-4">
-                  <p className="text-gray-600">Results analysis will be displayed here</p>
-                </div>
+                {!results ? (
+                  <div className="text-center py-8">
+                    <Button onClick={loadResults} disabled={loadingResults}>
+                      {loadingResults ? 'Loading Results...' : 'Load Team Results'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Team Participation Summary */}
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h3 className="font-semibold text-blue-900 mb-2">Team Participation</h3>
+                      <div className="grid md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-blue-700 font-medium">Participation Rate</p>
+                          <p className="text-2xl font-bold text-blue-900">
+                            {(results.participation_rate * 100).toFixed(0)}%
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-blue-700 font-medium">Team Consensus</p>
+                          <p className="text-2xl font-bold text-blue-900">
+                            {(results.team_consensus * 100).toFixed(0)}%
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-blue-700 font-medium">Evaluations</p>
+                          <p className="text-2xl font-bold text-blue-900">
+                            {results.completed_by?.length || 0} / {(results.completed_by?.length || 0) + (results.pending_from?.length || 0)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
 
-                <Button onClick={() => handlePhaseComplete(5)}>
-                  Complete Decision →
-                </Button>
+                    {/* Option Scores Ranking */}
+                    <div>
+                      <h3 className="font-semibold mb-3">Ranked Options</h3>
+                      <div className="space-y-3">
+                        {results.option_scores?.map((optionScore: any, index: number) => {
+                          const isRecommended = optionScore.option_id === results.recommended_option;
+                          const conflictColor =
+                            optionScore.conflict_level === 'high' ? 'bg-red-100 border-red-300' :
+                            optionScore.conflict_level === 'medium' ? 'bg-yellow-100 border-yellow-300' :
+                            optionScore.conflict_level === 'low' ? 'bg-blue-100 border-blue-300' :
+                            'bg-green-100 border-green-300';
+
+                          return (
+                            <div
+                              key={optionScore.option_id}
+                              className={`p-4 border-2 rounded-lg ${
+                                isRecommended ? 'border-primary-500 bg-primary-50' : conflictColor
+                              }`}
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-gray-500">#{index + 1}</span>
+                                    <h4 className="font-semibold">{optionScore.option_title}</h4>
+                                    {isRecommended && (
+                                      <Badge className="bg-primary-500 text-white">
+                                        ⭐ Recommended
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="grid md:grid-cols-4 gap-3 mt-3">
+                                <div>
+                                  <p className="text-xs text-gray-600">Weighted Score</p>
+                                  <p className="text-lg font-bold text-gray-900">
+                                    {optionScore.weighted_score.toFixed(2)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-600">Average Score</p>
+                                  <p className="text-lg font-bold text-gray-900">
+                                    {optionScore.average_score.toFixed(1)} / 10
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-600">Consensus</p>
+                                  <p className="text-lg font-bold text-gray-900">
+                                    {(optionScore.consensus * 100).toFixed(0)}%
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-600">Conflict Level</p>
+                                  <Badge className={
+                                    optionScore.conflict_level === 'high' ? 'bg-red-500' :
+                                    optionScore.conflict_level === 'medium' ? 'bg-yellow-500' :
+                                    optionScore.conflict_level === 'low' ? 'bg-blue-500' :
+                                    'bg-green-500'
+                                  }>
+                                    {optionScore.conflict_level}
+                                  </Badge>
+                                </div>
+                              </div>
+
+                              <div className="mt-3 text-xs text-gray-600">
+                                Evaluated by {optionScore.evaluators} team member{optionScore.evaluators !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Pending Evaluations Warning */}
+                    {results.pending_from && results.pending_from.length > 0 && (
+                      <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                        <p className="text-yellow-900 font-medium">⚠️ Pending Evaluations</p>
+                        <p className="text-sm text-yellow-800 mt-1">
+                          Waiting for evaluations from: {results.pending_from.join(', ')}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3">
+                      <Button onClick={() => loadResults()} variant="outline">
+                        Refresh Results
+                      </Button>
+                      <Button onClick={() => handlePhaseComplete(5)}>
+                        Complete Decision →
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </Card>
             )}
 
