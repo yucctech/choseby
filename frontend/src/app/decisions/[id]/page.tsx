@@ -59,9 +59,29 @@ function DecisionDetailContent() {
   const [results, setResults] = useState<any>(null);
   const [loadingResults, setLoadingResults] = useState(false);
 
+  // Outcome tracking state
+  const [outcome, setOutcome] = useState<any>(null);
+  const [showOutcomeForm, setShowOutcomeForm] = useState(false);
+  const [outcomeFormData, setOutcomeFormData] = useState({
+    selected_option_id: '',
+    customer_satisfaction_score: 3,
+    nps_score_change: 0,
+    customer_feedback: '',
+    actual_cost: 0,
+    revenue_impact: 0,
+    lessons_learned: '',
+    would_decide_same_again: true,
+  });
+
   useEffect(() => {
     loadDecisionData();
   }, [decisionId]);
+
+  useEffect(() => {
+    if (decision?.current_phase === 6) {
+      loadOutcome();
+    }
+  }, [decision?.current_phase]);
 
   const loadDecisionData = async () => {
     try {
@@ -223,6 +243,54 @@ function DecisionDetailContent() {
     } finally {
       setLoadingResults(false);
     }
+  };
+
+  // Outcome tracking handlers
+  const loadOutcome = async () => {
+    try {
+      const outcomeData = await api.outcomes.get(decisionId);
+      if (outcomeData) {
+        setOutcome(outcomeData);
+        setOutcomeFormData({
+          selected_option_id: outcomeData.selected_option_id,
+          customer_satisfaction_score: outcomeData.customer_satisfaction_score || 3,
+          nps_score_change: outcomeData.nps_score_change || 0,
+          customer_feedback: outcomeData.customer_feedback || '',
+          actual_cost: outcomeData.actual_cost || 0,
+          revenue_impact: outcomeData.revenue_impact || 0,
+          lessons_learned: outcomeData.lessons_learned || '',
+          would_decide_same_again: outcomeData.would_decide_same_again !== undefined ? outcomeData.would_decide_same_again : true,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load outcome:', err);
+    }
+  };
+
+  const handleSubmitOutcome = async () => {
+    try {
+      if (!outcomeFormData.selected_option_id) {
+        alert('Please select the final decision option');
+        return;
+      }
+
+      await api.outcomes.record(decisionId, {
+        ...outcomeFormData,
+        decision_date: new Date().toISOString(),
+        team_consensus_score: results?.team_consensus || 0,
+      });
+
+      await loadOutcome();
+      setShowOutcomeForm(false);
+      alert('Outcome recorded successfully! ✅');
+    } catch (err) {
+      console.error('Failed to record outcome:', err);
+      alert('Failed to record outcome');
+    }
+  };
+
+  const handleOutcomeChange = (field: string, value: any) => {
+    setOutcomeFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const getPhaseStatus = (phaseNumber: number) => {
@@ -950,12 +1018,273 @@ function DecisionDetailContent() {
             {currentPhase === 6 && (
               <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4">✅ Phase 6: Outcome Tracking</h2>
-                <p className="text-gray-600 mb-4">Track customer satisfaction and decision outcomes.</p>
+                <p className="text-gray-600 mb-4">Record final decision and track customer satisfaction outcomes.</p>
 
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="text-green-900 font-medium">Decision Complete!</p>
-                  <p className="text-green-800 text-sm mt-1">Track customer satisfaction to improve future decisions.</p>
-                </div>
+                {!outcome && !showOutcomeForm ? (
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <p className="text-gray-600 mb-4">No outcome recorded yet</p>
+                    <Button onClick={() => setShowOutcomeForm(true)}>
+                      Record Decision Outcome
+                    </Button>
+                  </div>
+                ) : outcome && !showOutcomeForm ? (
+                  <div className="space-y-6">
+                    {/* Outcome Summary */}
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h3 className="font-semibold text-green-900 mb-2">Decision Completed!</h3>
+                      <p className="text-sm text-green-800">
+                        Recorded on {new Date(outcome.recorded_at).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    {/* Selected Option */}
+                    <div>
+                      <h3 className="font-semibold mb-2">Final Decision</h3>
+                      <div className="p-4 bg-primary-50 border border-primary-300 rounded-lg">
+                        <p className="font-medium">
+                          {options.find(o => o.id === outcome.selected_option_id)?.title || 'Selected Option'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Metrics Grid */}
+                    <div>
+                      <h3 className="font-semibold mb-3">Outcome Metrics</h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-600">Customer Satisfaction</p>
+                          <p className="text-2xl font-bold">
+                            {outcome.customer_satisfaction_score || 'N/A'} / 5
+                          </p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-600">NPS Change</p>
+                          <p className={`text-2xl font-bold ${
+                            (outcome.nps_score_change || 0) > 0 ? 'text-green-600' :
+                            (outcome.nps_score_change || 0) < 0 ? 'text-red-600' : 'text-gray-900'
+                          }`}>
+                            {(outcome.nps_score_change || 0) > 0 ? '+' : ''}{outcome.nps_score_change || 0}
+                          </p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-600">Actual Cost</p>
+                          <p className="text-2xl font-bold">${outcome.actual_cost || 0}</p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <p className="text-sm text-gray-600">Revenue Impact</p>
+                          <p className={`text-2xl font-bold ${
+                            (outcome.revenue_impact || 0) > 0 ? 'text-green-600' :
+                            (outcome.revenue_impact || 0) < 0 ? 'text-red-600' : 'text-gray-900'
+                          }`}>
+                            ${outcome.revenue_impact || 0}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Feedback and Lessons */}
+                    {outcome.customer_feedback && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Customer Feedback</h3>
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                          <p className="text-gray-700 italic">&ldquo;{outcome.customer_feedback}&rdquo;</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {outcome.lessons_learned && (
+                      <div>
+                        <h3 className="font-semibold mb-2">Lessons Learned</h3>
+                        <div className="p-4 bg-blue-50 rounded-lg">
+                          <p className="text-gray-700">{outcome.lessons_learned}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 className="font-semibold mb-2">Would Decide Same Again?</h3>
+                      <Badge className={outcome.would_decide_same_again ? 'bg-green-500' : 'bg-red-500'}>
+                        {outcome.would_decide_same_again ? 'Yes' : 'No'}
+                      </Badge>
+                    </div>
+
+                    <Button onClick={() => setShowOutcomeForm(true)} variant="outline">
+                      Update Outcome
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Final Decision Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Final Decision *
+                      </label>
+                      <select
+                        value={outcomeFormData.selected_option_id}
+                        onChange={(e) => handleOutcomeChange('selected_option_id', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      >
+                        <option value="">Select the chosen option</option>
+                        {options.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Customer Satisfaction */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Customer Satisfaction (1-5)
+                      </label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((score) => (
+                          <button
+                            key={score}
+                            type="button"
+                            onClick={() => handleOutcomeChange('customer_satisfaction_score', score)}
+                            className={`flex-1 py-2 px-3 rounded-lg font-medium transition-all ${
+                              outcomeFormData.customer_satisfaction_score === score
+                                ? 'bg-primary-500 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {score}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* NPS Change */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        NPS Score Change
+                      </label>
+                      <input
+                        type="number"
+                        value={outcomeFormData.nps_score_change}
+                        onChange={(e) => handleOutcomeChange('nps_score_change', parseInt(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="e.g., +10 or -5"
+                      />
+                    </div>
+
+                    {/* Financial Impact */}
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Actual Cost ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={outcomeFormData.actual_cost}
+                          onChange={(e) => handleOutcomeChange('actual_cost', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          placeholder="5000"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Revenue Impact ($)
+                        </label>
+                        <input
+                          type="number"
+                          value={outcomeFormData.revenue_impact}
+                          onChange={(e) => handleOutcomeChange('revenue_impact', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          placeholder="Negative = lost, Positive = retained"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Customer Feedback */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Customer Feedback
+                      </label>
+                      <textarea
+                        value={outcomeFormData.customer_feedback}
+                        onChange={(e) => handleOutcomeChange('customer_feedback', e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="What did the customer say about our response?"
+                      />
+                    </div>
+
+                    {/* Lessons Learned */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Lessons Learned
+                      </label>
+                      <textarea
+                        value={outcomeFormData.lessons_learned}
+                        onChange={(e) => handleOutcomeChange('lessons_learned', e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="What would you do differently next time?"
+                      />
+                    </div>
+
+                    {/* Would Decide Same Again */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Would you make the same decision again?
+                      </label>
+                      <div className="flex gap-4">
+                        <button
+                          type="button"
+                          onClick={() => handleOutcomeChange('would_decide_same_again', true)}
+                          className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                            outcomeFormData.would_decide_same_again
+                              ? 'bg-green-500 text-white shadow-md'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Yes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOutcomeChange('would_decide_same_again', false)}
+                          className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                            !outcomeFormData.would_decide_same_again
+                              ? 'bg-red-500 text-white shadow-md'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-3">
+                      <Button onClick={handleSubmitOutcome}>
+                        Save Outcome
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowOutcomeForm(false);
+                          if (!outcome) {
+                            setOutcomeFormData({
+                              selected_option_id: '',
+                              customer_satisfaction_score: 3,
+                              nps_score_change: 0,
+                              customer_feedback: '',
+                              actual_cost: 0,
+                              revenue_impact: 0,
+                              lessons_learned: '',
+                              would_decide_same_again: true,
+                            });
+                          }
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </Card>
             )}
           </div>
