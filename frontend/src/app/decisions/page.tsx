@@ -51,9 +51,9 @@ function DecisionsListContent() {
         params.status = statusFilter;
       }
 
-      const response = await api.decisions.list(teamId, params);
-      setDecisions(response.data);
-      setPagination(prev => ({ ...prev, total: response.total }));
+      const response = await api.decisions.list(undefined, params);
+      setDecisions(response.decisions || []);
+      setPagination(prev => ({ ...prev, total: response.total || 0 }));
     } catch (error) {
       console.error('Failed to load decisions:', error);
     } finally {

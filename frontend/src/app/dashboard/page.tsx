@@ -43,7 +43,9 @@ function DashboardContent() {
           recentDecisions: dashboardData.recent_activity || [],
         });
 
-        setRecentDecisions(dashboardData.recent_activity || []);
+        // Recent activity from analytics already has the data we need
+        const recentActivity = dashboardData.recent_activity || [];
+        setRecentDecisions(recentActivity);
         setError(null);
       } catch (err) {
         console.error('Failed to load dashboard data:', err);

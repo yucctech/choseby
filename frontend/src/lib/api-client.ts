@@ -150,30 +150,27 @@ export const teams = {
 // ========================================
 
 export const decisions = {
-  async list(teamId: string, params?: { status?: string; page?: number; pageSize?: number }): Promise<PaginatedResponse<CustomerDecision>> {
+  async list(teamId?: string, params?: { status?: string; page?: number; pageSize?: number }): Promise<{ decisions: CustomerDecision[]; total: number }> {
     const query = new URLSearchParams();
     if (params?.status) query.append('status', params.status);
     if (params?.page) query.append('page', params.page.toString());
     if (params?.pageSize) query.append('page_size', params.pageSize.toString());
 
-    return apiRequest<PaginatedResponse<CustomerDecision>>(
-      `/teams/${teamId}/decisions?${query.toString()}`
+    const data = await apiRequest<{ decisions: CustomerDecision[]; total: number }>(
+      `/decisions?${query.toString()}`
     );
+    return data;
   },
 
   async get(decisionId: string): Promise<CustomerDecision> {
-    const response = await apiRequest<APIResponse<CustomerDecision>>(`/decisions/${decisionId}`);
-    if (!response.data) throw new Error('Decision not found');
-    return response.data;
+    return apiRequest<CustomerDecision>(`/decisions/${decisionId}`);
   },
 
   async create(teamId: string, decision: Partial<CustomerDecision>): Promise<CustomerDecision> {
-    const response = await apiRequest<APIResponse<CustomerDecision>>(`/teams/${teamId}/decisions`, {
+    return apiRequest<CustomerDecision>(`/decisions`, {
       method: 'POST',
       body: JSON.stringify(decision),
     });
-    if (!response.data) throw new Error('Failed to create decision');
-    return response.data;
   },
 
   async update(decisionId: string, updates: Partial<CustomerDecision>): Promise<CustomerDecision> {

@@ -116,7 +116,7 @@ NPS Score: ${formData.nps_score}
     try {
       setLoading(true);
 
-      const decision = await api.decisions.create(teamId, {
+      const decision = await api.decisions.create('', {
         ...formData,
         ai_classification: aiClassification || undefined,
         status: 'draft',
