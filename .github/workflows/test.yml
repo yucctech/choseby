@@ -45,20 +45,11 @@ jobs:
       run: go mod download
       working-directory: ./backend
 
-    - name: Set up test database
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/choseby_test?sslmode=disable
-      run: |
-        cd backend
-        psql $DATABASE_URL -f database/schema.sql
-
     - name: Run tests with coverage
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/choseby_test?sslmode=disable
-        JWT_SECRET: test-jwt-secret-key-for-github-actions
       run: |
         cd backend
         # Run only non-integration tests (handler unit tests removed as tech debt)
+        # These tests use mocks and don't need a real database
         # Integration tests require Supabase, not local Postgres
         go test -v -coverprofile=coverage.out ./internal/auth ./internal/database
         go tool cover -func=coverage.out | tee coverage.txt
