@@ -102,11 +102,31 @@ git push
 
 ### Testing Philosophy (MVP)
 
-- **Current:** 22.5% coverage baseline
-- **Target:** 15% minimum (MVP) → 60%+ (production)
-- **Focus:** Ship features first, improve coverage gradually
-- **Strategy:** Fast local feedback (`make local`) + mandatory GitHub Actions
+- **Current Status:** Integration tests validate E2E workflow, handler unit tests removed (tech debt)
+- **Strategy:** Integration tests > shallow unit tests (following docs/testing/README.md)
+- **Local Development:** Run `go test -v ./...` - AI accuracy may vary locally (60-100%)
+- **CI/CD:** GitHub Actions runs integration tests against Supabase dev database
 - **Test Organization:** Go-idiomatic scattered `*_test.go` files (NOT separate `test/` folder)
+
+### What Tests We Have:
+
+**✅ Integration Tests** (Validate System Works):
+- `integration_workflow_test.go` - Complete E2E customer response workflow
+- `performance_benchmark_test.go` - Response time requirements
+
+**✅ AI Accuracy Tests** (Validate Business Logic):
+- `internal/ai/classification_accuracy_test.go` - AI classification quality
+- `internal/ai/pollinations_accuracy_test.go` - Free tier AI validation
+- `internal/ai/modelscope_accuracy_test.go` - Alternative AI provider
+
+**✅ Database Tests**:
+- `internal/database/database_test.go` - Database wrapper functionality
+- `internal/auth/auth_test.go` - Password hashing validation
+
+**❌ Handler Unit Tests** (Removed - Tech Debt):
+- Removed brittle mock-based tests that tested implementation details
+- Will add proper business logic tests after MVP (see docs/testing/README.md:165-170)
+- Integration tests already validate handlers work correctly
 
 ## Architecture
 

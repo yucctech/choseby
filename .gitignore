@@ -26,6 +26,7 @@ backend/*.prof
 backend/cpu.prof
 backend/mem.prof
 backend/deps.png
+backend/internal/ai/*_test_results.json
 
 # Go build cache
 backend/tmp/

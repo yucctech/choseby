@@ -33,28 +33,29 @@ jobs:
 
           echo "✅ PR description acceptable"
 
-      - name: Run backend tests
+      - name: Run integration tests
         working-directory: ./backend
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DEV_DATABASE_URL }}
         run: |
-          # Fail PR if tests don't actually pass
-          go test -v ./... || {
-            echo "❌ Backend tests FAILED - cannot merge"
+          # Run integration tests against Supabase dev database
+          # These validate the complete E2E workflow actually works
+          echo "Running integration tests against Supabase..."
+          go test -v -timeout 10m -tags=integration ./... || {
+            echo "❌ Integration tests FAILED - cannot merge"
+            echo "Integration tests validate complete workflow with real database"
             exit 1
           }
 
-      - name: Verify integration tests pass
+      - name: Run AI classification tests
         working-directory: ./backend
         run: |
-          # Only required if backend code changed
-          if git diff --name-only origin/main | grep -q "^backend/"; then
-            echo "Backend code changed - running integration tests"
-            # Integration tests require DATABASE_URL
-            # For now, just verify they compile
-            go test -v -tags=integration -run=^$ ./... || {
-              echo "❌ Integration tests don't compile"
-              exit 1
-            }
-          fi
+          # Run AI accuracy tests (no database needed)
+          echo "Running AI classification accuracy tests..."
+          go test -v -timeout 5m ./... -run TestClassificationAccuracy || {
+            echo "❌ AI tests FAILED - cannot merge"
+            exit 1
+          }
 
       - name: Comment enforcement reminder
         if: failure()
