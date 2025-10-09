@@ -146,7 +146,7 @@ func TestPollinationsClassificationAccuracy(t *testing.T) {
 
 	// Save results to JSON
 	resultsJSON, _ := json.MarshalIndent(results, "", "  ")
-	_ = os.WriteFile("pollinations_test_results.json", resultsJSON, 0644)
+	_ = os.WriteFile("pollinations_test_results.json", resultsJSON, 0600)
 	t.Logf("\nResults saved to pollinations_test_results.json")
 
 	// Print model comparison

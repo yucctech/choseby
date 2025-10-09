@@ -139,7 +139,7 @@ func TestModelScopeClassificationAccuracy(t *testing.T) {
 
 	// Save results to JSON for comparison with other models
 	resultsJSON, _ := json.MarshalIndent(results, "", "  ")
-	_ = os.WriteFile("modelscope_test_results.json", resultsJSON, 0644)
+	_ = os.WriteFile("modelscope_test_results.json", resultsJSON, 0600)
 	t.Logf("\nResults saved to modelscope_test_results.json")
 
 	// Print comparison with other models

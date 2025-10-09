@@ -166,6 +166,13 @@ issues:
         - lll
         - tagliatelle
 
+    - path: internal/handlers/
+      linters:
+        - funlen
+        - gocyclo
+        - gocognit
+        - cyclop
+
     - path: scripts/
       linters:
         - forbidigo

@@ -160,7 +160,7 @@ func TestClassificationAccuracyWithRealScenarios(t *testing.T) {
 
 	// Save results to JSON for analysis
 	resultsJSON, _ := json.MarshalIndent(results, "", "  ")
-	_ = os.WriteFile("classification_test_results.json", resultsJSON, 0644)
+	_ = os.WriteFile("classification_test_results.json", resultsJSON, 0600)
 	t.Logf("\nResults saved to classification_test_results.json")
 
 	// Assert accuracy meets Week 2 target: >85%
