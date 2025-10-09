@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"choseby-backend/internal/auth"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
+	"choseby-backend/internal/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

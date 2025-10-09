@@ -173,6 +173,13 @@ issues:
         - gocognit
         - cyclop
 
+    - path: internal/api/
+      linters:
+        - funlen
+        - gocyclo
+        - gocognit
+        - cyclop
+
     - path: scripts/
       linters:
         - forbidigo

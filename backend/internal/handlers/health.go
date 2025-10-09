@@ -6,7 +6,6 @@ import (
 
 	"choseby-backend/internal/database"
 	"choseby-backend/internal/models"
-
 	"github.com/gin-gonic/gin"
 )
 

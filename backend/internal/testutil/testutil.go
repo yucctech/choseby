@@ -1,10 +1,10 @@
 package testutil
 
 import (
-	"choseby-backend/internal/auth"
-	"choseby-backend/internal/database"
 	"time"
 
+	"choseby-backend/internal/auth"
+	"choseby-backend/internal/database"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"

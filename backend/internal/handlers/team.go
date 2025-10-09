@@ -6,7 +6,6 @@ import (
 
 	"choseby-backend/internal/auth"
 	"choseby-backend/internal/database"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

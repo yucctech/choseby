@@ -6,7 +6,6 @@ import (
 	"choseby-backend/internal/database"
 	"choseby-backend/internal/handlers"
 	"choseby-backend/internal/middleware"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )

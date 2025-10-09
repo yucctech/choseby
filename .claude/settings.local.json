@@ -23,7 +23,19 @@
       "Bash(go build:*)",
       "Bash(golangci-lint run:*)",
       "Bash(gofmt:*)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(go env:*)",
+      "Bash(curl:*)",
+      "Bash(golangci-lint:*)",
+      "Bash(ls:*)",
+      "Bash(sh:*)",
+      "Bash(./bin/golangci-lint.exe:*)",
+      "Bash(go vet:*)",
+      "Read(//e/Repositories/**)",
+      "Bash(docker:*)",
+      "Bash(go install:*)",
+      "Bash(gci:*)",
+      "Bash(xargs gci diff:*)"
     ],
     "deny": [],
     "ask": []
