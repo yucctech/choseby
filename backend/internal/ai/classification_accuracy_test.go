@@ -66,7 +66,6 @@ func TestClassificationAccuracyWithRealScenarios(t *testing.T) {
 				scenario.Description,
 				responseTypes,
 			)
-
 			if err != nil {
 				t.Logf("WARNING: Classification failed for scenario %d: %v", scenario.ID, err)
 				results = append(results, ClassificationResult{
@@ -159,7 +158,7 @@ func TestClassificationAccuracyWithRealScenarios(t *testing.T) {
 
 	// Save results to JSON for analysis
 	resultsJSON, _ := json.MarshalIndent(results, "", "  ")
-	_ = os.WriteFile("classification_test_results.json", resultsJSON, 0600)
+	_ = os.WriteFile("classification_test_results.json", resultsJSON, 0o600)
 	t.Logf("\nResults saved to classification_test_results.json")
 
 	// Assert accuracy meets Week 2 target: >85%

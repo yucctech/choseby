@@ -63,7 +63,6 @@ func (a *Service) ValidateToken(tokenString string) (*Claims, error) {
 		}
 		return a.jwtSecret, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}

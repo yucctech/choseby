@@ -53,7 +53,6 @@ func TestPollinationsClassificationAccuracy(t *testing.T) {
 				scenario.Description,
 				responseTypes,
 			)
-
 			if err != nil {
 				t.Logf("WARNING: Classification failed for scenario %d: %v", scenario.ID, err)
 				results = append(results, ClassificationResult{
@@ -146,7 +145,7 @@ func TestPollinationsClassificationAccuracy(t *testing.T) {
 
 	// Save results to JSON
 	resultsJSON, _ := json.MarshalIndent(results, "", "  ")
-	_ = os.WriteFile("pollinations_test_results.json", resultsJSON, 0600)
+	_ = os.WriteFile("pollinations_test_results.json", resultsJSON, 0o600)
 	t.Logf("\nResults saved to pollinations_test_results.json")
 
 	// Print model comparison

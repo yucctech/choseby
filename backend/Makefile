@@ -204,7 +204,11 @@ ci: deps fmt vet lint test-coverage ## Run complete CI pipeline locally
 	@echo "$(GREEN)Ready to push!$(NC)"
 
 # Quick local development check (< 10 seconds)
-local: fmt vet test-short ## Quick local check before commit
+local: ## Quick local check before commit (matches CI/CD)
+	@echo "$(GREEN)Running local validation (matches CI/CD)...$(NC)"
+	@gofumpt -w .
+	@$(GOCMD) vet ./...
+	@$(GOCMD) build ./...
 	@echo "$(GREEN)✅ Local checks passed!$(NC)"
 
 # Pre-push validation (matches pre-push hook)

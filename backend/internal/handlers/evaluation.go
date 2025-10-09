@@ -69,7 +69,6 @@ func (h *EvaluationHandler) GetEvaluationStatus(c *gin.Context) {
 		"SELECT COUNT(*) FROM team_members WHERE team_id = $1",
 		teamUUID,
 	).Scan(&totalMembers)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "internal_error",
@@ -84,7 +83,6 @@ func (h *EvaluationHandler) GetEvaluationStatus(c *gin.Context) {
 		"SELECT COUNT(*) FROM evaluations WHERE decision_id = $1",
 		decisionUUID,
 	).Scan(&completedEvaluations)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "internal_error",
@@ -235,7 +233,6 @@ func (h *EvaluationHandler) SubmitEvaluation(c *gin.Context) {
 			(SELECT COUNT(*) FROM evaluations WHERE decision_id = $1) as completed,
 			(SELECT COUNT(*) FROM team_members WHERE team_id = $2) as total
 	`, decisionUUID, teamUUID).Scan(&completed, &total)
-
 	if err != nil {
 		completed, total = 0, 0
 	}
@@ -330,7 +327,6 @@ func (h *EvaluationHandler) ExportEvaluations(c *gin.Context) {
 		"SELECT title FROM decisions WHERE id = $1",
 		decisionUUID,
 	).Scan(&decisionTitle)
-
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":   "not_found",
@@ -380,7 +376,6 @@ func (h *EvaluationHandler) submitEvaluationTransaction(decisionID, userID uuid.
 		INSERT INTO evaluations (id, decision_id, user_id, overall_confidence, evaluation_notes)
 		VALUES ($1, $2, $3, $4, $5)
 	`, evaluationID, decisionID, userID, 5, "")
-
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -392,7 +387,6 @@ func (h *EvaluationHandler) submitEvaluationTransaction(decisionID, userID uuid.
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
 		`, uuid.New(), evaluationID, evalScore.OptionID, evalScore.CriteriaID,
 			evalScore.Score, evalScore.Comment, evalScore.Confidence)
-
 		if err != nil {
 			return uuid.Nil, err
 		}
@@ -425,7 +419,6 @@ func (h *EvaluationHandler) getAggregateResults(decisionID uuid.UUID) ([]map[str
 		HAVING COUNT(DISTINCT e.id) > 0
 		ORDER BY weighted_score DESC
 	`, decisionID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -472,7 +465,6 @@ func (h *EvaluationHandler) getExportData(decisionID uuid.UUID) (map[string]inte
 		"SELECT title, status, created_at FROM decisions WHERE id = $1",
 		decisionID,
 	).Scan(&title, &status, &createdAt)
-
 	if err != nil {
 		return nil, err
 	}
@@ -603,7 +595,6 @@ func (h *EvaluationHandler) getEvaluationStats(decisionID uuid.UUID) (map[string
 		FROM evaluations
 		WHERE decision_id = $1
 	`, decisionID).Scan(&totalEvaluations, &avgConfidence)
-
 	if err != nil {
 		return nil, err
 	}

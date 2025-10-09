@@ -35,7 +35,10 @@
       "Bash(docker:*)",
       "Bash(go install:*)",
       "Bash(gci:*)",
-      "Bash(xargs gci diff:*)"
+      "Bash(xargs gci diff:*)",
+      "WebSearch",
+      "Bash(gofumpt:*)",
+      "Bash(make:*)"
     ],
     "deny": [],
     "ask": []

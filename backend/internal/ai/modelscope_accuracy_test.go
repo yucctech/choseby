@@ -46,7 +46,6 @@ func TestModelScopeClassificationAccuracy(t *testing.T) {
 				scenario.Description,
 				responseTypes,
 			)
-
 			if err != nil {
 				t.Logf("WARNING: Classification failed for scenario %d: %v", scenario.ID, err)
 				results = append(results, ClassificationResult{
@@ -139,7 +138,7 @@ func TestModelScopeClassificationAccuracy(t *testing.T) {
 
 	// Save results to JSON for comparison with other models
 	resultsJSON, _ := json.MarshalIndent(results, "", "  ")
-	_ = os.WriteFile("modelscope_test_results.json", resultsJSON, 0600)
+	_ = os.WriteFile("modelscope_test_results.json", resultsJSON, 0o600)
 	t.Logf("\nResults saved to modelscope_test_results.json")
 
 	// Print comparison with other models
