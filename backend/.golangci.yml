@@ -31,7 +31,7 @@ linters:
     - exportloopref
     - forbidigo
     - funlen
-    - gci
+    # - gci  # Disabled - conflicts with gofumpt import formatting
     - gochecknoglobals
     - gochecknoinits
     - gocognit
@@ -39,10 +39,10 @@ linters:
     # - gocritic  # Disabled - too opinionated for handlers
     - gocyclo
     # - godot  # Disabled - overly strict comment formatting
-    - gofmt
+    # - gofmt  # Disabled - use gofumpt instead (stricter superset)
     - gofumpt
     - goheader
-    - goimports
+    # - goimports  # Disabled - gofumpt handles imports
     - gomnd
     - gomoddirectives
     - gomodguard
