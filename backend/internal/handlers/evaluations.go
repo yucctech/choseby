@@ -76,7 +76,7 @@ func (h *EvaluationsHandler) SubmitEvaluation(c *gin.Context) {
 
 	// Insert new evaluations
 	evaluationCount := 0
-	for _, eval := range req.Evaluations {
+	for i, eval := range req.Evaluations {
 		evaluation := models.Evaluation{
 			ID:               uuid.New(),
 			DecisionID:       uuid.MustParse(decisionID),
@@ -89,12 +89,28 @@ func (h *EvaluationsHandler) SubmitEvaluation(c *gin.Context) {
 			CreatedAt:        time.Now(),
 		}
 
-		_, err = h.db.NamedExecContext(c, `
+		result, err := h.db.NamedExecContext(c, `
 			INSERT INTO evaluations (id, decision_id, evaluator_id, option_id, criteria_id, score, confidence, anonymous_comment, created_at)
 			VALUES (:id, :decision_id, :evaluator_id, :option_id, :criteria_id, :score, :confidence, :anonymous_comment, :created_at)
 		`, evaluation)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to submit evaluation", "details": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":       "Failed to submit evaluation",
+				"details":     err.Error(),
+				"eval_index":  i,
+				"option_id":   eval.OptionID,
+				"criteria_id": eval.CriteriaID,
+			})
+			return
+		}
+
+		rowsAffected, _ := result.RowsAffected()
+		if rowsAffected == 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":         "Evaluation not inserted",
+				"eval_index":    i,
+				"rows_affected": rowsAffected,
+			})
 			return
 		}
 
