@@ -38,7 +38,7 @@ linters:
     - goconst
     # - gocritic  # Disabled - too opinionated for handlers
     - gocyclo
-    - godot
+    # - godot  # Disabled - overly strict comment formatting
     - gofmt
     - gofumpt
     - goheader
