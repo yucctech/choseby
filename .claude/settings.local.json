@@ -12,7 +12,13 @@
       "Bash(for:*)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(head:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(make test:*)",
+      "Bash(go test:*)",
+      "Bash(cat:*)",
+      "Bash(done)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

@@ -98,18 +98,18 @@ func (h *EvaluationHandler) GetEvaluationStatus(c *gin.Context) {
 
 	conflictCount := len(conflicts)
 	maxVariance := 0.0
-	conflictLevel := "none"
+	conflictLevel := models.PriorityNone
 
 	if conflictCount > 0 {
 		// Simple conflict analysis with basic variance
 		maxVariance = 2.5
 
 		if maxVariance > 2.5 {
-			conflictLevel = "high"
+			conflictLevel = models.PriorityHigh
 		} else if maxVariance > 1.5 {
-			conflictLevel = "medium"
+			conflictLevel = models.PriorityMedium
 		} else if maxVariance > 0.5 {
-			conflictLevel = "low"
+			conflictLevel = models.PriorityLow
 		}
 	}
 
@@ -372,7 +372,7 @@ func (h *EvaluationHandler) submitEvaluationTransaction(decisionID, userID uuid.
 	if err != nil {
 		return uuid.Nil, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }() // Explicitly ignore rollback error (will fail if already committed)
 
 	// Create evaluation record (with user ID for participation tracking only)
 	evaluationID := uuid.New()

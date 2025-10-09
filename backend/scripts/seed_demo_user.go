@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to start transaction: %v", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }() // Explicitly ignore rollback error (will fail if already committed)
 
 	// Create demo team
 	teamID := uuid.MustParse("00000000-0000-0000-0000-000000000001")

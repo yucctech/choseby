@@ -150,7 +150,7 @@ func (h *DecisionsHandler) CreateDecision(c *gin.Context) {
 	}
 	urgencyLevelDetailed := req.UrgencyLevelDetailed
 	if urgencyLevelDetailed == "" {
-		urgencyLevelDetailed = "medium"
+		urgencyLevelDetailed = models.PriorityMedium
 	}
 	customerImpactScope := req.CustomerImpactScope
 	if customerImpactScope == "" {
@@ -206,7 +206,7 @@ func (h *DecisionsHandler) CreateDecision(c *gin.Context) {
 		)
 	`, decision)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err) // Log error to Gin context
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create decision", "details": err.Error()})
 		return
 	}

@@ -106,7 +106,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		})
 		return
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }() // Explicitly ignore rollback error (will fail if already committed)
 
 	// Create team
 	team := models.Team{
