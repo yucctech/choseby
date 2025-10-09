@@ -316,13 +316,35 @@ func TestCustomerResponseWorkflowE2E(t *testing.T) {
 
 			assert.Equal(t, http.StatusOK, resp.StatusCode, "Should get evaluation results")
 
+			// Validate actual data, not just existence
 			assert.NotNil(t, resultsResp["option_scores"], "Should have option scores")
+
+			optionScores, ok := resultsResp["option_scores"].([]interface{})
+			require.True(t, ok, "option_scores should be an array")
+			require.Len(t, optionScores, 3, "Should have 3 options with scores")
+
+			// Validate that at least one option has valid scores
+			foundValidScore := false
+			for _, scoreInterface := range optionScores {
+				score := scoreInterface.(map[string]interface{})
+				avgScore, _ := score["average_score"].(float64)
+				evaluators, _ := score["evaluators"].(float64)
+
+				if avgScore > 0 && evaluators > 0 {
+					foundValidScore = true
+					assert.Equal(t, 8.0, avgScore, "Average score should match submitted score (8)")
+					assert.Equal(t, 1.0, evaluators, "Should have 1 evaluator")
+					break
+				}
+			}
+			assert.True(t, foundValidScore, "At least one option should have valid scores and evaluators")
+
 			assert.NotNil(t, resultsResp["team_consensus"], "Should have team consensus")
-			// recommended_option may be nil if all options have same score
+			assert.NotNil(t, resultsResp["participation_rate"], "Should have participation rate")
 
 			t.Logf("Team Consensus: %v", resultsResp["team_consensus"])
 			t.Logf("Recommended Option: %v", resultsResp["recommended_option"])
-			t.Logf("Option Scores: %v", resultsResp["option_scores"])
+			t.Logf("✅ Option Scores validation passed")
 		})
 
 		// Step 8: Generate response draft (requires migration 002 applied)
