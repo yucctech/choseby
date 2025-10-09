@@ -8,12 +8,30 @@ Go/Gin API server for customer response team decision workflows.
 # Install dependencies
 go mod download
 
-# Run tests (10 seconds)
-make local
+# Run local validation (MUST DO before every commit!)
+make local  # Or: gofumpt -w . && go vet ./... && go build ./...
 
 # Start server
 make run
 ```
+
+## 🚨 CRITICAL: Local Linting (MUST READ!)
+
+**Before EVERY commit, you MUST validate locally with the SAME tools as CI/CD.**
+
+See **[LOCAL_LINT_GUIDE.md](LOCAL_LINT_GUIDE.md)** for complete instructions.
+
+**Quick validation (Windows):**
+```bash
+gofumpt -w . && go vet ./... && go build ./...
+```
+
+**Quick validation (Linux/Mac):**
+```bash
+make local
+```
+
+**Why this matters:** CI/CD uses `golangci-lint` with 50+ linters including `gofumpt` (stricter than `gofmt`). Running only `go fmt` will NOT catch all issues!
 
 ## Testing (Important!)
 
