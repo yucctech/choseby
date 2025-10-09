@@ -1,8 +1,21 @@
 # Customer Response Platform: Database Schema
 ## PostgreSQL Implementation-Ready Schema
 
+**⚠️ NOTE**: This is a REFERENCE implementation guide with CREATE TABLE statements.
+**For actual database schema state**, see [`CURRENT_DATABASE_SCHEMA.md`](CURRENT_DATABASE_SCHEMA.md)
+
 ### 🎯 **OVERVIEW**
 Complete database schema for Customer Response Decision Intelligence platform. This schema is designed for PostgreSQL and ready for immediate implementation by Claude Code.
+
+**Use This File For**:
+- Initial database setup and migrations
+- Understanding table relationships and constraints
+- Sample data insertion examples
+
+**Always Check [`CURRENT_DATABASE_SCHEMA.md`](CURRENT_DATABASE_SCHEMA.md) For**:
+- Actual field names and types in production
+- Nullable vs required fields
+- Current database state validation
 
 ---
 

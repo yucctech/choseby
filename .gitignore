@@ -34,6 +34,17 @@ backend/tmp/
 backend/integration_test.go
 backend/integration_test_simplified*.go
 
+# One-time debug scripts (temporary utilities)
+backend/cmd/check_*.go
+backend/cmd/debug_*.go
+backend/scripts/add_*.go
+backend/scripts/hash.go
+
+# Frontend test artifacts
+frontend/playwright-report/
+frontend/test-results/
+frontend/tsconfig.tsbuildinfo
+
 # Environment variables (Frontend & Backend)
 .env
 .env.local

@@ -59,9 +59,11 @@
 **Customer Response Platform Technical Foundation**:
 - **Implementation Guide**: [`docs/technical/implementation-summary.md`](docs/technical/implementation-summary.md)
 - **API Documentation**: [`docs/technical/api-specifications.md`](docs/technical/api-specifications.md)
-- **Database Schema**: [`docs/technical/database-schema.md`](docs/technical/database-schema.md)
+- **Database Schema (Current State)**: [`docs/technical/CURRENT_DATABASE_SCHEMA.md`](docs/technical/CURRENT_DATABASE_SCHEMA.md) ⚠️ **SOURCE OF TRUTH**
+- **Database Schema (Reference)**: [`docs/technical/database-schema.md`](docs/technical/database-schema.md)
 - **Frontend Components**: [`docs/technical/frontend-components.md`](docs/technical/frontend-components.md)
 - **TypeScript Types**: [`docs/technical/frontend-types.md`](docs/technical/frontend-types.md)
+- **Security**: [`docs/technical/SECURITY.md`](docs/technical/SECURITY.md)
 
 **Customer Response Workflows**:
 - **User Flows**: [`docs/technical/user-flows/workflows.md`](docs/technical/user-flows/workflows.md)

@@ -7,7 +7,12 @@
       "Bash(go fmt:*)",
       "Bash(DATABASE_URL=\"postgresql://postgres.igrmbkienznttmunapix:9C.2%40eVGaVLWAse@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require&search_path=public\" go test -v -timeout 10m -tags=integration -run \"TestCustomerResponseWorkflowE2E/Complete_Customer_Response_Workflow/6._Submit_Team_Evaluation\")",
       "Bash(DATABASE_URL=\"postgresql://postgres.igrmbkienznttmunapix:9C.2%40eVGaVLWAse@aws-1-us-east-2.pooler.supabase.com:5432/postgres?sslmode=require&search_path=public\" go run cmd/check_evaluations.go 5476ab35-e58d-47a3-b5e7-3e640231975b)",
-      "Bash(awk:*)"
+      "Bash(awk:*)",
+      "Bash(tree:*)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(head:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
