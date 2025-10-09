@@ -14,11 +14,11 @@ import (
 // AIHandler handles DeepSeek AI integration for customer issue classification
 type AIHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 	aiService   *ai.AIService
 }
 
-func NewAIHandler(db *database.DB, authService *auth.AuthService, apiKey string) *AIHandler {
+func NewAIHandler(db *database.DB, authService *auth.Service, apiKey string) *AIHandler {
 	return &AIHandler{
 		db:          db,
 		authService: authService,

@@ -102,7 +102,7 @@ func min(a, b int) int {
 }
 
 // AuthRequired validates JWT tokens
-func AuthRequired(authService *auth.AuthService) gin.HandlerFunc {
+func AuthRequired(authService *auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -173,7 +173,7 @@ func Permission(required string) gin.HandlerFunc {
 }
 
 // WebSocketAuth validates WebSocket connections
-func WebSocketAuth(authService *auth.AuthService) gin.HandlerFunc {
+func WebSocketAuth(authService *auth.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.Query("token")
 		if token == "" {

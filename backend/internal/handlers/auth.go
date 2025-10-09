@@ -17,10 +17,10 @@ import (
 // AuthHandler handles customer response team authentication
 type AuthHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 }
 
-func NewAuthHandler(db *database.DB, authService *auth.AuthService) *AuthHandler {
+func NewAuthHandler(db *database.DB, authService *auth.Service) *AuthHandler {
 	return &AuthHandler{
 		db:          db,
 		authService: authService,
@@ -39,52 +39,9 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// Validate required fields
-	if req.Email == "" || req.Name == "" || req.Password == "" || req.TeamName == "" || req.Company == "" || req.Role == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "missing_fields",
-			"message": "All fields are required",
-		})
-		return
-	}
-
-	// Validate role
-	validRoles := []string{
-		"customer_success_manager",
-		"support_manager",
-		"account_manager",
-		"sales_manager",
-		"legal_compliance",
-		"operations_manager",
-	}
-
-	roleValid := false
-	for _, role := range validRoles {
-		if req.Role == role {
-			roleValid = true
-			break
-		}
-	}
-
-	if !roleValid {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "invalid_role",
-			"message": "Invalid role specified",
-		})
-		return
-	}
-
-	// Check if email already exists
-	var existingUser int
-	err := h.db.GetContext(c, &existingUser, `
-		SELECT COUNT(*) FROM team_members WHERE email = $1
-	`, req.Email)
-	if err == nil && existingUser > 0 {
-		c.JSON(http.StatusConflict, gin.H{
-			"error":   "email_exists",
-			"message": "Email already registered",
-		})
-		return
+	// Validate registration request
+	if err := h.validateRegistration(c, &req); err != nil {
+		return // Error already sent to client
 	}
 
 	// Hash password
@@ -389,4 +346,57 @@ func (h *AuthHandler) EpicSSO(c *gin.Context) {
 
 func (h *AuthHandler) CernerSSO(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, gin.H{"error": "SSO not available for customer response platform"})
+}
+
+// validateRegistration validates registration request fields
+func (h *AuthHandler) validateRegistration(c *gin.Context, req *models.RegisterRequest) error {
+	// Validate required fields
+	if req.Email == "" || req.Name == "" || req.Password == "" || req.TeamName == "" || req.Company == "" || req.Role == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "missing_fields",
+			"message": "All fields are required",
+		})
+		return http.ErrAbortHandler
+	}
+
+	// Validate role
+	validRoles := []string{
+		"customer_success_manager",
+		"support_manager",
+		"account_manager",
+		"sales_manager",
+		"legal_compliance",
+		"operations_manager",
+	}
+
+	roleValid := false
+	for _, role := range validRoles {
+		if req.Role == role {
+			roleValid = true
+			break
+		}
+	}
+
+	if !roleValid {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":   "invalid_role",
+			"message": "Invalid role specified",
+		})
+		return http.ErrAbortHandler
+	}
+
+	// Check if email already exists
+	var existingUser int
+	err := h.db.GetContext(c, &existingUser, `
+		SELECT COUNT(*) FROM team_members WHERE email = $1
+	`, req.Email)
+	if err == nil && existingUser > 0 {
+		c.JSON(http.StatusConflict, gin.H{
+			"error":   "email_exists",
+			"message": "Email already registered",
+		})
+		return http.ErrAbortHandler
+	}
+
+	return nil
 }

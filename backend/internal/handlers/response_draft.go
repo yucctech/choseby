@@ -18,11 +18,11 @@ import (
 // ResponseDraftHandler handles AI-generated customer response draft operations
 type ResponseDraftHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 	aiService   *ai.AIService
 }
 
-func NewResponseDraftHandler(db *database.DB, authService *auth.AuthService, apiKey string) *ResponseDraftHandler {
+func NewResponseDraftHandler(db *database.DB, authService *auth.Service, apiKey string) *ResponseDraftHandler {
 	return &ResponseDraftHandler{
 		db:          db,
 		authService: authService,
@@ -87,9 +87,9 @@ func (h *ResponseDraftHandler) GenerateResponseDraft(c *gin.Context) {
 
 	// Find option score for consensus and weighted score
 	var optionScore *models.OptionScore
-	for _, score := range evalResults.OptionScores {
-		if score.OptionID == selectedOptionID {
-			optionScore = &score
+	for i := range evalResults.OptionScores {
+		if evalResults.OptionScores[i].OptionID == selectedOptionID {
+			optionScore = &evalResults.OptionScores[i]
 			break
 		}
 	}

@@ -14,10 +14,10 @@ import (
 
 type EvaluationHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 }
 
-func NewEvaluationHandler(db *database.DB, authService *auth.AuthService) *EvaluationHandler {
+func NewEvaluationHandler(db *database.DB, authService *auth.Service) *EvaluationHandler {
 	return &EvaluationHandler{
 		db:          db,
 		authService: authService,

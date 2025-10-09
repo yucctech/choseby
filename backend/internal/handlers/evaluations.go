@@ -16,10 +16,10 @@ import (
 // EvaluationsHandler handles anonymous team evaluation operations
 type EvaluationsHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 }
 
-func NewEvaluationsHandler(db *database.DB, authService *auth.AuthService) *EvaluationsHandler {
+func NewEvaluationsHandler(db *database.DB, authService *auth.Service) *EvaluationsHandler {
 	return &EvaluationsHandler{
 		db:          db,
 		authService: authService,
@@ -224,21 +224,7 @@ func (h *EvaluationsHandler) GetResults(c *gin.Context) {
 	highestScore := 0.0
 
 	for _, analysis := range optionAnalyses {
-		// Calculate consensus level (inverse of variance, normalized)
-		consensus := 1.0
-		if analysis.ScoreVariance > 0 {
-			consensus = math.Max(0, 1.0-(analysis.ScoreVariance/10.0))
-		}
-
-		// Determine conflict level based on variance
-		conflictLevel := "none"
-		if analysis.ScoreVariance > 4.0 {
-			conflictLevel = "high"
-		} else if analysis.ScoreVariance > 2.0 {
-			conflictLevel = "medium"
-		} else if analysis.ScoreVariance > 1.0 {
-			conflictLevel = "low"
-		}
+		consensus, conflictLevel := h.calculateConsensusMetrics(analysis.ScoreVariance)
 
 		optionScore := models.OptionScore{
 			OptionID:      analysis.OptionID,
@@ -348,4 +334,25 @@ func (h *EvaluationsHandler) GetEvaluationStatus(c *gin.Context) {
 // ExportEvaluations exports evaluation data (placeholder for future implementation)
 func (h *EvaluationsHandler) ExportEvaluations(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, gin.H{"error": "Export functionality not implemented yet"})
+}
+
+// calculateConsensusMetrics determines consensus level and conflict based on score variance
+func (h *EvaluationsHandler) calculateConsensusMetrics(scoreVariance float64) (float64, string) {
+	// Calculate consensus level (inverse of variance, normalized)
+	consensus := 1.0
+	if scoreVariance > 0 {
+		consensus = math.Max(0, 1.0-(scoreVariance/10.0))
+	}
+
+	// Determine conflict level based on variance
+	conflictLevel := models.PriorityNone
+	if scoreVariance > 4.0 {
+		conflictLevel = models.PriorityHigh
+	} else if scoreVariance > 2.0 {
+		conflictLevel = models.PriorityMedium
+	} else if scoreVariance > 1.0 {
+		conflictLevel = models.PriorityLow
+	}
+
+	return consensus, conflictLevel
 }

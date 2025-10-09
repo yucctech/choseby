@@ -17,10 +17,10 @@ import (
 // DecisionsHandler handles customer decision operations
 type DecisionsHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 }
 
-func NewDecisionsHandler(db *database.DB, authService *auth.AuthService) *DecisionsHandler {
+func NewDecisionsHandler(db *database.DB, authService *auth.Service) *DecisionsHandler {
 	return &DecisionsHandler{
 		db:          db,
 		authService: authService,

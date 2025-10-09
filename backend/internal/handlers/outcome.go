@@ -15,10 +15,10 @@ import (
 // OutcomeHandler handles outcome tracking and AI learning feedback
 type OutcomeHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 }
 
-func NewOutcomeHandler(db *database.DB, authService *auth.AuthService) *OutcomeHandler {
+func NewOutcomeHandler(db *database.DB, authService *auth.Service) *OutcomeHandler {
 	return &OutcomeHandler{
 		db:          db,
 		authService: authService,

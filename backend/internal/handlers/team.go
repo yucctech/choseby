@@ -14,10 +14,10 @@ import (
 // TeamHandler handles team management operations
 type TeamHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 }
 
-func NewTeamHandler(db *database.DB, authService *auth.AuthService) *TeamHandler {
+func NewTeamHandler(db *database.DB, authService *auth.Service) *TeamHandler {
 	return &TeamHandler{
 		db:          db,
 		authService: authService,

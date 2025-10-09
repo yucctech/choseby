@@ -17,14 +17,14 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-type AuthService struct {
+type Service struct {
 	jwtSecret              []byte
 	jwtExpiration          time.Duration
 	refreshTokenExpiration time.Duration
 }
 
-func NewAuthService(jwtSecret string, jwtExpiration, refreshTokenExpiration int) *AuthService {
-	return &AuthService{
+func NewAuthService(jwtSecret string, jwtExpiration, refreshTokenExpiration int) *Service {
+	return &Service{
 		jwtSecret:              []byte(jwtSecret),
 		jwtExpiration:          time.Duration(jwtExpiration) * time.Second,
 		refreshTokenExpiration: time.Duration(refreshTokenExpiration) * time.Second,
@@ -32,7 +32,7 @@ func NewAuthService(jwtSecret string, jwtExpiration, refreshTokenExpiration int)
 }
 
 // GenerateToken creates a JWT token for authenticated team member
-func (a *AuthService) GenerateToken(userID, role string) (string, time.Time, error) {
+func (a *Service) GenerateToken(userID, role string) (string, time.Time, error) {
 	now := time.Now()
 	expiresAt := now.Add(a.jwtExpiration)
 
@@ -56,7 +56,7 @@ func (a *AuthService) GenerateToken(userID, role string) (string, time.Time, err
 }
 
 // ValidateToken validates and parses a JWT token
-func (a *AuthService) ValidateToken(tokenString string) (*Claims, error) {
+func (a *Service) ValidateToken(tokenString string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -77,7 +77,7 @@ func (a *AuthService) ValidateToken(tokenString string) (*Claims, error) {
 }
 
 // GenerateRefreshToken creates a refresh token (placeholder implementation)
-func (a *AuthService) GenerateRefreshToken(userID string) (string, time.Time, error) {
+func (a *Service) GenerateRefreshToken(userID string) (string, time.Time, error) {
 	// In a complete implementation, this would:
 	// 1. Generate a unique refresh token
 	// 2. Store it in the database with expiration
@@ -105,7 +105,7 @@ func (a *AuthService) GenerateRefreshToken(userID string) (string, time.Time, er
 }
 
 // HashPassword hashes a password using bcrypt
-func (a *AuthService) HashPassword(password string) (string, error) {
+func (a *Service) HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err
@@ -114,6 +114,6 @@ func (a *AuthService) HashPassword(password string) (string, error) {
 }
 
 // VerifyPassword verifies a password against its hash
-func (a *AuthService) VerifyPassword(hashedPassword, password string) error {
+func (a *Service) VerifyPassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }

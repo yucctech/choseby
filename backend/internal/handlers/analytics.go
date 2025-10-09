@@ -16,10 +16,10 @@ import (
 // AnalyticsHandler handles customer response analytics and dashboard data
 type AnalyticsHandler struct {
 	db          *database.DB
-	authService *auth.AuthService
+	authService *auth.Service
 }
 
-func NewAnalyticsHandler(db *database.DB, authService *auth.AuthService) *AnalyticsHandler {
+func NewAnalyticsHandler(db *database.DB, authService *auth.Service) *AnalyticsHandler {
 	return &AnalyticsHandler{
 		db:          db,
 		authService: authService,
@@ -48,20 +48,7 @@ func (h *AnalyticsHandler) GetDashboard(c *gin.Context) {
 	}
 
 	// Calculate date range based on period
-	var startDate time.Time
-	now := time.Now()
-
-	switch period {
-	case "7d":
-		startDate = now.AddDate(0, 0, -7)
-	case "30d":
-		startDate = now.AddDate(0, 0, -30)
-	case "90d":
-		startDate = now.AddDate(0, 0, -90)
-	default:
-		startDate = now.AddDate(0, 0, -30) // Default to 30 days
-		period = "30d"
-	}
+	startDate, period := h.calculateDateRange(period)
 
 	// Get total decisions in period
 	var totalDecisions int
@@ -215,53 +202,7 @@ func (h *AnalyticsHandler) GetDashboard(c *gin.Context) {
 	}
 
 	// Calculate team efficiency metrics
-	var teamEfficiency struct {
-		AvgEvaluationTime      float64 `json:"avg_evaluation_time" db:"avg_evaluation_time"`
-		ParticipationRate      float64 `json:"participation_rate" db:"participation_rate"`
-		ConflictResolutionRate float64 `json:"conflict_resolution_rate" db:"conflict_resolution_rate"`
-	}
-
-	// Calculate average time from decision creation to first evaluation
-	err = h.db.GetContext(c, &teamEfficiency.AvgEvaluationTime, `
-		SELECT COALESCE(
-			AVG(EXTRACT(EPOCH FROM (e.created_at - cd.created_at)) / 3600), 0
-		)
-		FROM customer_decisions cd
-		JOIN evaluations e ON cd.id = e.decision_id
-		WHERE cd.team_id = $1 AND cd.created_at >= $2
-	`, teamID, startDate)
-	if err != nil {
-		teamEfficiency.AvgEvaluationTime = 0
-	}
-
-	// Calculate overall participation rate
-	var totalEvaluationSlots, completedEvaluations int
-	err = h.db.GetContext(c, &totalEvaluationSlots, `
-		SELECT COUNT(cd.id) * (
-			SELECT COUNT(*) FROM team_members WHERE team_id = $1 AND is_active = true
-		)
-		FROM customer_decisions cd
-		WHERE cd.team_id = $1 AND cd.created_at >= $2
-	`, teamID, startDate)
-	if err != nil {
-		totalEvaluationSlots = 1 // Avoid division by zero
-	}
-
-	err = h.db.GetContext(c, &completedEvaluations, `
-		SELECT COUNT(DISTINCT e.evaluator_id || e.decision_id)
-		FROM evaluations e
-		JOIN customer_decisions cd ON e.decision_id = cd.id
-		WHERE cd.team_id = $1 AND cd.created_at >= $2
-	`, teamID, startDate)
-	if err != nil {
-		completedEvaluations = 0
-	}
-
-	if totalEvaluationSlots > 0 {
-		teamEfficiency.ParticipationRate = float64(completedEvaluations) / float64(totalEvaluationSlots) * 100
-	} else {
-		teamEfficiency.ParticipationRate = 0
-	}
+	teamEfficiency := h.calculateTeamEfficiency(c, teamID, startDate)
 
 	// Build final analytics response
 	analytics := models.DashboardAnalytics{
@@ -284,7 +225,7 @@ func (h *AnalyticsHandler) GetDashboard(c *gin.Context) {
 			"total_decisions":      totalDecisions,
 			"avg_resolution_hours": avgResolutionHours,
 			"avg_satisfaction":     avgCustomerSatisfaction,
-			"participation_rate":   teamEfficiency.ParticipationRate,
+			"participation_rate":   teamEfficiency["participation_rate"],
 		},
 	}
 
@@ -347,4 +288,72 @@ func (h *AnalyticsHandler) GetTeamPerformance(c *gin.Context) {
 // ExportAnalytics exports analytics data (placeholder for future implementation)
 func (h *AnalyticsHandler) ExportAnalytics(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, gin.H{"error": "Analytics export not implemented yet"})
+}
+
+// calculateDateRange determines the start date and normalizes the period string
+func (h *AnalyticsHandler) calculateDateRange(period string) (time.Time, string) {
+	now := time.Now()
+
+	switch period {
+	case "7d":
+		return now.AddDate(0, 0, -7), period
+	case "30d":
+		return now.AddDate(0, 0, -30), period
+	case "90d":
+		return now.AddDate(0, 0, -90), period
+	default:
+		return now.AddDate(0, 0, -30), "30d" // Default to 30 days
+	}
+}
+
+// calculateTeamEfficiency computes team efficiency metrics for the analytics dashboard
+func (h *AnalyticsHandler) calculateTeamEfficiency(c *gin.Context, teamID uuid.UUID, startDate time.Time) gin.H {
+	var avgEvaluationTime float64
+	var participationRate float64
+
+	// Calculate average time from decision creation to first evaluation
+	err := h.db.GetContext(c, &avgEvaluationTime, `
+		SELECT COALESCE(
+			AVG(EXTRACT(EPOCH FROM (e.created_at - cd.created_at)) / 3600), 0
+		)
+		FROM customer_decisions cd
+		JOIN evaluations e ON cd.id = e.decision_id
+		WHERE cd.team_id = $1 AND cd.created_at >= $2
+	`, teamID, startDate)
+	if err != nil {
+		avgEvaluationTime = 0
+	}
+
+	// Calculate overall participation rate
+	var totalEvaluationSlots, completedEvaluations int
+	err = h.db.GetContext(c, &totalEvaluationSlots, `
+		SELECT COUNT(cd.id) * (
+			SELECT COUNT(*) FROM team_members WHERE team_id = $1 AND is_active = true
+		)
+		FROM customer_decisions cd
+		WHERE cd.team_id = $1 AND cd.created_at >= $2
+	`, teamID, startDate)
+	if err != nil {
+		totalEvaluationSlots = 1 // Avoid division by zero
+	}
+
+	err = h.db.GetContext(c, &completedEvaluations, `
+		SELECT COUNT(DISTINCT e.evaluator_id || e.decision_id)
+		FROM evaluations e
+		JOIN customer_decisions cd ON e.decision_id = cd.id
+		WHERE cd.team_id = $1 AND cd.created_at >= $2
+	`, teamID, startDate)
+	if err != nil {
+		completedEvaluations = 0
+	}
+
+	if totalEvaluationSlots > 0 {
+		participationRate = float64(completedEvaluations) / float64(totalEvaluationSlots) * 100
+	}
+
+	return gin.H{
+		"avg_evaluation_time":      avgEvaluationTime,
+		"participation_rate":       participationRate,
+		"conflict_resolution_rate": 0.0, // Placeholder
+	}
 }

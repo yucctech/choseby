@@ -16,7 +16,7 @@ type TestSuite struct {
 	suite.Suite
 	DB          *database.DB
 	Mock        sqlmock.Sqlmock
-	AuthService *auth.AuthService
+	AuthService *auth.Service
 }
 
 // SetupTest initializes test dependencies before each test

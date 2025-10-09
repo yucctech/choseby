@@ -18,7 +18,10 @@
       "Bash(go test:*)",
       "Bash(cat:*)",
       "Bash(done)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(find:*)",
+      "Bash(go build:*)",
+      "Bash(golangci-lint run:*)"
     ],
     "deny": [],
     "ask": []

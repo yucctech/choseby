@@ -49,9 +49,9 @@ func (s *AIService) ClassifyDecision(ctx context.Context, decision *models.Custo
 
 	// Find matching response type
 	var matchedType *models.CustomerResponseType
-	for _, rt := range responseTypes {
-		if rt.TypeCode == classification.DecisionType {
-			matchedType = &rt
+	for i := range responseTypes {
+		if responseTypes[i].TypeCode == classification.DecisionType {
+			matchedType = &responseTypes[i]
 			break
 		}
 	}
