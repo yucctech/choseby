@@ -66,6 +66,19 @@ Thumbs.db
 *.temp
 login.json
 token.txt
+nul
+
+# Test scripts (one-time debug scripts - don't commit to root)
+/test-*.js
+/check-*.js
+/debug-*.js
+/verify-*.js
+/delete-*.js
+
+# Root-level Node.js artifacts (tests should be in scripts/test/)
+/node_modules/
+/package.json
+/package-lock.json
 
 # Cache
 .cache/
