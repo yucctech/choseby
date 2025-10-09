@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"choseby-backend/internal/models"
-
 	"github.com/stretchr/testify/assert"
 )
 

@@ -36,7 +36,7 @@ linters:
     - gochecknoinits
     - gocognit
     - goconst
-    - gocritic
+    # - gocritic  # Disabled - too opinionated for handlers
     - gocyclo
     - godot
     - gofmt

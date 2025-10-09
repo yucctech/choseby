@@ -16,7 +16,6 @@ import (
 	"choseby-backend/internal/api"
 	"choseby-backend/internal/config"
 	"choseby-backend/internal/database"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
