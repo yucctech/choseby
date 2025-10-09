@@ -15,7 +15,7 @@ import (
 type AIHandler struct {
 	db          *database.DB
 	authService *auth.Service
-	aiService   *ai.AIService
+	aiService   *ai.Service
 }
 
 func NewAIHandler(db *database.DB, authService *auth.Service, apiKey string) *AIHandler {

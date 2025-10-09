@@ -19,7 +19,7 @@ import (
 type ResponseDraftHandler struct {
 	db          *database.DB
 	authService *auth.Service
-	aiService   *ai.AIService
+	aiService   *ai.Service
 }
 
 func NewResponseDraftHandler(db *database.DB, authService *auth.Service, apiKey string) *ResponseDraftHandler {

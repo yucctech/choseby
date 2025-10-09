@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"choseby-backend/internal/auth"
@@ -206,7 +207,7 @@ func (h *EvaluationHandler) SubmitEvaluation(c *gin.Context) {
 			"message": "Evaluation already submitted for this decision",
 		})
 		return
-	} else if err != sql.ErrNoRows {
+	} else if !errors.Is(err, sql.ErrNoRows) {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "internal_error",
 			"message": "Failed to check existing evaluation",

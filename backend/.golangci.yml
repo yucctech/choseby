@@ -166,5 +166,10 @@ issues:
         - lll
         - tagliatelle
 
+    - path: scripts/
+      linters:
+        - forbidigo
+        - gochecknoglobals
+
   max-issues-per-linter: 0
   max-same-issues: 0

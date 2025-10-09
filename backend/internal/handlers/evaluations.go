@@ -241,7 +241,8 @@ func (h *EvaluationsHandler) GetResults(c *gin.Context) {
 		// Track highest scoring option for recommendation
 		if analysis.WeightedScore > highestScore && analysis.Evaluators > 0 {
 			highestScore = analysis.WeightedScore
-			recommendedOptionID = &analysis.OptionID
+			optionID := analysis.OptionID
+			recommendedOptionID = &optionID
 		}
 	}
 

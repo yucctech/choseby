@@ -21,7 +21,9 @@
       "Bash(git push:*)",
       "Bash(find:*)",
       "Bash(go build:*)",
-      "Bash(golangci-lint run:*)"
+      "Bash(golangci-lint run:*)",
+      "Bash(gofmt:*)",
+      "Bash(gh run list:*)"
     ],
     "deny": [],
     "ask": []

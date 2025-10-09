@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"time"
 
@@ -170,7 +171,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		WHERE email = $1 AND is_active = true
 	`, req.Email)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error":   "invalid_credentials",
 				"message": "Invalid email or password",

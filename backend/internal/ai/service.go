@@ -8,27 +8,27 @@ import (
 	"choseby-backend/internal/models"
 )
 
-// AIService provides AI-powered customer response intelligence
-type AIService struct {
+// Service provides AI-powered customer response intelligence
+type Service struct {
 	deepseek *DeepSeekClient
 	db       *database.DB
 }
 
 // NewAIService creates a new AI service
-func NewAIService(apiKey string, db *database.DB) *AIService {
+func NewAIService(apiKey string, db *database.DB) *Service {
 	config := DeepSeekConfig{
 		APIKey:            apiKey,
 		MaxRequestsPerMin: 60,
 	}
 
-	return &AIService{
+	return &Service{
 		deepseek: NewDeepSeekClient(config),
 		db:       db,
 	}
 }
 
 // ClassifyDecision analyzes a customer decision and provides AI classification
-func (s *AIService) ClassifyDecision(ctx context.Context, decision *models.CustomerDecision) error {
+func (s *Service) ClassifyDecision(ctx context.Context, decision *models.CustomerDecision) error {
 	// Get available response types from database
 	var responseTypes []models.CustomerResponseType
 	err := s.db.SelectContext(ctx, &responseTypes, `
@@ -72,7 +72,7 @@ func (s *AIService) ClassifyDecision(ctx context.Context, decision *models.Custo
 }
 
 // EnhanceDecisionWithAI adds AI analysis to an existing decision
-func (s *AIService) EnhanceDecisionWithAI(ctx context.Context, decisionID string) (*models.AIClassification, *models.AIRecommendations, error) {
+func (s *Service) EnhanceDecisionWithAI(ctx context.Context, decisionID string) (*models.AIClassification, *models.AIRecommendations, error) {
 	// Get decision from database
 	var decision models.CustomerDecision
 	err := s.db.GetContext(ctx, &decision, `
@@ -104,19 +104,19 @@ func (s *AIService) EnhanceDecisionWithAI(ctx context.Context, decisionID string
 }
 
 // SuggestResponseOptions generates AI-suggested response options
-func (s *AIService) SuggestResponseOptions(ctx context.Context, decision models.CustomerDecision) ([]models.ResponseOption, error) {
+func (s *Service) SuggestResponseOptions(ctx context.Context, decision models.CustomerDecision) ([]models.ResponseOption, error) {
 	// This is a placeholder for future AI-generated response options
 	// For now, return empty array to indicate no AI-generated options
 	return []models.ResponseOption{}, nil
 }
 
 // GenerateResponseDraft creates an AI-powered customer response draft
-func (s *AIService) GenerateResponseDraft(ctx context.Context, req ResponseDraftRequest) (*ResponseDraft, error) {
+func (s *Service) GenerateResponseDraft(ctx context.Context, req ResponseDraftRequest) (*ResponseDraft, error) {
 	return s.deepseek.GenerateResponseDraft(ctx, req)
 }
 
 // ValidateClassificationAccuracy checks if AI classification matches actual outcome
-func (s *AIService) ValidateClassificationAccuracy(ctx context.Context, decisionID string, actualType string) (bool, error) {
+func (s *Service) ValidateClassificationAccuracy(ctx context.Context, decisionID string, actualType string) (bool, error) {
 	// Get decision with AI classification
 	var decision models.CustomerDecision
 	err := s.db.GetContext(ctx, &decision, `
